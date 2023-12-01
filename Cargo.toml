@@ -8,3 +8,4 @@ authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
+sqlite = "0.32.0"
