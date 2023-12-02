@@ -2,7 +2,9 @@ mod db_ops;
 use std::path::Path;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use db_ops::{establish_connection, table_exists};
+use db_ops::establish_connection;
+
+use crate::db_ops::remove_db;
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -101,9 +103,58 @@ enum Database {
     },
 }
 fn main() {
-    // let cli = Cli::parse();
+    let cli = Cli::parse();
+    match cli {
+        Cli {
+            command: Command::Database {
+                command: db_command,
+            },
+        } => {
+            println!("db command entered");
+            match db_command {
+                Database::Add { name } => {
+                    let path = format!("./{name}.db");
+                    establish_connection(Path::new(&path)).expect("Failed to create new database");
+                }
+                Database::Delete { name } => {
+                    let path = format!("./{name}.db");
+                    remove_db(Path::new(&path)).expect("Failed to delete database");
+                }
+                Database::List => todo!(),
+                Database::Set { name } => todo!(),
+            }
+        }
+        Cli {
+            command: Command::Status,
+        } => {
+            println!("status command entered");
+        }
+        Cli {
+            command: Command::Todo {
+                command: todo_command,
+            },
+        } => {
+            println!("todo command entered");
+            match todo_command {
+                Todo::Add {
+                    name,
+                    priority,
+                    description,
+                } => todo!(),
+                Todo::Complete { id } => todo!(),
+                Todo::Delete { id } => todo!(),
+                Todo::List => todo!(),
+                Todo::Update {
+                    id,
+                    name,
+                    priority,
+                    description,
+                } => todo!(),
+            }
+        }
+    }
     // println!("{:?}", cli);
-    let conn = establish_connection(Path::new("./test.db")).unwrap();
+    // let conn = establish_connection(Path::new("./test.db")).unwrap();
 
-    println!("{}", table_exists(conn, "tasks").expect("error"));
+    // println!("{}", table_exists(conn, "tasks").expect("error"));
 }
