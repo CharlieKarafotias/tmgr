@@ -8,4 +8,5 @@ authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
+dotenv = "0.15.0"
 sqlite = "0.32.0"

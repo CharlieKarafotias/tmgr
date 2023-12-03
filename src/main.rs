@@ -1,10 +1,7 @@
 mod db_ops;
-use std::path::Path;
 
+use crate::db_ops::{establish_connection, list_dbs, remove_db};
 use clap::{Parser, Subcommand, ValueEnum};
-use db_ops::establish_connection;
-
-use crate::db_ops::remove_db;
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -113,14 +110,12 @@ fn main() {
             println!("db command entered");
             match db_command {
                 Database::Add { name } => {
-                    let path = format!("./{name}.db");
-                    establish_connection(Path::new(&path)).expect("Failed to create new database");
+                    establish_connection(&name).expect("Failed to create new database");
                 }
                 Database::Delete { name } => {
-                    let path = format!("./{name}.db");
-                    remove_db(Path::new(&path)).expect("Failed to delete database");
+                    remove_db(&name).expect("Failed to delete database");
                 }
-                Database::List => todo!(),
+                Database::List => list_dbs(),
                 Database::Set { name } => todo!(),
             }
         }
