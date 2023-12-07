@@ -1,7 +1,8 @@
-mod db_ops;
+mod db;
 
-use crate::db_ops::{establish_connection, list_dbs, remove_db};
 use clap::{Parser, Subcommand, ValueEnum};
+
+use crate::db::DB;
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -109,13 +110,9 @@ fn main() {
         } => {
             println!("db command entered");
             match db_command {
-                Database::Add { name } => {
-                    establish_connection(&name).expect("Failed to create new database");
-                }
-                Database::Delete { name } => {
-                    remove_db(&name).expect("Failed to delete database");
-                }
-                Database::List => list_dbs(),
+                Database::Add { name } => todo!(),
+                Database::Delete { name } => todo!(),
+                Database::List => todo!(),
                 Database::Set { name } => todo!(),
             }
         }
@@ -135,7 +132,10 @@ fn main() {
                     name,
                     priority,
                     description,
-                } => todo!(),
+                } => {
+                    let db = DB::new().unwrap();
+                    db.add_task(&name);
+                }
                 Todo::Complete { id } => todo!(),
                 Todo::Delete { id } => todo!(),
                 Todo::List => todo!(),
