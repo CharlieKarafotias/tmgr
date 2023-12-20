@@ -41,19 +41,19 @@ enum Todo {
     /// Mark a task as complete
     Complete {
         /// The id of the task
-        id: i32,
+        id: i64,
     },
     /// Delete a task
     Delete {
         /// The id of the task
-        id: i32,
+        id: i64,
     },
     /// List all tasks
     List,
     /// Update an existing task
     Update {
         /// The id of the task
-        id: i32,
+        id: i64,
         /// A short description of the task
         name: Option<String>,
         /// The priority of the task
@@ -134,11 +134,18 @@ fn main() {
                     description,
                 } => {
                     let db = DB::new().unwrap();
-                    db.add_task(&name);
+                    let res = db.add_task(name, priority.to_string(), description);
+                    println!("{:?}", res);
                 }
                 Todo::Complete { id } => todo!(),
-                Todo::Delete { id } => todo!(),
-                Todo::List => todo!(),
+                Todo::Delete { id } => {
+                    let db = DB::new().unwrap();
+                    db.delete_todo(id);
+                }
+                Todo::List => {
+                    let db = DB::new().unwrap();
+                    db.list_tasks().unwrap();
+                }
                 Todo::Update {
                     id,
                     name,
