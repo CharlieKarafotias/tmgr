@@ -154,7 +154,14 @@ fn main() {
                     name,
                     priority,
                     description,
-                } => todo!(),
+                } => {
+                    let db = DB::new().unwrap();
+                    let mut priorityStr: Option<String> = None;
+                    if let Some(priority) = priority {
+                        priorityStr = Some(priority.to_string());
+                    }
+                    let _ = db.update_todo(id, name, priorityStr, description);
+                }
             }
         }
     }

@@ -111,4 +111,38 @@ impl DB {
         }
         Ok(())
     }
+
+    pub fn update_todo(
+        &self,
+        id: i64,
+        new_name: Option<String>,
+        new_priority: Option<String>,
+        new_description: Option<String>,
+    ) -> Result<()> {
+        let mut update_sql = "UPDATE tasks SET".to_string();
+        // let mut params = Vec::new();
+        let mut param_values: Vec<rusqlite::types::Value> = Vec::new();
+
+        if let Some(name) = new_name {
+            update_sql.push_str(" name = (?),");
+            param_values.push(name.clone().into());
+            // params.push(name);
+        }
+        if let Some(priority) = new_priority {
+            update_sql.push_str(" priority = (?),");
+            param_values.push(priority.clone().into());
+        }
+        if let Some(description) = new_description {
+            update_sql.push_str(" description = (?),");
+            param_values.push(description.clone().into());
+        }
+
+        // remove trailing comma
+        update_sql.pop();
+        update_sql.push_str(" WHERE id = (?);");
+        param_values.push(id.into());
+        self.conn
+            .execute(&update_sql, rusqlite::params_from_iter(param_values))?;
+        Ok(())
+    }
 }
