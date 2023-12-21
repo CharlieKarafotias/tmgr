@@ -8,6 +8,7 @@ struct TaskFromDb {
     priority: String,
     description: Option<String>,
     created_on: String,
+    completed_on: Option<String>,
 }
 
 pub struct DB {
@@ -23,7 +24,8 @@ impl DB {
                 name TEXT NOT NULL,
                 priority TEXT NOT NULL,
                 description TEXT,
-                created_on TEXT NOT NULL
+                created_on TEXT NOT NULL,
+                completed_on TEXT
             )",
             [],
         )?; // Create a 'tasks' table if it doesn't exist
@@ -55,6 +57,7 @@ impl DB {
                 priority: row.get(2)?,
                 description: row.get(3)?,
                 created_on: row.get(4)?,
+                completed_on: row.get(5)?,
             })
         })?;
         let mut tasks = Vec::new();
@@ -63,24 +66,26 @@ impl DB {
         }
         // Print the header
         println!(
-            "{:<5} {:<20} {:<10} {:<20} {:<10}",
-            "ID", "Name", "Priority", "Description", "Created On"
+            "{:<5} {:<20} {:<10} {:<20} {:<35} {:<35}",
+            "ID", "Name", "Priority", "Description", "Created On", "Completed On"
         );
-        println!("{}", "-".repeat(60));
+        println!("{}", "-".repeat(110));
 
         // // Print each task
         for task in tasks {
             println!(
-                "{:<5} {:<20} {:<10} {:<20} {:<10}",
+                "{:<5} {:<20} {:<10} {:<20} {:<35} {:<35}",
                 task.id,
                 task.name,
                 task.priority,
-                task.description.unwrap_or_else(|| "".to_string()),
+                task.description.unwrap_or_else(|| "NULL".to_string()),
                 task.created_on,
+                task.completed_on
+                    .unwrap_or_else(|| "IN-PROGRESS".to_string())
             );
         }
 
-        println!("{}", "-".repeat(60));
+        println!("{}", "-".repeat(110));
 
         Ok(())
     }
@@ -92,6 +97,17 @@ impl DB {
         match res {
             0 => println!("Task with id {} not found", id),
             _ => println!("Successfully deleted task"),
+        }
+        Ok(())
+    }
+
+    pub fn complete_todo(&self, id: i64) -> Result<()> {
+        let sql = "UPDATE tasks SET completed_on = (?) WHERE id = (?)";
+        let mut stmt = self.conn.prepare(sql)?;
+        let res = stmt.execute(params![Utc::now(), id])?;
+        match res {
+            0 => println!("Task with id {} not found", id),
+            _ => println!("Successfully updated task"),
         }
         Ok(())
     }

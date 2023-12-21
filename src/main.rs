@@ -137,7 +137,10 @@ fn main() {
                     let res = db.add_task(name, priority.to_string(), description);
                     println!("{:?}", res);
                 }
-                Todo::Complete { id } => todo!(),
+                Todo::Complete { id } => {
+                    let db = DB::new().unwrap();
+                    db.complete_todo(id);
+                }
                 Todo::Delete { id } => {
                     let db = DB::new().unwrap();
                     db.delete_todo(id);
