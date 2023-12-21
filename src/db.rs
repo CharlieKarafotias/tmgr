@@ -1,11 +1,13 @@
+use chrono::Utc;
 use rusqlite::{params, Connection, Result};
 
 #[derive(Debug)]
-struct Task {
+struct TaskFromDb {
     id: i64,
     name: String,
     priority: String,
     description: Option<String>,
+    created_on: String,
 }
 
 pub struct DB {
@@ -20,7 +22,8 @@ impl DB {
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 priority TEXT NOT NULL,
-                description TEXT
+                description TEXT,
+                created_on TEXT NOT NULL
             )",
             [],
         )?; // Create a 'tasks' table if it doesn't exist
@@ -34,9 +37,9 @@ impl DB {
         priority: String,
         description: Option<String>,
     ) -> Result<usize> {
-        let sql = "INSERT INTO tasks (name, priority, description) VALUES (?, ?, ?)";
+        let sql = "INSERT INTO tasks (name, priority, description, created_on) VALUES (?, ?, ?, ?)";
         let mut stmt = self.conn.prepare(sql)?;
-        let res = stmt.execute(params![name, priority, description])?;
+        let res = stmt.execute(params![name, priority, description, Utc::now()])?;
         Ok(res)
         // Insert a new task
     }
@@ -46,11 +49,12 @@ impl DB {
         let mut stmt = self.conn.prepare(sql)?;
 
         let rows = stmt.query_map([], |row| {
-            Ok(Task {
+            Ok(TaskFromDb {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 priority: row.get(2)?,
                 description: row.get(3)?,
+                created_on: row.get(4)?,
             })
         })?;
         let mut tasks = Vec::new();
@@ -59,19 +63,20 @@ impl DB {
         }
         // Print the header
         println!(
-            "{:<5} {:<20} {:<10} {:<20}",
-            "ID", "Name", "Priority", "Description"
+            "{:<5} {:<20} {:<10} {:<20} {:<10}",
+            "ID", "Name", "Priority", "Description", "Created On"
         );
         println!("{}", "-".repeat(60));
 
         // // Print each task
         for task in tasks {
             println!(
-                "{:<5} {:<20} {:<10} {:<20}",
+                "{:<5} {:<20} {:<10} {:<20} {:<10}",
                 task.id,
                 task.name,
                 task.priority,
                 task.description.unwrap_or_else(|| "".to_string()),
+                task.created_on,
             );
         }
 
