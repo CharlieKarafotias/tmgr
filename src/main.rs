@@ -165,8 +165,4 @@ fn main() {
             }
         }
     }
-    // println!("{:?}", cli);
-    // let conn = establish_connection(Path::new("./test.db")).unwrap();
-
-    // println!("{}", table_exists(conn, "tasks").expect("error"));
 }
