@@ -1,8 +1,10 @@
 mod db;
+mod db_cmds;
+mod persistent;
 
 use clap::{Parser, Subcommand, ValueEnum};
 
-use crate::db::DB;
+use crate::{db::DB, db_cmds::db_add};
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -113,7 +115,7 @@ fn main() {
         } => {
             println!("db command entered");
             match db_command {
-                Database::Add { name } => todo!(),
+                Database::Add { name } => db_add(name),
                 Database::Delete { name } => todo!(),
                 Database::List => todo!(),
                 Database::Set { name } => todo!(),
