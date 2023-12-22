@@ -18,6 +18,7 @@ enum Command {
         #[command(subcommand)]
         command: Database,
     },
+    /// Info regarding file locations, current database, general statistics
     Status,
     Todo {
         #[command(subcommand)]
@@ -27,6 +28,7 @@ enum Command {
 
 // Declarations for the Todo command
 #[derive(Debug, Subcommand)]
+/// Access commands related to a particular task
 enum Todo {
     /// Add a new task
     Add {
@@ -81,6 +83,7 @@ impl std::fmt::Display for TaskPriority {
 
 // Declarations for the Database command
 #[derive(Debug, Subcommand)]
+/// Access database commands
 enum Database {
     /// Add a new database
     Add {
