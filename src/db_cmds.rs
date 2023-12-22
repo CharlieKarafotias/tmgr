@@ -1,5 +1,10 @@
 // add, delete, list, set
 
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
+
 use crate::persistent::{check_if_db_exists, mk_db, mkdir_db};
 
 // TODO: update the task commands under db.rs to be able to read the correct db files
@@ -20,7 +25,19 @@ pub fn db_add(name: String) {
 
 // TODO: finish these
 pub fn db_delete(name: String) {
-    todo!()
+    let mut file_name = name.clone();
+    file_name.push_str(".db");
+
+    let mut path = env::current_dir().expect("Failed to get current directory");
+    path = path.join("databases");
+    path = path.join(file_name);
+    // remove file at path if it is a file
+    if check_if_db_exists(path.to_str().unwrap()) {
+        fs::remove_file(path).expect("Failed to delete database");
+        println!("Successfully deleted database");
+    } else {
+        println!("No database exists with the name: {}", name);
+    }
 }
 
 pub fn db_list() {
