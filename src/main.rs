@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 
 use crate::{
     db::DB,
-    db_cmds::{db_add, db_delete},
+    db_cmds::{db_add, db_delete, db_list, db_set},
 };
 
 #[derive(Debug, Parser)]
@@ -120,8 +120,8 @@ fn main() {
             match db_command {
                 Database::Add { name } => db_add(name),
                 Database::Delete { name } => db_delete(name),
-                Database::List => todo!(),
-                Database::Set { name } => todo!(),
+                Database::List => db_list(),
+                Database::Set { name } => db_set(name),
             }
         }
         Cli {

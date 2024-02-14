@@ -1,4 +1,6 @@
+use crate::persistent::{path_to_db, path_to_env};
 use chrono::Utc;
+use dotenv::from_path;
 use rusqlite::{params, Connection, Result};
 
 #[derive(Debug)]
@@ -17,7 +19,11 @@ pub struct DB {
 
 impl DB {
     pub fn new() -> Result<Self> {
-        let conn = Connection::open("tasks.db")?; // Open or create a SQLite database file
+        let env_path = path_to_env();
+        dotenv::from_path(env_path).expect("Failed to read .env file");
+        let curr_db = dotenv::var("db_var").expect("Unable to find db_var in .env file");
+        let path_to_db = path_to_db(&curr_db);
+        let conn = Connection::open(path_to_db)?; // Open or create a SQLite database file
         conn.execute(
             "CREATE TABLE IF NOT EXISTS tasks (
                 id INTEGER PRIMARY KEY,
