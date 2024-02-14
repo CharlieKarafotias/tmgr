@@ -1,1 +1,4 @@
 /target
+/databases
+*.db
+*.env

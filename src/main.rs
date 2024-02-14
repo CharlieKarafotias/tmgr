@@ -1,8 +1,13 @@
 mod db;
+mod db_cmds;
+mod persistent;
 
 use clap::{Parser, Subcommand, ValueEnum};
 
-use crate::db::DB;
+use crate::{
+    db::DB,
+    db_cmds::{db_add, db_delete, db_list, db_set},
+};
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -18,6 +23,7 @@ enum Command {
         #[command(subcommand)]
         command: Database,
     },
+    /// Info regarding file locations, current database, general statistics
     Status,
     Todo {
         #[command(subcommand)]
@@ -27,6 +33,7 @@ enum Command {
 
 // Declarations for the Todo command
 #[derive(Debug, Subcommand)]
+/// Access commands related to a particular task
 enum Todo {
     /// Add a new task
     Add {
@@ -81,6 +88,7 @@ impl std::fmt::Display for TaskPriority {
 
 // Declarations for the Database command
 #[derive(Debug, Subcommand)]
+/// Access database commands
 enum Database {
     /// Add a new database
     Add {
@@ -110,10 +118,10 @@ fn main() {
         } => {
             println!("db command entered");
             match db_command {
-                Database::Add { name } => todo!(),
-                Database::Delete { name } => todo!(),
-                Database::List => todo!(),
-                Database::Set { name } => todo!(),
+                Database::Add { name } => db_add(name),
+                Database::Delete { name } => db_delete(name),
+                Database::List => db_list(),
+                Database::Set { name } => db_set(name),
             }
         }
         Cli {
