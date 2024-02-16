@@ -115,62 +115,56 @@ fn main() {
             command: Command::Database {
                 command: db_command,
             },
-        } => {
-            println!("db command entered");
-            match db_command {
-                Database::Add { name } => db_add(name),
-                Database::Delete { name } => db_delete(name),
-                Database::List => db_list(),
-                Database::Set { name } => db_set(name),
-            }
-        }
+        } => match db_command {
+            Database::Add { name } => db_add(name),
+            Database::Delete { name } => db_delete(name),
+            Database::List => db_list(),
+            Database::Set { name } => db_set(name),
+        },
         Cli {
             command: Command::Status,
         } => {
-            println!("status command entered");
+            todo!("Not implemented");
         }
         Cli {
             command: Command::Todo {
                 command: todo_command,
             },
-        } => {
-            println!("todo command entered");
-            match todo_command {
-                Todo::Add {
-                    name,
-                    priority,
-                    description,
-                } => {
-                    let db = DB::new().unwrap();
-                    let res = db.add_task(name, priority.to_string(), description);
-                    println!("{:?}", res);
-                }
-                Todo::Complete { id } => {
-                    let db = DB::new().unwrap();
-                    db.complete_todo(id);
-                }
-                Todo::Delete { id } => {
-                    let db = DB::new().unwrap();
-                    db.delete_todo(id);
-                }
-                Todo::List => {
-                    let db = DB::new().unwrap();
-                    db.list_tasks().unwrap();
-                }
-                Todo::Update {
-                    id,
-                    name,
-                    priority,
-                    description,
-                } => {
-                    let db = DB::new().unwrap();
-                    let mut priorityStr: Option<String> = None;
-                    if let Some(priority) = priority {
-                        priorityStr = Some(priority.to_string());
-                    }
-                    let _ = db.update_todo(id, name, priorityStr, description);
-                }
+        } => match todo_command {
+            Todo::Add {
+                name,
+                priority,
+                description,
+            } => {
+                let db = DB::new().unwrap();
+                let res = db.add_task(name, priority.to_string(), description);
+                println!("{:?}", res);
             }
-        }
+            Todo::Complete { id } => {
+                let db = DB::new().unwrap();
+                db.complete_todo(id);
+            }
+            Todo::Delete { id } => {
+                let db = DB::new().unwrap();
+                db.delete_todo(id);
+            }
+            Todo::List => {
+                let db = DB::new().unwrap();
+                db.list_tasks().unwrap();
+            }
+            Todo::Update {
+                id,
+                name,
+                priority,
+                description,
+            } => {
+                let db = DB::new().unwrap();
+                let mut priorityStr: Option<String> = None;
+                if let Some(priority) = priority {
+                    priorityStr = Some(priority.to_string());
+                }
+                let _ = db.update_todo(id, name, priorityStr, description);
+            }
+        },
     }
 }
