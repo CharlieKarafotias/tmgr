@@ -1,13 +1,8 @@
-mod db;
-mod db_cmds;
-mod persistent;
+mod commands;
 
 use clap::{Parser, Subcommand, ValueEnum};
-
-use crate::{
-    db::DB,
-    db_cmds::{db_add, db_delete, db_list, db_set},
-};
+use commands::db_cmds;
+use commands::db_cmds::db::DB;
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -116,10 +111,10 @@ fn main() {
                 command: db_command,
             },
         } => match db_command {
-            Database::Add { name } => db_add(name),
-            Database::Delete { name } => db_delete(name),
-            Database::List => db_list(),
-            Database::Set { name } => db_set(name),
+            Database::Add { name } => db_cmds::db_add(name),
+            Database::Delete { name } => db_cmds::db_delete(name),
+            Database::List => db_cmds::db_list(),
+            Database::Set { name } => db_cmds::db_set(name),
         },
         Cli {
             command: Command::Status,

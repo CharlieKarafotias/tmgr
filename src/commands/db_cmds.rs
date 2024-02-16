@@ -1,5 +1,7 @@
 //! This file contains the orchestrator functions for adding, deleting, listing, and setting operations for the program's database.
-use crate::persistent::{change_db, list_dbs, mk_db, rm_db};
+pub mod db;
+mod persistent;
+use persistent::{change_db, list_dbs, mk_db, rm_db};
 
 /// Adds a new database with the specified name.
 ///
