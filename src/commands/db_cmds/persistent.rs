@@ -64,7 +64,7 @@ pub fn path_to_db(name: &str) -> String {
 /// * Panics if the current working directory value is invalid.
 /// * Panics if the conversion to a string fails.
 fn path_to_db_dir() -> String {
-    let mut path = env::current_exe().expect("Failed to get current directory");
+    let mut path = env::current_exe().expect("ERROR: Unable to resolve executable directory");
     path.pop(); // remove the tmgr part of the path
     path = path.join("databases");
     path.to_str()
@@ -191,7 +191,7 @@ pub fn list_dbs() -> Result<Vec<String>, Box<dyn std::error::Error>> {
 /// * Panics if the current working directory value is invalid
 /// * Panics if the conversion to a string fails.
 pub fn path_to_env() -> String {
-    let mut path = env::current_exe().expect("Failed to get current directory");
+    let mut path = env::current_exe().expect("ERROR: Unable to resolve executable directory");
     path.pop(); // remove the tmgr part of the path
     path = path.join(".env");
     path.to_str()
