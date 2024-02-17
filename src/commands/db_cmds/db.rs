@@ -1,6 +1,5 @@
 use super::persistent::{path_to_db, path_to_env};
 use chrono::Utc;
-use dotenv::from_path;
 use rusqlite::{params, Connection, Result};
 
 #[derive(Debug)]

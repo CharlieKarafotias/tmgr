@@ -5,9 +5,10 @@ A simple to use todo tracker command line interface for tracking all things codi
 
 - [] Multi Sqlite3 Database support __(In-Progress)__
     - Data migration based on Rust types. Dev feature that enables new DBs to be created based off Rust types to reduce redundancy __(Planned)__
-    - Known bug: Correct path functions to ensure tmgr runs properly no matter the execution location __(Planned)__
+    - Known bug: Correct path functions to ensure tmgr runs properly no matter the execution location __(Done)__
 - [] Data structures designed __(In-Progress)__
 - [] Command Line Interface Implemented __(In-Progress)__
+    - Improve error handling. Custom error kinds/messages for various scenarios __(In-Progress)__
 - [] Bash install script __(Planned)__
 - [] Simple GUI __(Planned)__
 

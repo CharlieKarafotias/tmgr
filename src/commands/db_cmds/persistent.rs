@@ -6,6 +6,8 @@ use std::{
     io::{self, prelude::*, Read, Write},
     path::{Path, PathBuf},
 };
+
+use super::db_errors;
 // -------------------- Functions for managing file space --------------------
 
 /// Given an OsString, this function returns a string slice representing the file name without its extension.
@@ -62,7 +64,8 @@ pub fn path_to_db(name: &str) -> String {
 /// * Panics if the current working directory value is invalid.
 /// * Panics if the conversion to a string fails.
 fn path_to_db_dir() -> String {
-    let mut path = env::current_dir().expect("Failed to get current directory");
+    let mut path = env::current_exe().expect("ERROR: Unable to resolve executable directory");
+    path.pop(); // remove the tmgr part of the path
     path = path.join("databases");
     path.to_str()
         .expect("failed to convert path to string")
@@ -95,14 +98,14 @@ fn check_if_db_exists(name: &str) -> bool {
     Path::new(&path_to_db(name)).exists()
 }
 
-/// Creates a directory for the database if it does not exist, and returns the path to the database directory.
+/// Creates a directory for the database if it does not exist.
 ///
 /// # Returns
 ///
-/// An io::Result containing the path to the database directory if successful, or an error if the operation fails.
-fn mkdir_db() -> io::Result<bool> {
+/// An io::Result<()> if successful, or an error if the operation fails.
+fn mkdir_db() -> io::Result<()> {
     fs::create_dir(path_to_db_dir())?;
-    Ok(true)
+    Ok(())
 }
 
 /// Creates a new database file with the specified name in the database directory.
@@ -111,11 +114,10 @@ fn mkdir_db() -> io::Result<bool> {
 ///
 /// * `name` - A string representing the name of the database file to be created.
 ///
-/// # Panics
+/// # Errors
 ///
-/// * Panics if database directory does not exist and fails to be created
-/// * Panics if file creation fails
-pub fn mk_db(name: &str) -> io::Result<bool> {
+/// * Errors if the database already exists.
+pub fn mk_db(name: &str) -> Result<(), Box<dyn std::error::Error>> {
     // check if database directory exists; if not then make it
     if !check_db_dir(&path_to_db_dir()) {
         mkdir_db()?;
@@ -124,9 +126,13 @@ pub fn mk_db(name: &str) -> io::Result<bool> {
     // Create the new file
     if !check_if_db_exists(name) {
         File::create(path_to_db(name))?;
-        Ok(true)
+        Ok(())
     } else {
-        Ok(false)
+        Err(db_errors::DatabaseError::new(
+            &format!("Unable to create database {}", name),
+            db_errors::DatabaseErrorKind::DatabaseAlreadyExists,
+        )
+        .into())
     }
 }
 
@@ -140,25 +146,37 @@ pub fn mk_db(name: &str) -> io::Result<bool> {
 ///
 /// An io::Result containing a boolean value indicating whether the database was successfully removed or not.
 ///
-/// # Panics
+/// # Errors
 ///
-/// * Panics if file deletion fails
-pub fn rm_db(name: &str) -> io::Result<bool> {
+/// * Errors if database does not exist.
+pub fn rm_db(name: &str) -> Result<(), Box<dyn std::error::Error>> {
     // remove db file if it exists
     if check_if_db_exists(name) {
         fs::remove_file(path_to_db(name))?;
-        Ok(true)
+        Ok(())
     } else {
-        Ok(false)
+        Err(db_errors::DatabaseError::new(
+            &format!("Unable to remove database {}", name),
+            db_errors::DatabaseErrorKind::DatabaseDoesNotExist,
+        )
+        .into())
     }
 }
 
-pub fn list_dbs() -> Vec<String> {
-    fs::read_dir(path_to_db_dir())
-        .unwrap()
+/// Retrieves a list of all database names in the database directory.
+///
+/// # Returns
+///
+/// A Result containing a vector of strings, representing the names of all the databases in the directory, if successful. If an error occurs, an Err variant containing an error type is returned.
+///
+/// # Errors
+/// * Errors if there is an issue reading the database directory
+/// * Errors if there is a problem converting the file names to strings.
+pub fn list_dbs() -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    Ok(fs::read_dir(path_to_db_dir())?
         .flatten()
         .map(|f| drop_file_extension(&f.file_name()).to_string())
-        .collect()
+        .collect())
 }
 //  -------------------- Functions for managing dotenv --------------------
 
@@ -173,7 +191,8 @@ pub fn list_dbs() -> Vec<String> {
 /// * Panics if the current working directory value is invalid
 /// * Panics if the conversion to a string fails.
 pub fn path_to_env() -> String {
-    let mut path = env::current_dir().expect("Failed to get current directory");
+    let mut path = env::current_exe().expect("ERROR: Unable to resolve executable directory");
+    path.pop(); // remove the tmgr part of the path
     path = path.join(".env");
     path.to_str()
         .expect("failed to convert path to string")
@@ -245,7 +264,7 @@ fn update_env_var(var_name: &str, new_val: &str) -> io::Result<bool> {
 /// # Returns
 ///
 /// Returns `Ok(true)` if the database is updated successfully, `Ok(false)` if the database does not exist, and an `Err` if an I/O error occurs.
-pub fn change_db(db_name: &str) -> io::Result<bool> {
+pub fn change_db(db_name: &str) -> Result<(), Box<dyn std::error::Error>> {
     // ensure the database exists. If not, return Ok(false)
     if Path::new(&path_to_db(db_name)).exists() {
         let env_path = path_to_env();
@@ -259,8 +278,12 @@ pub fn change_db(db_name: &str) -> io::Result<bool> {
             // update the "db_var" env variable in the .env file to the db_name value
             update_env_var("db_var", db_name)?;
         }
-        Ok(true)
+        Ok(())
     } else {
-        Ok(false)
+        Err(db_errors::DatabaseError::new(
+            &format!("Unable to set database {}", db_name),
+            db_errors::DatabaseErrorKind::DatabaseDoesNotExist,
+        )
+        .into())
     }
 }
