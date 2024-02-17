@@ -1,5 +1,6 @@
 //! This file contains the orchestrator functions for adding, deleting, listing, and setting operations for the program's database.
 pub mod db;
+mod db_errors;
 mod persistent;
 use persistent::{change_db, list_dbs, mk_db, rm_db};
 
@@ -14,15 +15,14 @@ use persistent::{change_db, list_dbs, mk_db, rm_db};
 /// * `Successfully created database with name: {name}` to console if the database is added successfully.
 /// * `The database by the name {name} already exists` to console if a database with the specified name already exists.
 ///
-/// # Panics
-/// * Panics if file creation fails.
+/// # Errors
+/// * Errors if the database already exists.
 pub fn db_add(name: String) {
-    if let Ok(file_created) = mk_db(&name) {
-        if file_created {
-            println!("Successfully created database with name: {}", name);
-        } else {
-            println!("The database by the name {} already exists", name);
+    match mk_db(&name) {
+        Ok(_) => {
+            println!("Successfully created database with name: {}", name)
         }
+        Err(error) => println!("ERROR: {}", error),
     }
 }
 
@@ -37,16 +37,14 @@ pub fn db_add(name: String) {
 /// * `Successfully deleted database` to console if the database is deleted successfully.
 /// * `No database exists with the name: {db_name}` to console if no database exists with the specified name.
 ///
-/// # Panics
-///
-/// Panics if the file to be removed is not found.
+/// # Errors
+/// * Errors if database does not exist.
 pub fn db_delete(name: String) {
-    if let Ok(file_removed) = rm_db(&name) {
-        if file_removed {
-            println!("Successfully deleted database");
-        } else {
-            println!("No database exists with the name: {}", name);
+    match rm_db(&name) {
+        Ok(_) => {
+            println!("Successfully deleted database {}", name)
         }
+        Err(error) => println!("ERROR: {}", error),
     }
 }
 
@@ -58,10 +56,14 @@ pub fn db_delete(name: String) {
 /// # Panics
 /// * Panics if the database directory cannot be found.
 pub fn db_list() {
-    println!("----Databases-----");
-    let mut dbs = list_dbs();
-    dbs.sort();
-    dbs.iter().for_each(|curr| println!("Name: {}", curr));
+    match list_dbs() {
+        Ok(mut dbs) => {
+            println!("----Databases-----");
+            dbs.sort();
+            dbs.iter().for_each(|current| println!("Name: {}", current));
+        }
+        Err(error) => println!("ERROR: {}", error),
+    }
 }
 
 /// Sets the current database to the specified name and updates the .env file accordingly.
@@ -80,11 +82,10 @@ pub fn db_list() {
 ///
 /// Displays a message indicating whether the database was successfully set or not.
 pub fn db_set(name: String) {
-    if let Ok(is_updated) = change_db(&name) {
-        if is_updated {
-            println!("Successfully set database to {}", name);
-        } else {
-            println!("No database exists with the name: {}", name);
+    match change_db(&name) {
+        Ok(_) => {
+            println!("Successfully set database to {}", name)
         }
-    };
+        Err(error) => println!("ERROR: {}", error),
+    }
 }
