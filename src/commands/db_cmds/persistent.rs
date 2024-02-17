@@ -316,4 +316,21 @@ mod tests {
     fn test_check_db_dir_non_existing_dir() {
         assert!(!check_db_dir("non_existing_dir"));
     }
+
+    #[test]
+    fn test_path_to_db_dir() {
+        let expected_dir_name = "databases";
+        let path = path_to_db_dir();
+        // get the right side of the slices, should be the databases directory
+        let actual_dir_name = path.rsplit_once('/').unwrap().1;
+        assert_eq!(expected_dir_name, actual_dir_name);
+    }
+
+    #[test]
+    fn test_path_to_db() {
+        let expected_db_name = "example.db";
+        let path = path_to_db("example");
+        let actual_db_name = path.rsplit_once('/').unwrap().1;
+        assert_eq!(expected_db_name, actual_db_name);
+    }
 }
