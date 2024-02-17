@@ -2,8 +2,10 @@ use std::{error, fmt};
 
 #[derive(Debug)]
 pub enum DatabaseErrorKind {
-    DatabaseAlreadyExists,
-    DatabaseDoesNotExist,
+    AlreadyExists,
+    DoesNotExist,
+    VariableNotSet,
+    DirectoryNotSet,
 }
 
 #[derive(Debug)]
@@ -15,8 +17,22 @@ pub struct DatabaseError {
 impl fmt::Display for DatabaseErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            DatabaseErrorKind::DatabaseAlreadyExists => write!(f, "database already exists"),
-            DatabaseErrorKind::DatabaseDoesNotExist => write!(f, "database does not exists"),
+            DatabaseErrorKind::AlreadyExists => write!(
+                f,
+                "database already exists hint: run `tmgr database set <name>`"
+            ),
+            DatabaseErrorKind::DoesNotExist => write!(
+                f,
+                "database does not exists hint: run `tmgr database add <name>`"
+            ),
+            DatabaseErrorKind::VariableNotSet => write!(
+                f,
+                "database variable not set, hint: run `tmgr database set <name>`"
+            ),
+            DatabaseErrorKind::DirectoryNotSet => write!(
+                f,
+                "database directory not set, hint: run `tmgr database set-directory <dir>`"
+            ),
         }
     }
 }

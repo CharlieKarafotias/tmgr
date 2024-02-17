@@ -2,7 +2,7 @@
 pub mod db;
 mod db_errors;
 mod persistent;
-use persistent::{change_db, list_dbs, mk_db, rm_db};
+use persistent::{change_db, env_check_state, list_dbs, mk_db, rm_db, set_db_directory};
 
 /// Adds a new database with the specified name.
 ///
@@ -18,11 +18,13 @@ use persistent::{change_db, list_dbs, mk_db, rm_db};
 /// # Errors
 /// * Errors if the database already exists.
 pub fn db_add(name: String) {
-    match mk_db(&name) {
-        Ok(_) => {
-            println!("Successfully created database with name: {}", name)
+    if db_state_ok() {
+        match mk_db(&name) {
+            Ok(_) => {
+                println!("Successfully created database with name: {}", name)
+            }
+            Err(error) => println!("ERROR: {}", error),
         }
-        Err(error) => println!("ERROR: {}", error),
     }
 }
 
@@ -40,11 +42,13 @@ pub fn db_add(name: String) {
 /// # Errors
 /// * Errors if database does not exist.
 pub fn db_delete(name: String) {
-    match rm_db(&name) {
-        Ok(_) => {
-            println!("Successfully deleted database {}", name)
+    if db_state_ok() {
+        match rm_db(&name) {
+            Ok(_) => {
+                println!("Successfully deleted database {}", name)
+            }
+            Err(error) => println!("ERROR: {}", error),
         }
-        Err(error) => println!("ERROR: {}", error),
     }
 }
 
@@ -56,17 +60,19 @@ pub fn db_delete(name: String) {
 /// # Panics
 /// * Panics if the database directory cannot be found.
 pub fn db_list() {
-    match list_dbs() {
-        Ok(mut dbs) => {
-            println!("----Databases-----");
-            dbs.sort();
-            dbs.iter().for_each(|current| println!("Name: {}", current));
+    if db_state_ok() {
+        match list_dbs() {
+            Ok(mut dbs) => {
+                println!("----Databases-----");
+                dbs.sort();
+                dbs.iter().for_each(|current| println!("Name: {}", current));
+            }
+            Err(error) => println!("ERROR: {}", error),
         }
-        Err(error) => println!("ERROR: {}", error),
     }
 }
 
-/// Sets the current database to the specified name and updates the .env file accordingly.
+/// Sets the current database to the specified name and updates the .env file's `db_var` variable accordingly.
 ///
 /// # Arguments
 ///
@@ -88,4 +94,45 @@ pub fn db_set(name: String) {
         }
         Err(error) => println!("ERROR: {}", error),
     }
+}
+
+/// Sets the directory where databases are stored and updates the .env file's `db_dir` variable accordingly.
+///
+/// # Arguments
+///
+/// * `path` - A string representing the path where the database directory is located.
+///
+/// # Examples
+///
+/// - Set the database directory to the current directory.
+/// `db_set_directory(".");`
+/// - Set the database directory to the path "/path/to/directory".
+/// `db_set_directory("/path/to/directory");`
+///
+/// # Outputs
+///
+/// Displays a message indicating whether the database directory was successfully set or not.
+pub fn db_set_directory(path: String) {
+    match set_db_directory(&path) {
+        Ok(_) => {
+            println!("Successfully set database directory to {}", path)
+        }
+        Err(error) => println!("ERROR: {}", error),
+    }
+}
+
+/// Function to ensure the env state is set correctly
+///
+/// Returns
+/// * bool true if env state is set correctly
+/// * bool false if env state is not set
+///
+/// Errors
+/// * Errors if env state is not set; indicating which fields aren't correct
+fn db_state_ok() -> bool {
+    if let Err(error) = env_check_state() {
+        println!("ERROR: {}", error);
+        return false;
+    }
+    true
 }

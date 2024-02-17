@@ -18,6 +18,8 @@ enum Command {
         #[command(subcommand)]
         command: Database,
     },
+    /// Initializes tmgr for use
+    Init,
     /// Info regarding file locations, current database, general statistics
     Status,
     Todo {
@@ -102,6 +104,11 @@ enum Database {
         /// The database name
         name: String,
     },
+    /// Set the directory where databases are stored
+    SetDirectory {
+        /// The directory path
+        path: String,
+    },
 }
 fn main() {
     let cli = Cli::parse();
@@ -115,11 +122,21 @@ fn main() {
             Database::Delete { name } => db_cmds::db_delete(name),
             Database::List => db_cmds::db_list(),
             Database::Set { name } => db_cmds::db_set(name),
+            Database::SetDirectory { path } => db_cmds::db_set_directory(path),
         },
         Cli {
             command: Command::Status,
         } => {
             todo!("Not implemented");
+        }
+        Cli {
+            command: Command::Init,
+        } => {
+            let db_name = "init_db".to_string();
+            db_cmds::db_set_directory(".".to_string());
+            db_cmds::db_add(db_name.clone());
+            db_cmds::db_set(db_name);
+            println!("Initializer complete!");
         }
         Cli {
             command: Command::Todo {
