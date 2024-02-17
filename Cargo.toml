@@ -1,6 +1,6 @@
 [package]
 name = "tmgr"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 
@@ -10,4 +10,5 @@ authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 chrono = "0.4.31"
 clap = { version = "4.4.7", features = ["derive"] }
 dotenv = "0.15.0"
-rusqlite = { version = "0.30.0", features = ["chrono"] }
+rusqlite = { version = "0.31.0", features = ["chrono"] }
+tempdir = "0.3.7"

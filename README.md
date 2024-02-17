@@ -19,6 +19,7 @@ A simple to use todo tracker command line interface for tracking all things codi
 - Run `cargo run`. This should return all the commands that are available for the program by default. 
     - Run a specific command like `cargo run -- todo add "my first todo"`
 - Build the project with `cargo build`
+- To contribute to this repo, ensure [Pre-commit](https://pre-commit.com/#install) is installed on your computer. This project utilizes pre-commit to ensure consistency throughout commits.
 
 ## CLI Commands 
 

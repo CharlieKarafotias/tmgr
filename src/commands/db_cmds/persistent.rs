@@ -287,3 +287,50 @@ pub fn change_db(db_name: &str) -> Result<(), Box<dyn std::error::Error>> {
         .into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempdir;
+
+    #[test]
+    fn test_drop_file_extension_with_extension() {
+        let file_name = OsString::from("example.txt");
+        assert_eq!(drop_file_extension(&file_name), "example");
+    }
+
+    #[test]
+    fn test_drop_file_extension_without_extension() {
+        let file_name = OsString::from("example");
+        assert_eq!(drop_file_extension(&file_name), "example");
+    }
+
+    #[test]
+    fn test_check_db_dir_existing_dir() {
+        let temp_dir = tempdir::TempDir::new("test_db_dir").unwrap();
+        let dir_path = temp_dir.path().to_str().unwrap().to_string();
+        assert!(check_db_dir(&dir_path));
+    }
+
+    #[test]
+    fn test_check_db_dir_non_existing_dir() {
+        assert!(!check_db_dir("non_existing_dir"));
+    }
+
+    #[test]
+    fn test_path_to_db_dir() {
+        let expected_dir_name = "databases";
+        let path = path_to_db_dir();
+        // get the right side of the slices, should be the databases directory
+        let actual_dir_name = path.rsplit_once('/').unwrap().1;
+        assert_eq!(expected_dir_name, actual_dir_name);
+    }
+
+    #[test]
+    fn test_path_to_db() {
+        let expected_db_name = "example.db";
+        let path = path_to_db("example");
+        let actual_db_name = path.rsplit_once('/').unwrap().1;
+        assert_eq!(expected_db_name, actual_db_name);
+    }
+}

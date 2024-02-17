@@ -137,11 +137,11 @@ fn main() {
             }
             Todo::Complete { id } => {
                 let db = DB::new().unwrap();
-                db.complete_todo(id);
+                let _ = db.complete_todo(id);
             }
             Todo::Delete { id } => {
                 let db = DB::new().unwrap();
-                db.delete_todo(id);
+                let _ = db.delete_todo(id);
             }
             Todo::List => {
                 let db = DB::new().unwrap();
@@ -154,11 +154,11 @@ fn main() {
                 description,
             } => {
                 let db = DB::new().unwrap();
-                let mut priorityStr: Option<String> = None;
+                let mut priority_str: Option<String> = None;
                 if let Some(priority) = priority {
-                    priorityStr = Some(priority.to_string());
+                    priority_str = Some(priority.to_string());
                 }
-                let _ = db.update_todo(id, name, priorityStr, description);
+                let _ = db.update_todo(id, name, priority_str, description);
             }
         },
     }
