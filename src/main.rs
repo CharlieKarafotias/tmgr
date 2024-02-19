@@ -1,5 +1,5 @@
 mod commands;
-
+mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
 use commands::db_cmds;
 use commands::db_cmds::db::DB;
