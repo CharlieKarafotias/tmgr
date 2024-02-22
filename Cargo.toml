@@ -12,3 +12,4 @@ clap = { version = "4.4.7", features = ["derive"] }
 dotenv = "0.15.0"
 rusqlite = { version = "0.31.0", features = ["chrono"] }
 tempdir = "0.3.7"
+tempfile = "3.10.0"

@@ -12,11 +12,16 @@ pub struct State {
 
 impl State {
     #[allow(unused)]
-    pub fn new() -> Self {
+    pub fn new(path: Option<&Path>) -> Self {
         let mut config_path = current_exe().unwrap();
         config_path.pop(); // remove executable name
         config_path.push("tmgr_config.toml");
-        let f = Path::new(&config_path);
+        let default_path = Path::new(&config_path);
+
+        let f = match path {
+            Some(p) => p,
+            None => default_path,
+        };
 
         let mut state_res = Self {
             db_dir: None,
@@ -25,9 +30,8 @@ impl State {
 
         match f.try_exists() {
             Ok(true) => {
-                println!("State manager found config, reading...");
                 // read in values
-                if let Ok(lines) = read_lines(&config_path) {
+                if let Ok(lines) = read_lines(f) {
                     // Consumes the iterator, returns an (Optional) String
                     for line in lines.flatten() {
                         match line.split_once('=') {
@@ -36,14 +40,16 @@ impl State {
                                     if value.trim() == "\"\"" {
                                         state_res.db_dir = None
                                     } else {
-                                        state_res.db_dir = Some(value.trim().to_string());
+                                        state_res.db_dir =
+                                            Some(value.trim().replace('\"', "").to_string());
                                     }
                                 }
                                 "db_var" => {
                                     if value.trim() == "\"\"" {
                                         state_res.db_var = None
                                     } else {
-                                        state_res.db_var = Some(value.trim().to_string());
+                                        state_res.db_var =
+                                            Some(value.trim().replace('\"', "").to_string());
                                     }
                                 }
                                 _ => panic!(
@@ -57,18 +63,17 @@ impl State {
                 }
             }
             Ok(false) => {
-                println!("State manager config file not found, creating...");
-                let mut file = match File::create(&config_path) {
+                let mut file = match File::create(f) {
                     Err(why) => {
-                        panic!("couldn't create {:#?}: {}", &config_path, why)
+                        panic!("couldn't create {:#?}: {}", &f, why)
                     }
                     Ok(file) => file,
                 };
 
                 let initial_values: &str = "db_dir = \"\"\ndb_var = \"\"\n";
                 match file.write_all(initial_values.as_bytes()) {
-                    Err(why) => panic!("couldn't write to {:#?}: {}", &config_path, why),
-                    Ok(_) => println!("successfully wrote to {:#?}", &config_path),
+                    Err(why) => panic!("couldn't write to {:#?}: {}", &f, why),
+                    Ok(_) => println!("successfully wrote to {:#?}", &f),
                 }
 
                 // update state - empty string is None
@@ -97,18 +102,17 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn test_new_state() {
         // Path
-        let mut config_path = current_exe().unwrap();
-        config_path.pop(); // remove executable name
-        config_path.push("tmgr_config.toml");
-        // new state
-        let state = State::new();
+        let temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        let f = temp_file.path();
 
-        // remove temp file
-        std::fs::remove_file(config_path).unwrap();
+        // new state with temp path
+        let state = State::new(Some(f));
+
         // Verify that db_dir and db_var are initially None
         assert_eq!(state.db_dir, None);
         assert_eq!(state.db_var, None);
@@ -116,26 +120,16 @@ mod tests {
 
     #[test]
     fn test_new_state_existing_file() {
-        // Path
-        let mut config_path = current_exe().unwrap();
-        config_path.pop(); // remove executable name
-        config_path.push("tmgr_config.toml");
-        // new state to create the file
-        let state = State::new();
+        // Create a temporary file
+        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        // Write initial values to the file
+        let initial_values: &str = "db_dir = \"test1\"\ndb_var = \"test2\"\n";
+        temp_file.write_all(initial_values.as_bytes()).unwrap();
 
-        // Verify that db_dir and db_var are initially None
-        assert_eq!(state.db_dir, None);
-        assert_eq!(state.db_var, None);
+        let f = temp_file.path();
+        let state = State::new(Some(f));
 
-        // New state using read file
-        let state2 = State::new();
-
-        // remove temp file
-        match std::fs::remove_file(&config_path) {
-            Ok(_) => println!("successfully removed {:#?}", &config_path),
-            Err(why) => println!("couldn't remove {:#?}: {}", &config_path, why),
-        }
-        assert_eq!(state2.db_dir, None);
-        assert_eq!(state2.db_var, None);
+        assert_eq!(state.db_dir, Some("test1".to_string()));
+        assert_eq!(state.db_var, Some("test2".to_string()));
     }
 }
