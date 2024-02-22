@@ -2,7 +2,8 @@
 pub mod db;
 mod db_errors;
 mod persistent;
-use persistent::{change_db, env_check_state, list_dbs, mk_db, rm_db, set_db_directory};
+use super::super::state_mgr::State;
+use persistent::{change_db, env_check_state, list_dbs, mk_db, rm_db};
 
 /// Adds a new database with the specified name.
 ///
@@ -96,24 +97,9 @@ pub fn db_set(name: String) {
     }
 }
 
-/// Sets the directory where databases are stored and updates the .env file's `db_dir` variable accordingly.
-///
-/// # Arguments
-///
-/// * `path` - A string representing the path where the database directory is located.
-///
-/// # Examples
-///
-/// - Set the database directory to the current directory.
-/// `db_set_directory(".");`
-/// - Set the database directory to the path "/path/to/directory".
-/// `db_set_directory("/path/to/directory");`
-///
-/// # Outputs
-///
-/// Displays a message indicating whether the database directory was successfully set or not.
-pub fn db_set_directory(path: String) {
-    match set_db_directory(&path) {
+/// Sets the directory where databases are stored and updates the configuration file's `db_dir` variable accordingly.
+pub fn db_set_directory(mut state: State, path: String) {
+    match state.update_var("db_dir", &path) {
         Ok(_) => {
             println!("Successfully set database directory to {}", path)
         }

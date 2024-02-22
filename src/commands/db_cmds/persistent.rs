@@ -333,41 +333,6 @@ pub fn change_db(db_name: &str) -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-/// Sets the database directory to the specified path.
-///
-/// # Arguments
-///
-/// * `path` - A string representing the path where the database directory is located.
-///
-/// # Errors
-///
-/// Returns an error if there is an issue setting the database directory.
-///
-/// # Examples
-///
-/// ```
-/// use your_crate_name::set_db_directory;
-///
-/// // Set the database directory to the current directory.
-/// set_db_directory(".");
-///
-/// // Set the database directory to the path "/path/to/directory".
-/// set_db_directory("/path/to/directory");
-/// ```
-pub fn set_db_directory(path: &str) -> Result<(), Box<dyn std::error::Error>> {
-    // get the absolute path
-    let abs_path = Path::new(path).canonicalize()?;
-    // update the "db_dir" env variable in the .env file to the path value
-    if let Some(path) = abs_path.to_str() {
-        update_env_var("db_dir", path)?;
-    } else {
-        return Err(Box::new(io::Error::new(
-            io::ErrorKind::Other,
-            "failed to convert path to string",
-        )));
-    }
-    Ok(())
-}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -395,14 +360,5 @@ mod tests {
     #[test]
     fn test_check_db_dir_non_existing_dir() {
         assert!(!check_db_dir("non_existing_dir"));
-    }
-
-    #[test]
-    fn test_set_db_directory_non_existing_dir() {
-        // Call the function with an invalid path that would result in an error
-        let result = set_db_directory("/invalid/path");
-
-        // Check if an error is returned
-        assert!(result.is_err());
     }
 }

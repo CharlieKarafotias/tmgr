@@ -3,6 +3,7 @@ mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
 use commands::db_cmds;
 use commands::db_cmds::db::DB;
+use state_mgr::State;
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -111,6 +112,7 @@ enum Database {
     },
 }
 fn main() {
+    let state = State::new(None);
     let cli = Cli::parse();
     match cli {
         Cli {
@@ -122,7 +124,7 @@ fn main() {
             Database::Delete { name } => db_cmds::db_delete(name),
             Database::List => db_cmds::db_list(),
             Database::Set { name } => db_cmds::db_set(name),
-            Database::SetDirectory { path } => db_cmds::db_set_directory(path),
+            Database::SetDirectory { path } => db_cmds::db_set_directory(state, path),
         },
         Cli {
             command: Command::Status,
@@ -133,7 +135,7 @@ fn main() {
             command: Command::Init,
         } => {
             let db_name = "init_db".to_string();
-            db_cmds::db_set_directory(".".to_string());
+            db_cmds::db_set_directory(state, ".".to_string());
             db_cmds::db_add(db_name.clone());
             db_cmds::db_set(db_name);
             println!("Initializer complete!");
