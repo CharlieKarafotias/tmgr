@@ -5,7 +5,6 @@ use std::io::{self, BufRead, Read, Seek, Write};
 use std::path::Path;
 use std::{error, fmt};
 
-#[allow(unused)]
 pub struct State {
     db_dir: Option<String>,
     db_var: Option<String>,
@@ -14,6 +13,16 @@ pub struct State {
 
 impl State {
     #[allow(unused)]
+    pub fn get_path(&self) -> String {
+        self.path.clone()
+    }
+    pub fn get_db_dir(&self) -> Option<String> {
+        self.db_dir.clone()
+    }
+    #[allow(unused)]
+    pub fn get_db_var(&self) -> Option<String> {
+        self.db_var.clone()
+    }
     pub fn new(path: Option<&Path>) -> Self {
         let mut config_path = current_exe().unwrap();
         config_path.pop(); // remove executable name

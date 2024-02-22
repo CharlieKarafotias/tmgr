@@ -112,7 +112,7 @@ enum Database {
     },
 }
 fn main() {
-    let state = State::new(None);
+    let mut state = State::new(None);
     let cli = Cli::parse();
     match cli {
         Cli {
@@ -120,11 +120,11 @@ fn main() {
                 command: db_command,
             },
         } => match db_command {
-            Database::Add { name } => db_cmds::db_add(name),
-            Database::Delete { name } => db_cmds::db_delete(name),
-            Database::List => db_cmds::db_list(),
-            Database::Set { name } => db_cmds::db_set(name),
-            Database::SetDirectory { path } => db_cmds::db_set_directory(state, path),
+            Database::Add { name } => db_cmds::db_add(&mut state, name),
+            Database::Delete { name } => db_cmds::db_delete(&mut state, name),
+            Database::List => db_cmds::db_list(&mut state),
+            Database::Set { name } => db_cmds::db_set(&mut state, name),
+            Database::SetDirectory { path } => db_cmds::db_set_directory(&mut state, path),
         },
         Cli {
             command: Command::Status,
@@ -135,9 +135,9 @@ fn main() {
             command: Command::Init,
         } => {
             let db_name = "init_db".to_string();
-            db_cmds::db_set_directory(state, ".".to_string());
-            db_cmds::db_add(db_name.clone());
-            db_cmds::db_set(db_name);
+            db_cmds::db_set_directory(&mut state, ".".to_string());
+            db_cmds::db_add(&mut state, db_name.clone());
+            db_cmds::db_set(&mut state, db_name);
             println!("Initializer complete!");
         }
         Cli {

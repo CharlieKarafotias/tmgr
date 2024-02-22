@@ -2,123 +2,181 @@
 pub mod db;
 mod db_errors;
 mod persistent;
+use std::{error::Error, fs, path::PathBuf};
+
 use super::super::state_mgr::State;
-use persistent::{change_db, env_check_state, list_dbs, mk_db, rm_db};
+use persistent::drop_file_extension;
 
 /// Adds a new database with the specified name.
-///
-/// # Arguments
-///
-/// * `name` - A string representing the name of the new database to be added.
-///
-/// # Returns
-///
-/// * `Successfully created database with name: {name}` to console if the database is added successfully.
-/// * `The database by the name {name} already exists` to console if a database with the specified name already exists.
-///
-/// # Errors
-/// * Errors if the database already exists.
-pub fn db_add(name: String) {
-    if db_state_ok() {
-        match mk_db(&name) {
-            Ok(_) => {
-                println!("Successfully created database with name: {}", name)
+pub fn db_add(state: &mut State, name: String) {
+    match state.get_db_dir() {
+        Some(path) => {
+            // Create a new database file with provided name.
+            let mut db_path = PathBuf::from(&path).join(&name);
+            db_path.set_extension("db");
+
+            match db_path.try_exists() {
+                Ok(true) => {
+                    let e = db_errors::DatabaseError::new(
+                        &format!("Unable to add database {}", name),
+                        db_errors::DatabaseErrorKind::AlreadyExists,
+                    );
+                    println!("ERROR: {}", e);
+                }
+                Ok(false) => match fs::File::create(&db_path) {
+                    Ok(_) => println!("Successfully created database with name: {}", name),
+                    Err(e) => {
+                        println!("ERROR: {}", e);
+                    }
+                },
+                Err(e) => {
+                    println!("ERROR: {}", e)
+                }
             }
-            Err(error) => println!("ERROR: {}", error),
+        }
+        None => {
+            let e = db_errors::DatabaseError::new(
+                &format!("Unable to add database {}", name),
+                db_errors::DatabaseErrorKind::DirectoryNotSet,
+            );
+            println!("ERROR: {}", e);
         }
     }
 }
 
 /// Deletes the database with the specified name.
-///
-/// # Arguments
-///
-/// * `name` - A string representing the name of the database to be deleted.
-///
-///  # Returns
-///
-/// * `Successfully deleted database` to console if the database is deleted successfully.
-/// * `No database exists with the name: {db_name}` to console if no database exists with the specified name.
-///
-/// # Errors
-/// * Errors if database does not exist.
-pub fn db_delete(name: String) {
-    if db_state_ok() {
-        match rm_db(&name) {
-            Ok(_) => {
-                println!("Successfully deleted database {}", name)
+pub fn db_delete(state: &mut State, name: String) {
+    match state.get_db_dir() {
+        Some(path) => {
+            let mut db_path = PathBuf::from(&path).join(&name);
+            db_path.set_extension("db");
+            match db_path.is_file() {
+                true => {
+                    // remove the file
+                    match fs::remove_file(&db_path) {
+                        Ok(_) => println!("Successfully deleted database {}", name),
+                        Err(e) => println!("ERROR: {}", e),
+                    }
+                }
+                false => {
+                    let e = db_errors::DatabaseError::new(
+                        &format!("Unable to remove database {}", name),
+                        db_errors::DatabaseErrorKind::DoesNotExist,
+                    );
+                    println!("ERROR: {}", e);
+                }
             }
-            Err(error) => println!("ERROR: {}", error),
+        }
+        None => {
+            let e = db_errors::DatabaseError::new(
+                &format!("Unable to remove database {}", name),
+                db_errors::DatabaseErrorKind::DirectoryNotSet,
+            );
+            println!("ERROR: {}", e);
         }
     }
 }
 
 /// Lists all the databases in the current directory and displays their names to the console in alphabetical order.
-///
-/// # Returns
-/// * Lists the names of all the databases in the current directory.
-///
-/// # Panics
-/// * Panics if the database directory cannot be found.
-pub fn db_list() {
-    if db_state_ok() {
-        match list_dbs() {
-            Ok(mut dbs) => {
-                println!("----Databases-----");
+pub fn db_list(state: &mut State) {
+    match state.get_db_dir() {
+        Some(path) => match fs::read_dir(path) {
+            Ok(dbs) => {
+                let mut dbs: Vec<String> = dbs
+                    .flatten()
+                    .map(|f| drop_file_extension(&f.file_name()).to_string())
+                    .collect();
                 dbs.sort();
+                println!("----Databases-----");
                 dbs.iter().for_each(|current| println!("Name: {}", current));
             }
-            Err(error) => println!("ERROR: {}", error),
+            Err(e) => println!("ERROR: {}", e),
+        },
+        None => {
+            let error = db_errors::DatabaseError::new(
+                "Unable to list databases",
+                db_errors::DatabaseErrorKind::DirectoryNotSet,
+            );
+            println!("ERROR: {}", error)
         }
     }
 }
 
-/// Sets the current database to the specified name and updates the .env file's `db_var` variable accordingly.
-///
-/// # Arguments
-///
-/// * `name` - A string representing the name of the database to be set.
-///
-/// # Examples
-///
-/// ```
-/// db_set("my_database");
-/// ```
-///
-/// # Outputs
-///
-/// Displays a message indicating whether the database was successfully set or not.
-pub fn db_set(name: String) {
-    match change_db(&name) {
-        Ok(_) => {
-            println!("Successfully set database to {}", name)
+/// Sets the current database to the specified name and updates the configuration file's `db_var` variable accordingly.
+pub fn db_set(state: &mut State, name: String) {
+    match state.get_db_dir() {
+        Some(path) => {
+            let mut db_path = PathBuf::from(&path).join(&name);
+            db_path.set_extension("db");
+            if !db_path.is_file() {
+                let e: Box<dyn Error> = db_errors::DatabaseError::new(
+                    &format!("Unable to set database {}", name),
+                    db_errors::DatabaseErrorKind::DoesNotExist,
+                )
+                .into();
+                println!("ERROR: {}", e);
+            } else {
+                match state.update_var("db_var", &name) {
+                    Ok(_) => {
+                        println!("Successfully set database to {}", name)
+                    }
+                    Err(e) => {
+                        println!("ERROR: {}", e);
+                    }
+                };
+            }
         }
-        Err(error) => println!("ERROR: {}", error),
+        None => {
+            let e: Box<dyn Error> = db_errors::DatabaseError::new(
+                &format!("Unable to set database {}", name),
+                db_errors::DatabaseErrorKind::DoesNotExist,
+            )
+            .into();
+            println!("ERROR: {}", e);
+        }
     }
 }
 
 /// Sets the directory where databases are stored and updates the configuration file's `db_dir` variable accordingly.
-pub fn db_set_directory(mut state: State, path: String) {
-    match state.update_var("db_dir", &path) {
-        Ok(_) => {
-            println!("Successfully set database directory to {}", path)
-        }
-        Err(error) => println!("ERROR: {}", error),
-    }
-}
+pub fn db_set_directory(state: &mut State, path: String) {
+    let path_abs = PathBuf::from(&path)
+        .canonicalize()
+        .expect("ERROR: invalid path");
+    let path_abs = path_abs.join("databases");
 
-/// Function to ensure the env state is set correctly
-///
-/// Returns
-/// * bool true if env state is set correctly
-/// * bool false if env state is not set
-///
-/// Errors
-/// * Errors if env state is not set; indicating which fields aren't correct
-fn db_state_ok() -> bool {
-    if let Err(error) = env_check_state() {
-        println!("ERROR: {}", error);
-        return false;
+    // create the directory if it doesn't exist
+    if !path_abs.is_dir() {
+        match fs::create_dir_all(&path_abs) {
+            Ok(_) => {}
+            Err(_) => {
+                let e: Box<dyn Error> = db_errors::DatabaseError::new(
+                    &format!("Unable to set database directory {}", path),
+                    db_errors::DatabaseErrorKind::DoesNotExist,
+                )
+                .into();
+                println!("ERROR: {}", e);
+                return;
+            }
+        }
     }
-    true
+
+    // update the db_dir variable
+    match state.update_var(
+        "db_dir",
+        path_abs
+            .to_str()
+            .expect("ERROR: failed to convert path to string"),
+    ) {
+        Ok(_) => {
+            println!(
+                "Successfully set database directory to {}",
+                path_abs
+                    .to_str()
+                    .expect("ERROR: failed to convert path to string")
+            );
+        }
+        Err(error) => {
+            println!("ERROR: {}", error);
+        }
+    }
 }
