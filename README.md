@@ -110,6 +110,6 @@ Example:
 
 ### Persistent Storage
 
-TMGR utilizes the [dotenv](https://docs.rs/dotenv/latest/dotenv/) crate to store state between sessions. In the future, this will be replaced with a production ready solution, as setting environment variables through a .env file is not practical long term. The following variables are tracked in the .env file:
-- db_var: Stores the current database. This is set by the `change_db` function under src/commands/db_cmds/persistent.rs and can be executed by running the command `tmgr database set {db_name}`. 
+TMGR utilizes a [toml](https://toml.io/en/) file to store state between sessions. The following variables are tracked in the `tmgr_config.toml` file:
+- db_var: Stores the current database. This can be set by the user by running the command `tmgr database set {database_name}`.
 - db_dir: Stores the save location of databases for the program. This can be set by the user by running the command `tmgr database set-directory {path}`.
