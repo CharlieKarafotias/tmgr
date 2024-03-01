@@ -1,3 +1,9 @@
+# 0.2.4
+- Added state manager
+# 0.2.3
+- Added init command for first-time setup
+- Added new sub command to databases command list (set-directory)
+- New errors added to db_errors.rs
 # 0.2.2
 - Added pre-commit support
 - Initial testing introduced for persistent.rs file

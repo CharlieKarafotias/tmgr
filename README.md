@@ -10,6 +10,7 @@ A simple to use todo tracker command line interface for tracking all things codi
 - [] Command Line Interface Implemented __(In-Progress)__
     - Improve error handling. Custom error kinds/messages for various scenarios __(In-Progress)__
 - [] Bash install script __(Planned)__
+- [] Improved persistent state storage solution. See [Behind The Scenes -> Persistent Storage](#persistent-storage) section for more information __(Done)__
 - [] Simple GUI __(Planned)__
 
 ## Getting Started
@@ -48,6 +49,15 @@ Database commands manage the state of the sqlite3 database that store tasks.
         - Name: The database name
     - Example:
         - `tmgr database set 2024Tasks`
+
+### Init Command
+
+Initializes tmgr for first time use. This consists of running 3 subcommands from the databases subcommand list:
+- `tmgr database set-directory .`
+- `tmgr database add init-db`
+- `tmgr database set init-db`
+
+If successful, a message stating _Initializer complete!_ will show.
 
 ### Status Command
 
@@ -95,3 +105,11 @@ The help command will present all available subcommands that TMGR supports. Furt
 Example: 
 - `tmgr -h`
 - `tmgr --help`
+
+## Behind The Scenes:
+
+### Persistent Storage
+
+TMGR utilizes a [toml](https://toml.io/en/) file to store state between sessions. The following variables are tracked in the `tmgr_config.toml` file:
+- db_var: Stores the current database. This can be set by the user by running the command `tmgr database set {database_name}`.
+- db_dir: Stores the save location of databases for the program. This can be set by the user by running the command `tmgr database set-directory {path}`.

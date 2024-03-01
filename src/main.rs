@@ -1,8 +1,9 @@
 mod commands;
-
+mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
 use commands::db_cmds;
 use commands::db_cmds::db::DB;
+use state_mgr::State;
 
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
@@ -18,6 +19,8 @@ enum Command {
         #[command(subcommand)]
         command: Database,
     },
+    /// Initializes tmgr for use
+    Init,
     /// Info regarding file locations, current database, general statistics
     Status,
     Todo {
@@ -102,8 +105,14 @@ enum Database {
         /// The database name
         name: String,
     },
+    /// Set the directory where databases are stored
+    SetDirectory {
+        /// The directory path
+        path: String,
+    },
 }
 fn main() {
+    let mut state = State::new(None);
     let cli = Cli::parse();
     match cli {
         Cli {
@@ -111,15 +120,25 @@ fn main() {
                 command: db_command,
             },
         } => match db_command {
-            Database::Add { name } => db_cmds::db_add(name),
-            Database::Delete { name } => db_cmds::db_delete(name),
-            Database::List => db_cmds::db_list(),
-            Database::Set { name } => db_cmds::db_set(name),
+            Database::Add { name } => db_cmds::db_add(&mut state, name),
+            Database::Delete { name } => db_cmds::db_delete(&mut state, name),
+            Database::List => db_cmds::db_list(&mut state),
+            Database::Set { name } => db_cmds::db_set(&mut state, name),
+            Database::SetDirectory { path } => db_cmds::db_set_directory(&mut state, path),
         },
         Cli {
             command: Command::Status,
         } => {
             todo!("Not implemented");
+        }
+        Cli {
+            command: Command::Init,
+        } => {
+            let db_name = "init_db".to_string();
+            db_cmds::db_set_directory(&mut state, ".".to_string());
+            db_cmds::db_add(&mut state, db_name.clone());
+            db_cmds::db_set(&mut state, db_name);
+            println!("Initializer complete!");
         }
         Cli {
             command: Command::Todo {
