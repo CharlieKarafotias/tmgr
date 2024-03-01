@@ -1,7 +1,6 @@
-use super::{
-    db_errors,
-    persistent::{path_to_db, path_to_env},
-};
+use std::path::PathBuf;
+
+use super::{db_errors, State};
 use chrono::Utc;
 use rusqlite::{params, Connection, Result};
 
@@ -20,10 +19,8 @@ pub struct DB {
 }
 
 impl DB {
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let env_path = path_to_env();
-        dotenv::from_path(env_path).expect("Failed to read .env file");
-        let curr_db = dotenv::var("db_var").expect("Unable to find db_var in .env file");
+    pub fn new(state: &mut State) -> Result<Self, Box<dyn std::error::Error>> {
+        let curr_db = state.get_db_var().unwrap_or("none".to_string());
         if curr_db == "none" {
             return Err(db_errors::DatabaseError::new(
                 "No database selected",
@@ -31,7 +28,9 @@ impl DB {
             )
             .into());
         }
-        let path_to_db = path_to_db(&curr_db).expect("Failed to find db file");
+        // TODO: add to state manager to have ability to make path given current db
+        let mut path_to_db = PathBuf::from(state.get_db_dir().unwrap()).join(curr_db);
+        path_to_db.set_extension("db");
         let conn = Connection::open(path_to_db)?; // Open or create a SQLite database file
         conn.execute(
             "CREATE TABLE IF NOT EXISTS tasks (

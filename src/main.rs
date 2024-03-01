@@ -1,8 +1,7 @@
 mod commands;
 mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
-use commands::db_cmds;
-use commands::db_cmds::db::DB;
+use commands::{db_cmds, todo_cmds};
 use state_mgr::State;
 
 #[derive(Debug, Parser)]
@@ -149,36 +148,16 @@ fn main() {
                 name,
                 priority,
                 description,
-            } => {
-                let db = DB::new().unwrap();
-                let res = db.add_task(name, priority.to_string(), description);
-                println!("{:?}", res);
-            }
-            Todo::Complete { id } => {
-                let db = DB::new().unwrap();
-                let _ = db.complete_todo(id);
-            }
-            Todo::Delete { id } => {
-                let db = DB::new().unwrap();
-                let _ = db.delete_todo(id);
-            }
-            Todo::List => {
-                let db = DB::new().unwrap();
-                db.list_tasks().unwrap();
-            }
+            } => todo_cmds::add(&mut state, name, priority, description),
+            Todo::Complete { id } => todo_cmds::complete(&mut state, id),
+            Todo::Delete { id } => todo_cmds::delete(&mut state, id),
+            Todo::List => todo_cmds::list(&mut state),
             Todo::Update {
                 id,
                 name,
                 priority,
                 description,
-            } => {
-                let db = DB::new().unwrap();
-                let mut priority_str: Option<String> = None;
-                if let Some(priority) = priority {
-                    priority_str = Some(priority.to_string());
-                }
-                let _ = db.update_todo(id, name, priority_str, description);
-            }
+            } => todo_cmds::update(&mut state, id, name, priority, description),
         },
     }
 }
