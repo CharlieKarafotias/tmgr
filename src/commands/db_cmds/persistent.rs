@@ -1,8 +1,6 @@
 // persistent.rs provides an interface for managing the persistent storage required for tmgr
 use std::{
-    env,
-    ffi::OsString,
-    io,
+    env, io,
     path::{Path, PathBuf},
 };
 
@@ -20,13 +18,13 @@ use dotenv;
 /// # Returns
 ///
 /// A string slice representing the file name without its extension.
-pub fn drop_file_extension(os_str: &OsString) -> &str {
-    if let Some(dot_index) = os_str.to_str().and_then(|s| s.rfind('.')) {
-        &os_str.to_str().unwrap()[..dot_index]
-    } else {
-        os_str.to_str().unwrap()
-    }
-}
+// pub fn drop_file_extension(os_str: &OsString) -> &str {
+//     if let Some(dot_index) = os_str.to_str().and_then(|s| s.rfind('.')) {
+//         &os_str.to_str().unwrap()[..dot_index]
+//     } else {
+//         os_str.to_str().unwrap()
+//     }
+// }
 // -------------------- Functions for managing Databases --------------------
 
 /// Provides the path to a database file in the database directory.

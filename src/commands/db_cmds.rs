@@ -5,7 +5,6 @@ mod persistent;
 use std::{error::Error, fs, path::PathBuf};
 
 use super::super::state_mgr::State;
-use persistent::drop_file_extension;
 
 /// Adds a new database with the specified name.
 pub fn db_add(state: &mut State, name: String) {
@@ -77,6 +76,15 @@ pub fn db_delete(state: &mut State, name: String) {
     }
 }
 
+/// Removes the file extension from the filename.
+fn drop_file_extension(filename: &str) -> String {
+    if let Some(dot_index) = filename.rfind('.') {
+        filename[..dot_index].to_string()
+    } else {
+        filename.to_string()
+    }
+}
+
 /// Lists all the databases in the current directory and displays their names to the console in alphabetical order.
 pub fn db_list(state: &mut State) {
     match state.get_db_dir() {
@@ -84,7 +92,7 @@ pub fn db_list(state: &mut State) {
             Ok(dbs) => {
                 let mut dbs: Vec<String> = dbs
                     .flatten()
-                    .map(|f| drop_file_extension(&f.file_name()).to_string())
+                    .map(|entry| drop_file_extension(entry.file_name().to_str().unwrap_or("")))
                     .collect();
                 dbs.sort();
                 println!("----Databases-----");

@@ -10,7 +10,7 @@ A simple to use todo tracker command line interface for tracking all things codi
 - [] Command Line Interface Implemented __(In-Progress)__
     - Improve error handling. Custom error kinds/messages for various scenarios __(In-Progress)__
 - [] Bash install script __(Planned)__
-- [] Improved persistent state storage solution. See [Behind The Scenes -> Persistent Storage](#persistent-storage) section for more information __(In-Progress)__
+- [] Improved persistent state storage solution. See [Behind The Scenes -> Persistent Storage](#persistent-storage) section for more information __(Done)__
 - [] Simple GUI __(Planned)__
 
 ## Getting Started
