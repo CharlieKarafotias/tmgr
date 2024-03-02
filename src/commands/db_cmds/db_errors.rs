@@ -6,6 +6,7 @@ pub enum DatabaseErrorKind {
     DoesNotExist,
     VariableNotSet,
     DirectoryNotSet,
+    PathCreationFailed,
 }
 
 #[derive(Debug)]
@@ -32,6 +33,10 @@ impl fmt::Display for DatabaseErrorKind {
             DatabaseErrorKind::DirectoryNotSet => write!(
                 f,
                 "database directory not set, hint: run `tmgr database set-directory <dir>`"
+            ),
+            DatabaseErrorKind::PathCreationFailed => write!(
+                f,
+                "path to current database file could not be created, hint: run `tmgr database set-directory <dir>` or `tmgr database set <name>`"
             ),
         }
     }
