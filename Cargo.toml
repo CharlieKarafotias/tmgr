@@ -8,7 +8,7 @@ authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 
 [dependencies]
 chrono = "0.4.31"
-clap = { version = "4.4.7", features = ["derive"] }
+clap = { version = "4.5.2", features = ["derive"] }
 dotenv = "0.15.0"
 rusqlite = { version = "0.31.0", features = ["chrono"] }
 tempdir = "0.3.7"
