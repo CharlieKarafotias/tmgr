@@ -7,7 +7,7 @@ authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.31"
+chrono = "0.4.35"
 clap = { version = "4.4.7", features = ["derive"] }
 dotenv = "0.15.0"
 rusqlite = { version = "0.31.0", features = ["chrono"] }
