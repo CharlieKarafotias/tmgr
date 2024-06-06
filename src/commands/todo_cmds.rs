@@ -15,32 +15,35 @@ pub fn add(state: &mut State, name: String, priority: TaskPriority, description:
         Err(e) => println!("ERROR: {}", e),
     }
 }
+
 pub fn complete(state: &mut State, id: i64) {
     let db = connect_to_db(state);
     match db {
         Ok(db) => {
             let res = db.complete_todo(id);
             match res {
-                Ok(_) => (), // TODO: complete_todo should return number of rows updated. The commands should handle printing
+                Ok(_) => println!("Successfully set task {id} as completed"),
                 Err(e) => println!("ERROR: {}", e),
             }
         }
         Err(e) => println!("ERROR: {}", e),
     }
 }
+
 pub fn delete(state: &mut State, id: i64) {
     let db = connect_to_db(state);
     match db {
         Ok(db) => {
             let res = db.delete_todo(id);
             match res {
-                Ok(_) => (), // TODO: delete_todo should return number of rows deleted. The commands should handle printing
+                Ok(_) => println!("Successfully deleted task {id}"),
                 Err(e) => println!("ERROR: {}", e),
             }
         }
         Err(e) => println!("ERROR: {}", e),
     }
 }
+
 pub fn list(state: &mut State) {
     let db = connect_to_db(state);
     match db {

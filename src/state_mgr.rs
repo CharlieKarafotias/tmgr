@@ -55,7 +55,7 @@ impl State {
                 // read in values
                 if let Ok(lines) = read_lines(f) {
                     // Consumes the iterator, returns an (Optional) String
-                    for line in lines.flatten() {
+                    for line in lines.map_while(|x| x.ok()) {
                         match line.split_once('=') {
                             Some((key, value)) => match key.trim() {
                                 "db_dir" => {
