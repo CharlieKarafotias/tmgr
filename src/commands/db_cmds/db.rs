@@ -1,7 +1,4 @@
-use super::{
-    db_errors,
-    persistent::{path_to_db, path_to_env},
-};
+use super::{db_errors, State};
 use chrono::Utc;
 use rusqlite::{params, Connection, Result};
 
@@ -19,11 +16,10 @@ pub struct DB {
     conn: Connection,
 }
 
+// TODO: this file should be more abstracted, CRUD like using the structs defined for Todo
 impl DB {
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let env_path = path_to_env();
-        dotenv::from_path(env_path).expect("Failed to read .env file");
-        let curr_db = dotenv::var("db_var").expect("Unable to find db_var in .env file");
+    pub fn new(state: &mut State) -> Result<Self, Box<dyn std::error::Error>> {
+        let curr_db = state.get_db_var().unwrap_or("none".to_string());
         if curr_db == "none" {
             return Err(db_errors::DatabaseError::new(
                 "No database selected",
@@ -31,21 +27,29 @@ impl DB {
             )
             .into());
         }
-        let path_to_db = path_to_db(&curr_db).expect("Failed to find db file");
-        let conn = Connection::open(path_to_db)?; // Open or create a SQLite database file
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS tasks (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                priority TEXT NOT NULL,
-                description TEXT,
-                created_on TEXT NOT NULL,
-                completed_on TEXT
-            )",
-            [],
-        )?; // Create a 'tasks' table if it doesn't exist
+        match state.get_db_var_full_path() {
+            Some(path) => {
+                let conn = Connection::open(path)?; // Open or create a SQLite database file
+                conn.execute(
+                    "CREATE TABLE IF NOT EXISTS tasks (
+                        id INTEGER PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        priority TEXT NOT NULL,
+                        description TEXT,
+                        created_on TEXT NOT NULL,
+                        completed_on TEXT
+                    )",
+                    [],
+                )?; // Create a 'tasks' table if it doesn't exist
 
-        Ok(DB { conn })
+                Ok(DB { conn })
+            }
+            None => Err(db_errors::DatabaseError::new(
+                "State manager failed to create path to database file",
+                db_errors::DatabaseErrorKind::PathCreationFailed,
+            )
+            .into()),
+        }
     }
 
     pub fn add_task(
@@ -56,11 +60,11 @@ impl DB {
     ) -> Result<usize> {
         let sql = "INSERT INTO tasks (name, priority, description, created_on) VALUES (?, ?, ?, ?)";
         let mut stmt = self.conn.prepare(sql)?;
-        let res = stmt.execute(params![name, priority, description, Utc::now()])?;
-        Ok(res)
-        // Insert a new task
+        let rows_updated = stmt.execute(params![name, priority, description, Utc::now()])?;
+        Ok(rows_updated)
     }
 
+    // TODO: this function should return type Result<Vec<TaskFromDb>, Box<dyn std::error::Error>> instead and leave printing to todo_cmds.rs file
     pub fn list_tasks(&self) -> Result<()> {
         let sql = "SELECT * FROM tasks";
         let mut stmt = self.conn.prepare(sql)?;
@@ -86,7 +90,7 @@ impl DB {
         );
         println!("{}", "-".repeat(110));
 
-        // // Print each task
+        // Print each task
         for task in tasks {
             println!(
                 "{:<5} {:<20} {:<10} {:<20} {:<35} {:<35}",
@@ -105,26 +109,30 @@ impl DB {
         Ok(())
     }
 
-    pub fn delete_todo(&self, id: i64) -> Result<()> {
+    pub fn delete_todo(&self, id: i64) -> Result<usize, Box<dyn std::error::Error>> {
         let sql = "DELETE FROM tasks WHERE id = (?)";
         let mut stmt = self.conn.prepare(sql)?;
-        let res = stmt.execute(params![id])?;
-        match res {
-            0 => println!("Task with id {} not found", id),
-            _ => println!("Successfully deleted task"),
+        let rows_updated = stmt.execute(params![id])?;
+        match rows_updated {
+            0 => Err(Box::new(db_errors::DatabaseError::new(
+                format!("Task with id {id} not found").as_str(),
+                db_errors::DatabaseErrorKind::EntryNotFound,
+            ))),
+            rows_updated => Ok(rows_updated),
         }
-        Ok(())
     }
 
-    pub fn complete_todo(&self, id: i64) -> Result<()> {
+    pub fn complete_todo(&self, id: i64) -> Result<usize, Box<dyn std::error::Error>> {
         let sql = "UPDATE tasks SET completed_on = (?) WHERE id = (?)";
         let mut stmt = self.conn.prepare(sql)?;
-        let res = stmt.execute(params![Utc::now(), id])?;
-        match res {
-            0 => println!("Task with id {} not found", id),
-            _ => println!("Successfully updated task"),
+        let rows_updated = stmt.execute(params![Utc::now(), id])?;
+        match rows_updated {
+            0 => Err(Box::new(db_errors::DatabaseError::new(
+                format!("Task with id {id} not found").as_str(),
+                db_errors::DatabaseErrorKind::EntryNotFound,
+            ))),
+            rows_updated => Ok(rows_updated),
         }
-        Ok(())
     }
 
     pub fn update_todo(
@@ -133,15 +141,15 @@ impl DB {
         new_name: Option<String>,
         new_priority: Option<String>,
         new_description: Option<String>,
-    ) -> Result<()> {
+    ) -> Result<usize, Box<dyn std::error::Error>> {
         let mut update_sql = "UPDATE tasks SET".to_string();
-        // let mut params = Vec::new();
+
+        // TODO: definitely a better way to add in these param_values, maybe a map on Some values instead of if lets
         let mut param_values: Vec<rusqlite::types::Value> = Vec::new();
 
         if let Some(name) = new_name {
             update_sql.push_str(" name = (?),");
             param_values.push(name.clone().into());
-            // params.push(name);
         }
         if let Some(priority) = new_priority {
             update_sql.push_str(" priority = (?),");
@@ -156,8 +164,18 @@ impl DB {
         update_sql.pop();
         update_sql.push_str(" WHERE id = (?);");
         param_values.push(id.into());
-        self.conn
+
+        // TODO: in future, replace ? (error propagation) with actual error and wrap with one of the db_errors defined in db_errors.rs
+        let rows_updated = self
+            .conn
             .execute(&update_sql, rusqlite::params_from_iter(param_values))?;
-        Ok(())
+
+        match rows_updated {
+            0 => Err(Box::new(db_errors::DatabaseError::new(
+                format!("Task with id {id} not found").as_str(),
+                db_errors::DatabaseErrorKind::EntryNotFound,
+            ))),
+            rows_updated => Ok(rows_updated),
+        }
     }
 }

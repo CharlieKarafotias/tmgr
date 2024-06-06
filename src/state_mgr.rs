@@ -2,7 +2,7 @@ use core::panic;
 use std::env::current_exe;
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, Read, Seek, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{error, fmt};
 
 pub struct State {
@@ -22,6 +22,16 @@ impl State {
     #[allow(unused)]
     pub fn get_db_var(&self) -> Option<String> {
         self.db_var.clone()
+    }
+    pub fn get_db_var_full_path(&self) -> Option<String> {
+        match (&self.db_dir, &self.db_var) {
+            (Some(db_dir), Some(db_var)) => {
+                let mut path_to_db = PathBuf::from(db_dir).join(db_var);
+                path_to_db.set_extension("db");
+                path_to_db.to_str().map(|s| s.to_string())
+            }
+            _ => None,
+        }
     }
     pub fn new(path: Option<&Path>) -> Self {
         let mut config_path = current_exe().unwrap();
@@ -45,7 +55,7 @@ impl State {
                 // read in values
                 if let Ok(lines) = read_lines(f) {
                     // Consumes the iterator, returns an (Optional) String
-                    for line in lines.flatten() {
+                    for line in lines.map_while(|x| x.ok()) {
                         match line.split_once('=') {
                             Some((key, value)) => match key.trim() {
                                 "db_dir" => {

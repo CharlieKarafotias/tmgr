@@ -1,7 +1,6 @@
 //! This file contains the orchestrator functions for adding, deleting, listing, and setting operations for the program's database.
 pub mod db;
 mod db_errors;
-mod persistent;
 use std::{error::Error, fs, path::PathBuf};
 
 use super::super::state_mgr::State;
