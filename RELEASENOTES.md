@@ -1,3 +1,7 @@
+# 0.2.5
+- Improved error messages for todo commands
+- Addressed suggestion from compiler which prevents a potential bug in state manager
+- Version bumps for chrono, clap, and tempfile dependencies
 # 0.2.4
 - Added state manager
 # 0.2.3

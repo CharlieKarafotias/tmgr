@@ -1,15 +1,15 @@
 [package]
 name = "tmgr"
-version = "0.2.4"
+version = "0.2.5"
 edition = "2021"
 authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.31"
-clap = { version = "4.4.7", features = ["derive"] }
+chrono = "0.4.38"
+clap = { version = "4.5.4", features = ["derive"] }
 dotenv = "0.15.0"
 rusqlite = { version = "0.31.0", features = ["chrono"] }
 tempdir = "0.3.7"
-tempfile = "3.10.0"
+tempfile = "3.10.1"
