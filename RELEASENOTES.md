@@ -1,3 +1,6 @@
+# 0.2.6
+- Improved file structure of project
+- Updated readme with details on the status command
 # 0.2.5
 - Improved error messages for todo commands
 - Addressed suggestion from compiler which prevents a potential bug in state manager

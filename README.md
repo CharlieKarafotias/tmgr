@@ -10,7 +10,7 @@ A simple to use todo tracker command line interface for tracking all things codi
 - [] Command Line Interface Implemented __(In-Progress)__
     - Improve error handling. Custom error kinds/messages for various scenarios __(In-Progress)__
 - [] Bash install script __(Planned)__
-- [] Improved persistent state storage solution. See [Behind The Scenes -> Persistent Storage](#persistent-storage) section for more information __(Done)__
+- [x] Improved persistent state storage solution. See [Behind The Scenes -> Persistent Storage](#persistent-storage) section for more information __(Done)__
 - [] Simple GUI __(Planned)__
 
 ## Getting Started
@@ -61,7 +61,11 @@ If successful, a message stating _Initializer complete!_ will show.
 
 ### Status Command
 
-Returns the status of the program such as the current working directory, the location of the database folder, the total amount of tasks in the current database and more. This is not implemented yet.
+The status command provides the user with the internal workings of the CLI. This includes information about the following:
+- The current working directory
+- The location of the database folder
+- The total amount of tasks in the current database
+- More to come as development progresses
 
 ### Todo Commands 
 

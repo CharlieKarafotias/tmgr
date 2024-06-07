@@ -4,6 +4,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use commands::{db_cmds, todo_cmds};
 use state_mgr::State;
 
+// Clap structs (CLI constructs)
 #[derive(Debug, Parser)]
 #[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
 #[command(propagate_version = true)]
@@ -111,6 +112,7 @@ impl std::fmt::Display for TaskPriority {
     }
 }
 
+// Calls the CLI and runs the correct command
 pub fn run_cli() {
     let input = Cli::parse();
     let mut state = State::new(None);
