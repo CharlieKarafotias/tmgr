@@ -62,8 +62,9 @@ If successful, a message stating _Initializer complete!_ will show.
 ### Status Command
 
 The status command provides the user with the internal workings of the CLI. This includes information about the following:
-- The current working directory
-- The location of the database folder
+- State Manager variables: 
+    - The location of the database folder
+    - The current database selected
 - The total amount of tasks in the current database
 - More to come as development progresses
 

@@ -1,7 +1,7 @@
 mod commands;
 mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
-use commands::{db_cmds, todo_cmds};
+use commands::{db_cmds, status_cmds, todo_cmds};
 use state_mgr::State;
 
 // Clap structs (CLI constructs)
@@ -130,9 +130,7 @@ pub fn run_cli() {
         },
         Cli {
             command: Command::Status,
-        } => {
-            todo!("Not implemented");
-        }
+        } => status_cmds::get_status(&state),
         Cli {
             command: Command::Init,
         } => {

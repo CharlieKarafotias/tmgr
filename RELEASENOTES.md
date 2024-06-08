@@ -1,3 +1,5 @@
+# 0.2.7
+- Implemented the status command
 # 0.2.6
 - Improved file structure of project
 - Updated readme with details on the status command

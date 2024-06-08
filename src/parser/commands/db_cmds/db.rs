@@ -18,7 +18,7 @@ pub struct DB {
 
 // TODO: this file should be more abstracted, CRUD like using the structs defined for Todo
 impl DB {
-    pub fn new(state: &mut State) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(state: &State) -> Result<Self, Box<dyn std::error::Error>> {
         let curr_db = state.get_db_var().unwrap_or("none".to_string());
         if curr_db == "none" {
             return Err(db_errors::DatabaseError::new(
@@ -62,6 +62,15 @@ impl DB {
         let mut stmt = self.conn.prepare(sql)?;
         let rows_updated = stmt.execute(params![name, priority, description, Utc::now()])?;
         Ok(rows_updated)
+    }
+
+    pub fn count_tasks(&self) -> Result<usize, Box<dyn std::error::Error>> {
+        let sql = "SELECT COUNT(name) FROM tasks";
+        let res = self.conn.query_row(sql, [], |r| r.get(0));
+        match res {
+            Ok(r) => Ok(r),
+            Err(e) => Err(Box::new(e)),
+        }
     }
 
     // TODO: this function should return type Result<Vec<TaskFromDb>, Box<dyn std::error::Error>> instead and leave printing to todo_cmds.rs file
