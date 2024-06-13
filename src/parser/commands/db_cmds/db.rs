@@ -3,13 +3,13 @@ use chrono::Utc;
 use rusqlite::{params, Connection, Result};
 
 #[derive(Debug)]
-struct TaskFromDb {
-    id: i64,
-    name: String,
-    priority: String,
-    description: Option<String>,
-    created_on: String,
-    completed_on: Option<String>,
+pub struct TaskFromDb {
+    pub id: i64,
+    pub name: String,
+    pub priority: String,
+    pub description: Option<String>,
+    pub created_on: String,
+    pub completed_on: Option<String>,
 }
 
 pub struct DB {
@@ -74,7 +74,7 @@ impl DB {
     }
 
     // TODO: this function should return type Result<Vec<TaskFromDb>, Box<dyn std::error::Error>> instead and leave printing to todo_cmds.rs file
-    pub fn list_tasks(&self) -> Result<()> {
+    pub fn list_tasks(&self) -> Result<Vec<TaskFromDb>> {
         let sql = "SELECT * FROM tasks";
         let mut stmt = self.conn.prepare(sql)?;
 
@@ -92,30 +92,7 @@ impl DB {
         for row_result in rows {
             tasks.push(row_result?);
         }
-        // Print the header
-        println!(
-            "{:<5} {:<20} {:<10} {:<20} {:<35} {:<35}",
-            "ID", "Name", "Priority", "Description", "Created On", "Completed On"
-        );
-        println!("{}", "-".repeat(110));
-
-        // Print each task
-        for task in tasks {
-            println!(
-                "{:<5} {:<20} {:<10} {:<20} {:<35} {:<35}",
-                task.id,
-                task.name,
-                task.priority,
-                task.description.unwrap_or_else(|| "NULL".to_string()),
-                task.created_on,
-                task.completed_on
-                    .unwrap_or_else(|| "IN-PROGRESS".to_string())
-            );
-        }
-
-        println!("{}", "-".repeat(110));
-
-        Ok(())
+        Ok(tasks)
     }
 
     pub fn delete_todo(&self, id: i64) -> Result<usize, Box<dyn std::error::Error>> {

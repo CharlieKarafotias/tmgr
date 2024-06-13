@@ -1,6 +1,9 @@
 //! This file contains the orchestrator functions for adding, completing, deleting, listing, and updating a task in a database
 use super::super::{State, TaskPriority};
 use super::db_cmds::db::DB;
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::*;
 
 pub fn add(state: &mut State, name: String, priority: TaskPriority, description: Option<String>) {
     let db = connect_to_db(state);
@@ -49,9 +52,35 @@ pub fn list(state: &mut State) {
     match db {
         Ok(db) => {
             let res = db.list_tasks();
-            match res {
-                Ok(_) => (), // TODO: list_tasks should return vector. The commands should handle printing
-                Err(e) => println!("ERROR: {}", e),
+            if let Ok(tasks) = res {
+                let mut table = Table::new();
+                table
+                    .set_header(vec![
+                        "ID",
+                        "Name",
+                        "Priority",
+                        "Description",
+                        "Created On",
+                        "Completed On",
+                    ])
+                    .load_preset(UTF8_FULL)
+                    .apply_modifier(UTF8_ROUND_CORNERS)
+                    .set_content_arrangement(ContentArrangement::Dynamic);
+
+                for task in tasks {
+                    table.add_row(vec![
+                        task.id.to_string(),
+                        task.name,
+                        task.priority,
+                        task.description.unwrap_or_else(|| "NULL".to_string()),
+                        task.created_on,
+                        task.completed_on
+                            .unwrap_or_else(|| "IN-PROGRESS".to_string()),
+                    ]);
+                }
+                println!("{table}");
+            } else {
+                println!("ERROR: unable to list tasks");
             }
         }
         Err(e) => println!("ERROR: {}", e),
