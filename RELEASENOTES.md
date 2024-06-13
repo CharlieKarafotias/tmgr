@@ -1,3 +1,6 @@
+# 0.2.8
+- Improved listing of todos
+- Clap version bump
 # 0.2.7
 - Implemented the status command
 # 0.2.6
