@@ -47,7 +47,7 @@ pub fn delete(state: &mut State, id: i64) {
     }
 }
 
-pub fn list(state: &mut State) {
+pub fn list(state: &mut State, should_show_all: bool) {
     let db = connect_to_db(state);
     match db {
         Ok(db) => {
@@ -68,15 +68,30 @@ pub fn list(state: &mut State) {
                     .set_content_arrangement(ContentArrangement::Dynamic);
 
                 for task in tasks {
-                    table.add_row(vec![
-                        task.id.to_string(),
-                        task.name,
-                        task.priority,
-                        task.description.unwrap_or_else(|| "NULL".to_string()),
-                        task.created_on,
-                        task.completed_on
-                            .unwrap_or_else(|| "IN-PROGRESS".to_string()),
-                    ]);
+                    // if should_show_all is false, only show tasks that are not completed
+                    if !should_show_all {
+                        if task.completed_on.is_none() {
+                            table.add_row(vec![
+                                task.id.to_string(),
+                                task.name,
+                                task.priority,
+                                task.description.unwrap_or_else(|| "NULL".to_string()),
+                                task.created_on,
+                                task.completed_on
+                                    .unwrap_or_else(|| "IN-PROGRESS".to_string()),
+                            ]);
+                        }
+                    } else {
+                        table.add_row(vec![
+                            task.id.to_string(),
+                            task.name,
+                            task.priority,
+                            task.description.unwrap_or_else(|| "NULL".to_string()),
+                            task.created_on,
+                            task.completed_on
+                                .unwrap_or_else(|| "IN-PROGRESS".to_string()),
+                        ]);
+                    }
                 }
                 println!("{table}");
             } else {

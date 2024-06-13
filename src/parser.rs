@@ -53,8 +53,12 @@ enum Todo {
         /// The id of the task
         id: i64,
     },
-    /// List all tasks
-    List,
+    /// List the tasks in the database. By default, this will only list in progress tasks.
+    List {
+        #[arg(short, long)]
+        /// List all tasks, including completed ones
+        all: bool,
+    },
     /// Update an existing task
     Update {
         /// The id of the task
@@ -152,7 +156,7 @@ pub fn run_cli() {
             } => todo_cmds::add(&mut state, name, priority, description),
             Todo::Complete { id } => todo_cmds::complete(&mut state, id),
             Todo::Delete { id } => todo_cmds::delete(&mut state, id),
-            Todo::List => todo_cmds::list(&mut state),
+            Todo::List { all } => todo_cmds::list(&mut state, all),
             Todo::Update {
                 id,
                 name,

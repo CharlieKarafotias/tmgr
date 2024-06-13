@@ -1,3 +1,5 @@
+# 0.2.9
+- Updated list command to support arg called `all`. By default, calling list will only print in progress tasks.
 # 0.2.8
 - Improved listing of todos
 - Clap version bump
