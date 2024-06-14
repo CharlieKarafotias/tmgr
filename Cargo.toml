@@ -3,6 +3,7 @@ name = "tmgr"
 version = "0.3.0"
 edition = "2021"
 authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
+repository = "https://github.com/charliekarafotias/tmgr"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

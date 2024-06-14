@@ -1,7 +1,7 @@
 mod commands;
 mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
-use commands::{db_cmds, status_cmds, todo_cmds};
+use commands::{db_cmds, status_cmds, todo_cmds, update_cmds};
 use state_mgr::State;
 
 // Clap structs (CLI constructs)
@@ -27,6 +27,8 @@ enum Command {
         #[command(subcommand)]
         command: Todo,
     },
+    /// Update tmgr to the latest stable version
+    Update,
 }
 
 // Declarations for the Todo command
@@ -164,5 +166,8 @@ pub fn run_cli() {
                 description,
             } => todo_cmds::update(&mut state, id, name, priority, description),
         },
+        Cli {
+            command: Command::Update,
+        } => update_cmds::update(),
     }
 }
