@@ -3,7 +3,7 @@ use super::super::{State, TaskPriority};
 use super::db_cmds::db::DB;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
-use comfy_table::*;
+use comfy_table::{ContentArrangement, Table};
 
 pub fn add(state: &mut State, name: String, priority: TaskPriority, description: Option<String>) {
     let db = connect_to_db(state);
