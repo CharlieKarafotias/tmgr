@@ -1,3 +1,5 @@
+# 0.3.1
+- Added in new update command to update tmgr easily
 # 0.3.0
 - Updated outputs of the `database list` and `status` command to improve readability
 # 0.2.9
