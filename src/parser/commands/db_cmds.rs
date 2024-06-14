@@ -1,6 +1,9 @@
 //! This file contains the orchestrator functions for adding, deleting, listing, and setting operations for the program's database.
 pub mod db;
 mod db_errors;
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::{ContentArrangement, Table};
 use std::{error::Error, fs, path::PathBuf};
 
 use super::super::state_mgr::State;
@@ -42,6 +45,7 @@ pub fn db_add(state: &mut State, name: String) {
     }
 }
 
+// TODO: if database being deleted is the currently set database, set current db_var in the state to empty
 /// Deletes the database with the specified name.
 pub fn db_delete(state: &mut State, name: String) {
     match state.get_db_dir() {
@@ -94,8 +98,19 @@ pub fn db_list(state: &mut State) {
                     .map(|entry| drop_file_extension(entry.file_name().to_str().unwrap_or("")))
                     .collect();
                 dbs.sort();
-                println!("----Databases-----");
-                dbs.iter().for_each(|current| println!("Name: {}", current));
+                let mut table = Table::new();
+                table
+                    .set_header(vec!["Database Name"])
+                    .load_preset(UTF8_FULL)
+                    .apply_modifier(UTF8_ROUND_CORNERS)
+                    .set_content_arrangement(ContentArrangement::Dynamic);
+
+                // println!("----Databases-----");
+                dbs.iter().for_each(|current| {
+                    table.add_row(vec![current]);
+                });
+
+                println!("{table}");
             }
             Err(e) => println!("ERROR: {}", e),
         },
