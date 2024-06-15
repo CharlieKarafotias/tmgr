@@ -1,5 +1,6 @@
 mod request_models;
 use std::{
+    fmt,
     fs::{self, File, Permissions},
     io::Write,
     os::unix::fs::PermissionsExt,
@@ -14,32 +15,46 @@ use semver::Version;
 
 use crate::parser::state_mgr::State;
 
+struct UpdateInfo {
+    needs_update: bool,
+    binary_download_url: String,
+}
+
+/// Updates the current executable to the latest version
 pub fn update(state: &State) {
     println!("Checking repository for updates...");
-
-    let (needs_update, binary_download_url) = check_for_updates();
-    if needs_update {
-        if let Some(binary_download_url) = binary_download_url {
-            println!("Update found, downloading...");
-            let new_binary_download_path = download_binary_to_downloads_folder(binary_download_url);
-            if let Some(path_to_existing_executable) = find_existing_executable(state) {
-                delete_existing_binary(path_to_existing_executable.as_str());
-                // update downloaded binary name from tmgr_new to tmgr
-                let mut new_binary_path = PathBuf::from(path_to_existing_executable);
-                new_binary_path.set_file_name("tmgr");
-                move_new_binary(new_binary_download_path, new_binary_path);
+    match check_for_updates() {
+        Ok(UpdateInfo {
+            needs_update,
+            binary_download_url,
+        }) => {
+            if needs_update {
+                todo!("Implement update logic");
+                // if let Some(binary_download_url) = binary_download_url {
+                //     println!("Update found, downloading...");
+                //     let new_binary_download_path =
+                //         download_binary_to_downloads_folder(binary_download_url);
+                //     if let Some(path_to_existing_executable) = find_existing_executable(state) {
+                //         delete_existing_binary(path_to_existing_executable.as_str());
+                //         // update downloaded binary name from tmgr_new to tmgr
+                //         let mut new_binary_path = PathBuf::from(path_to_existing_executable);
+                //         new_binary_path.set_file_name("tmgr");
+                //         move_new_binary(new_binary_download_path, new_binary_path);
+                //     }
+                //     println!("Update complete");
+                // } else {
+                //     println!("ERROR: No download url for the application found on GitHub");
+                // }
+            } else {
+                println!("Already on latest version");
             }
-            println!("Update complete");
-        } else {
-            println!("ERROR: No download url for the application found on GitHub");
         }
-    } else {
-        println!("Already on latest version");
+        Err(e) => println!("ERROR: {}", e),
     }
 }
 
 #[tokio::main]
-async fn check_for_updates() -> (bool, Option<String>) {
+async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
     let repo_link = env!("CARGO_PKG_REPOSITORY");
     let url: Vec<&str> = repo_link.split('/').rev().collect();
     let repo = url[0];
@@ -55,23 +70,44 @@ async fn check_for_updates() -> (bool, Option<String>) {
         .get(github_latest_release_url)
         .header(USER_AGENT, "tmgr-rust")
         .send()
-        .await;
-    match res {
-        Ok(res) => {
-            let latest_release = res.json::<GithubReleaseResponse>().await.unwrap();
-            let latest_version_github = Version::parse(&latest_release.tag_name.replace('v', ""))
-                .expect("ERROR: unable to determine latest version");
-            let current_version = Version::parse(env!("CARGO_PKG_VERSION"))
-                .expect("ERROR: unable to determine current version");
-            (
-                latest_version_github > current_version,
-                Some(latest_release.assets[0].browser_download_url.clone()),
-            )
-        }
-        Err(_) => {
-            println!("ERROR: Failed to get latest release from GitHub");
-            (false, None)
-        }
+        .await
+        .map_err(|e| UpdateError {
+            message: e.to_string(),
+            kind: UpdateErrorKind::RepoCheckFail,
+        })?;
+
+    // convert response to struct
+    let latest_release = res
+        .json::<GithubReleaseResponse>()
+        .await
+        .map_err(|e| UpdateError {
+            message: e.to_string(),
+            kind: UpdateErrorKind::GitHibResponseToRustStructConversionFail,
+        })?;
+
+    // parse latest version
+    let latest_version_github =
+        Version::parse(&latest_release.tag_name.replace('v', "")).map_err(|e| UpdateError {
+            message: e.to_string(),
+            kind: UpdateErrorKind::NoLatestVersion,
+        })?;
+
+    // parse current version
+    let current_version = Version::parse(env!("CARGO_PKG_VERSION")).map_err(|e| UpdateError {
+        message: e.to_string(),
+        kind: UpdateErrorKind::NoCurrentVersion,
+    })?;
+
+    if !latest_release.assets.is_empty() {
+        Ok(UpdateInfo {
+            needs_update: latest_version_github > current_version,
+            binary_download_url: latest_release.assets[0].browser_download_url.clone(),
+        })
+    } else {
+        Err(UpdateError {
+            message: "no assets found".to_string(),
+            kind: UpdateErrorKind::NoDownloadLinkFromGitHub,
+        })
     }
 }
 
@@ -131,4 +167,48 @@ fn delete_existing_binary(existing_binary_path: &str) {
 
 fn move_new_binary(existing_binary_path: PathBuf, new_binary_path: PathBuf) {
     let _ = fs::rename(existing_binary_path, new_binary_path);
+}
+
+#[derive(Debug)]
+struct UpdateError {
+    kind: UpdateErrorKind,
+    message: String,
+}
+
+#[derive(Debug)]
+enum UpdateErrorKind {
+    RepoCheckFail,
+    NoDownloadLinkFromGitHub,
+    NoCurrentVersion,
+    NoLatestVersion,
+    GitHibResponseToRustStructConversionFail,
+}
+
+impl fmt::Display for UpdateErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            UpdateErrorKind::RepoCheckFail => write!(
+                f,
+                "unable to retrieve fetch tmgr GitHub repo, try again later"
+            ),
+            UpdateErrorKind::NoDownloadLinkFromGitHub => {
+                write!(f, "no download url for the tmgr executable found on GitHub")
+            }
+            UpdateErrorKind::NoCurrentVersion => {
+                write!(f, "unable to determine current version of tmgr")
+            }
+            UpdateErrorKind::NoLatestVersion => {
+                write!(f, "unable to determine latest version of tmgr from GitHub")
+            }
+            UpdateErrorKind::GitHibResponseToRustStructConversionFail => {
+                write!(f, "unable to convert GitHub response to Rust struct")
+            }
+        }
+    }
+}
+
+impl fmt::Display for UpdateError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} (update error: {})", self.message, self.kind)
+    }
 }
