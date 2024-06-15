@@ -1,6 +1,6 @@
 mod request_models;
 use std::{
-    fs::{File, Permissions},
+    fs::{self, File, Permissions},
     io::Write,
     os::unix::fs::PermissionsExt,
     path::PathBuf,
@@ -21,8 +21,14 @@ pub fn update(state: &State) {
     if needs_update {
         if let Some(binary_download_url) = binary_download_url {
             println!("Update found, downloading...");
-            download_binary_to_downloads_folder(binary_download_url);
-            let path_to_exsting_executable = find_existing_executable(state);
+            let new_binary_download_path = download_binary_to_downloads_folder(binary_download_url);
+            if let Some(path_to_existing_executable) = find_existing_executable(state) {
+                delete_existing_binary(path_to_existing_executable.as_str());
+                // update downloaded binary name from tmgr_new to tmgr
+                let mut new_binary_path = PathBuf::from(path_to_existing_executable);
+                new_binary_path.set_file_name("tmgr");
+                move_new_binary(new_binary_download_path, new_binary_path);
+            }
             println!("Update complete");
         } else {
             println!("ERROR: No download url for the application found on GitHub");
@@ -70,7 +76,7 @@ async fn check_for_updates() -> (bool, Option<String>) {
 }
 
 #[tokio::main]
-async fn download_binary_to_downloads_folder(binary_download_url: String) {
+async fn download_binary_to_downloads_folder(binary_download_url: String) -> PathBuf {
     let download_dir = UserDirs::new();
     match download_dir {
         Some(user_dirs) => {
@@ -89,11 +95,12 @@ async fn download_binary_to_downloads_folder(binary_download_url: String) {
                 .await
                 .expect("ERROR: Failed to download binary");
             let full_path = PathBuf::from(download_dir_path).join("tmgr_new");
-            let mut f = File::create(full_path).expect("ERROR: Failed to create file");
+            let mut f = File::create(full_path.clone()).expect("ERROR: Failed to create file");
             f.write_all(&bytes).expect("ERROR: Failed to write to file");
             f.set_permissions(Permissions::from_mode(0o751)).unwrap();
+            full_path
         }
-        None => println!("ERROR: Unable to determine system's file structure"),
+        None => panic!("ERROR: Unable to determine system's file structure"),
     }
 }
 
@@ -118,10 +125,10 @@ fn find_existing_executable(state: &State) -> Option<String> {
     }
 }
 
-fn delete_existing_binary(existing_binary_path: PathBuf) {
-    todo!("delete existing binary");
+fn delete_existing_binary(existing_binary_path: &str) {
+    fs::remove_file(existing_binary_path).expect("ERROR: Failed to delete existing binary");
 }
 
-fn move_new_binary_and_delete_old(existing_binary_path: PathBuf, new_binary_path: PathBuf) {
-    todo!("move new binary and delete old");
+fn move_new_binary(existing_binary_path: PathBuf, new_binary_path: PathBuf) {
+    let _ = fs::rename(existing_binary_path, new_binary_path);
 }
