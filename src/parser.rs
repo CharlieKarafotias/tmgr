@@ -168,6 +168,6 @@ pub fn run_cli() {
         },
         Cli {
             command: Command::Update,
-        } => update_cmds::update(),
+        } => update_cmds::update(&state),
     }
 }

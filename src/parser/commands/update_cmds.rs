@@ -9,9 +9,12 @@ use std::{
 use directories::UserDirs;
 use request_models::GithubReleaseResponse;
 use reqwest::header::USER_AGENT;
+use rust_search::{FilterExt, SearchBuilder};
 use semver::Version;
 
-pub fn update() {
+use crate::parser::state_mgr::State;
+
+pub fn update(state: &State) {
     println!("Checking repository for updates...");
 
     let (needs_update, binary_download_url) = check_for_updates();
@@ -19,6 +22,7 @@ pub fn update() {
         if let Some(binary_download_url) = binary_download_url {
             println!("Update found, downloading...");
             download_binary_to_downloads_folder(binary_download_url);
+            let path_to_exsting_executable = find_existing_executable(state);
             println!("Update complete");
         } else {
             println!("ERROR: No download url for the application found on GitHub");
@@ -53,15 +57,10 @@ async fn check_for_updates() -> (bool, Option<String>) {
                 .expect("ERROR: unable to determine latest version");
             let current_version = Version::parse(env!("CARGO_PKG_VERSION"))
                 .expect("ERROR: unable to determine current version");
-            // TODO: remove this after test:
             (
-                true,
+                latest_version_github > current_version,
                 Some(latest_release.assets[0].browser_download_url.clone()),
             )
-            // (
-            //     latest_version_github > current_version,
-            //     Some(latest_release.assets[0].browser_download_url.clone()),
-            // )
         }
         Err(_) => {
             println!("ERROR: Failed to get latest release from GitHub");
@@ -98,14 +97,31 @@ async fn download_binary_to_downloads_folder(binary_download_url: String) {
     }
 }
 
-fn find_existing_binary() {
-    todo!("find existing binary");
+// TODO: convert all options to results
+fn find_existing_executable(state: &State) -> Option<String> {
+    // Path to existing state manager (stored at same place as executable)
+    let mut existing_executable_path = PathBuf::from(state.get_path());
+    existing_executable_path.pop();
+    // Search for tmgr in the same directory
+    let search: Vec<String> = SearchBuilder::default()
+        .search_input("tmgr")
+        .location(existing_executable_path)
+        .custom_filter(|dir| dir.metadata().unwrap().is_file())
+        .strict()
+        .build()
+        .collect();
+    if !search.is_empty() {
+        Some(search[0].clone())
+    } else {
+        println!("ERROR: Unable to find existing executable");
+        None
+    }
 }
 
-fn delete_existing_binary() {
+fn delete_existing_binary(existing_binary_path: PathBuf) {
     todo!("delete existing binary");
 }
 
-fn move_new_binary_and_delete_old() {
+fn move_new_binary_and_delete_old(existing_binary_path: PathBuf, new_binary_path: PathBuf) {
     todo!("move new binary and delete old");
 }
