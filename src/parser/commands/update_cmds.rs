@@ -1,4 +1,12 @@
 mod request_models;
+use std::{
+    fs::{File, Permissions},
+    io::Write,
+    os::unix::fs::PermissionsExt,
+    path::PathBuf,
+};
+
+use directories::UserDirs;
 use request_models::GithubReleaseResponse;
 use reqwest::header::USER_AGENT;
 use semver::Version;
@@ -10,7 +18,7 @@ pub fn update() {
     if needs_update {
         if let Some(binary_download_url) = binary_download_url {
             println!("Update found, downloading...");
-            download_binary(binary_download_url);
+            download_binary_to_downloads_folder(binary_download_url);
             println!("Update complete");
         } else {
             println!("ERROR: No download url for the application found on GitHub");
@@ -45,10 +53,15 @@ async fn check_for_updates() -> (bool, Option<String>) {
                 .expect("ERROR: unable to determine latest version");
             let current_version = Version::parse(env!("CARGO_PKG_VERSION"))
                 .expect("ERROR: unable to determine current version");
+            // TODO: remove this after test:
             (
-                latest_version_github > current_version,
+                true,
                 Some(latest_release.assets[0].browser_download_url.clone()),
             )
+            // (
+            //     latest_version_github > current_version,
+            //     Some(latest_release.assets[0].browser_download_url.clone()),
+            // )
         }
         Err(_) => {
             println!("ERROR: Failed to get latest release from GitHub");
@@ -58,15 +71,41 @@ async fn check_for_updates() -> (bool, Option<String>) {
 }
 
 #[tokio::main]
-async fn download_binary(_binary_download_url: String) {
-    todo!("download binary");
-    // let client = reqwest::Client::new();
-    // let res = client
-    //     .get(binary_download_url)
-    //     .header(USER_AGENT, "tmgr-rust")
-    //     .send()
-    //     .await;
-    // TODO: need to find bin with tmgr in it, then save binary
-    // let bytes = res.bytes().unwrap();
-    // std::fs::write("tmgr", bytes).unwrap();
+async fn download_binary_to_downloads_folder(binary_download_url: String) {
+    let download_dir = UserDirs::new();
+    match download_dir {
+        Some(user_dirs) => {
+            let download_dir_path = user_dirs
+                .download_dir()
+                .expect("ERROR: Unable to determine download directory");
+            let client = reqwest::Client::new();
+            let res = client
+                .get(binary_download_url)
+                .header(USER_AGENT, "tmgr-rust")
+                .send()
+                .await;
+            let bytes = res
+                .expect("ERROR: Failed to download binary")
+                .bytes()
+                .await
+                .expect("ERROR: Failed to download binary");
+            let full_path = PathBuf::from(download_dir_path).join("tmgr_new");
+            let mut f = File::create(full_path).expect("ERROR: Failed to create file");
+            f.write_all(&bytes).expect("ERROR: Failed to write to file");
+            f.set_permissions(Permissions::from_mode(0o751)).unwrap();
+        }
+        None => println!("ERROR: Unable to determine system's file structure"),
+    }
+}
+
+fn find_existing_binary() {
+    todo!("find existing binary");
+}
+
+fn delete_existing_binary() {
+    todo!("delete existing binary");
+}
+
+fn move_new_binary_and_delete_old() {
+    todo!("move new binary and delete old");
 }
