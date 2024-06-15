@@ -30,19 +30,31 @@ pub fn update(state: &State) {
         }) => {
             if needs_update {
                 match download_binary_to_downloads_folder(binary_download_url) {
-                    Ok(_) => {
-                        todo!("Implement update logic");
-                        //     if let Some(path_to_existing_executable) = find_existing_executable(state) {
-                        //         delete_existing_binary(path_to_existing_executable.as_str());
-                        //         // update downloaded binary name from tmgr_new to tmgr
-                        //         let mut new_binary_path = PathBuf::from(path_to_existing_executable);
-                        //         new_binary_path.set_file_name("tmgr");
-                        //         move_new_binary(new_binary_download_path, new_binary_path);
-                        //     }
-                        //     println!("Update complete");
-                        // } else {
-                        //     println!("ERROR: No download url for the application found on GitHub");
-                        // }
+                    Ok(new_binary_download_path) => {
+                        match find_existing_executable(state) {
+                            Ok(path_to_existing_executable) => {
+                                match delete_existing_binary(path_to_existing_executable.as_str()) {
+                                    Ok(_) => {
+                                        // update downloaded binary name from tmgr_new to tmgr
+                                        let mut new_binary_path =
+                                            PathBuf::from(path_to_existing_executable);
+                                        new_binary_path.set_file_name("tmgr");
+                                        // move new binary from download folder to bin of current executable
+                                        let result = move_new_binary(
+                                            new_binary_download_path,
+                                            new_binary_path,
+                                        );
+                                        if result.is_ok() {
+                                            println!("Update complete");
+                                        } else {
+                                            println!("ERROR: {}", result.unwrap_err());
+                                        }
+                                    }
+                                    Err(e) => println!("ERROR: {}", e),
+                                }
+                            }
+                            Err(e) => println!("ERROR: {}", e),
+                        }
                     }
                     Err(e) => println!("ERROR: {}", e),
                 }
@@ -164,33 +176,47 @@ async fn download_binary_to_downloads_folder(
     Ok(full_path)
 }
 
-// TODO: convert all options to results
-fn find_existing_executable(state: &State) -> Option<String> {
+fn find_existing_executable(state: &State) -> Result<String, UpdateError> {
     // Path to existing state manager (stored at same place as executable)
     let mut existing_executable_path = PathBuf::from(state.get_path());
+    // Remove the file name of the config to get the path to the directory
     existing_executable_path.pop();
     // Search for tmgr in the same directory
     let search: Vec<String> = SearchBuilder::default()
         .search_input("tmgr")
-        .location(existing_executable_path)
+        .location(&existing_executable_path)
         .custom_filter(|dir| dir.metadata().unwrap().is_file())
         .strict()
         .build()
         .collect();
     if !search.is_empty() {
-        Some(search[0].clone())
+        Ok(search[0].clone())
     } else {
-        println!("ERROR: Unable to find existing executable");
-        None
+        Err(UpdateError {
+            message: format!(
+                "ERROR: No existing binary found in {}",
+                existing_executable_path.display()
+            ),
+            kind: UpdateErrorKind::NoExistingBinary,
+        })
     }
 }
 
-fn delete_existing_binary(existing_binary_path: &str) {
-    fs::remove_file(existing_binary_path).expect("ERROR: Failed to delete existing binary");
+fn delete_existing_binary(existing_binary_path: &str) -> Result<(), UpdateError> {
+    fs::remove_file(existing_binary_path).map_err(|e| UpdateError {
+        message: e.to_string(),
+        kind: UpdateErrorKind::UnableToDeleteExistingBinary,
+    })
 }
 
-fn move_new_binary(existing_binary_path: PathBuf, new_binary_path: PathBuf) {
-    let _ = fs::rename(existing_binary_path, new_binary_path);
+fn move_new_binary(
+    existing_binary_path: PathBuf,
+    new_binary_path: PathBuf,
+) -> Result<(), UpdateError> {
+    fs::rename(existing_binary_path, new_binary_path).map_err(|e| UpdateError {
+        message: e.to_string(),
+        kind: UpdateErrorKind::UnableToMoveBinary,
+    })
 }
 
 #[derive(Debug)]
@@ -210,6 +236,9 @@ enum UpdateErrorKind {
     BinaryDownloadFail,
     CorruptedBinaryDownload,
     CreateFileFail,
+    NoExistingBinary,
+    UnableToDeleteExistingBinary,
+    UnableToMoveBinary,
 }
 
 impl fmt::Display for UpdateErrorKind {
@@ -237,6 +266,9 @@ impl fmt::Display for UpdateErrorKind {
             UpdateErrorKind::BinaryDownloadFail => write!(f, "unable to retrieve fetch tmgr the latest executable from GitHub repo, try again later"),
             UpdateErrorKind::CorruptedBinaryDownload => write!(f, "unable to convert downloaded executable to bytes"),
             UpdateErrorKind::CreateFileFail => write!(f, "unable to create file in downloads folder"),
+            UpdateErrorKind::NoExistingBinary => write!(f, "unable to find existing executable on system"),
+            UpdateErrorKind::UnableToDeleteExistingBinary => write!(f, "unable to delete existing executable"),
+            UpdateErrorKind::UnableToMoveBinary => write!(f, "unable to move downloaded executable to bin of current executable"),
         }
     }
 }
