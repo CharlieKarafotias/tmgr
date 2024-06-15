@@ -1,5 +1,5 @@
 # 0.4.0
-- Added in new update command facilitate updating tmgr
+- Added in new `update` command to facilitate updating tmgr to the latest version
 # 0.3.0
 - Updated outputs of the `database list` and `status` command to improve readability
 # 0.2.9
