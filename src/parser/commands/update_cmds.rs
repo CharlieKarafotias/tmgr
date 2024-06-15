@@ -29,22 +29,23 @@ pub fn update(state: &State) {
             binary_download_url,
         }) => {
             if needs_update {
-                todo!("Implement update logic");
-                // if let Some(binary_download_url) = binary_download_url {
-                //     println!("Update found, downloading...");
-                //     let new_binary_download_path =
-                //         download_binary_to_downloads_folder(binary_download_url);
-                //     if let Some(path_to_existing_executable) = find_existing_executable(state) {
-                //         delete_existing_binary(path_to_existing_executable.as_str());
-                //         // update downloaded binary name from tmgr_new to tmgr
-                //         let mut new_binary_path = PathBuf::from(path_to_existing_executable);
-                //         new_binary_path.set_file_name("tmgr");
-                //         move_new_binary(new_binary_download_path, new_binary_path);
-                //     }
-                //     println!("Update complete");
-                // } else {
-                //     println!("ERROR: No download url for the application found on GitHub");
-                // }
+                match download_binary_to_downloads_folder(binary_download_url) {
+                    Ok(_) => {
+                        todo!("Implement update logic");
+                        //     if let Some(path_to_existing_executable) = find_existing_executable(state) {
+                        //         delete_existing_binary(path_to_existing_executable.as_str());
+                        //         // update downloaded binary name from tmgr_new to tmgr
+                        //         let mut new_binary_path = PathBuf::from(path_to_existing_executable);
+                        //         new_binary_path.set_file_name("tmgr");
+                        //         move_new_binary(new_binary_download_path, new_binary_path);
+                        //     }
+                        //     println!("Update complete");
+                        // } else {
+                        //     println!("ERROR: No download url for the application found on GitHub");
+                        // }
+                    }
+                    Err(e) => println!("ERROR: {}", e),
+                }
             } else {
                 println!("Already on latest version");
             }
@@ -112,32 +113,55 @@ async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
 }
 
 #[tokio::main]
-async fn download_binary_to_downloads_folder(binary_download_url: String) -> PathBuf {
-    let download_dir = UserDirs::new();
-    match download_dir {
-        Some(user_dirs) => {
-            let download_dir_path = user_dirs
-                .download_dir()
-                .expect("ERROR: Unable to determine download directory");
-            let client = reqwest::Client::new();
-            let res = client
-                .get(binary_download_url)
-                .header(USER_AGENT, "tmgr-rust")
-                .send()
-                .await;
-            let bytes = res
-                .expect("ERROR: Failed to download binary")
-                .bytes()
-                .await
-                .expect("ERROR: Failed to download binary");
-            let full_path = PathBuf::from(download_dir_path).join("tmgr_new");
-            let mut f = File::create(full_path.clone()).expect("ERROR: Failed to create file");
-            f.write_all(&bytes).expect("ERROR: Failed to write to file");
-            f.set_permissions(Permissions::from_mode(0o751)).unwrap();
-            full_path
-        }
-        None => panic!("ERROR: Unable to determine system's file structure"),
-    }
+async fn download_binary_to_downloads_folder(
+    binary_download_url: String,
+) -> Result<PathBuf, UpdateError> {
+    // get download directory of the current system
+    let system_file_structure = UserDirs::new().ok_or(UpdateError {
+        message: "ERROR: Unable to determine system's file structure".to_string(),
+        kind: UpdateErrorKind::UnableToDetermineFileStructure,
+    })?;
+    let download_dir_path = system_file_structure.download_dir().ok_or(UpdateError {
+        message: "ERROR: Unable to determine download directory".to_string(),
+        kind: UpdateErrorKind::UnableToDetermineFileStructure,
+    })?;
+
+    // download binary from github
+    let client = reqwest::Client::new();
+    let res = client
+        .get(binary_download_url)
+        .header(USER_AGENT, "tmgr-rust")
+        .send()
+        .await
+        .map_err(|e| UpdateError {
+            message: e.to_string(),
+            kind: UpdateErrorKind::BinaryDownloadFail,
+        })?;
+
+    // convert response to bytes
+    let bytes = res.bytes().await.map_err(|e| UpdateError {
+        message: e.to_string(),
+        kind: UpdateErrorKind::CorruptedBinaryDownload,
+    })?;
+
+    // write bytes to new file called tmgr_new in Downloads folder
+    let full_path = PathBuf::from(download_dir_path).join("tmgr_new");
+    let mut f = File::create(&full_path).map_err(|e| UpdateError {
+        message: e.to_string(),
+        kind: UpdateErrorKind::CreateFileFail,
+    })?;
+    f.write_all(&bytes).map_err(|e| UpdateError {
+        message: e.to_string(),
+        kind: UpdateErrorKind::CreateFileFail,
+    })?;
+
+    // make new file executable
+    f.set_permissions(Permissions::from_mode(0o751))
+        .map_err(|e| UpdateError {
+            message: e.to_string(),
+            kind: UpdateErrorKind::CreateFileFail,
+        })?;
+    Ok(full_path)
 }
 
 // TODO: convert all options to results
@@ -182,6 +206,10 @@ enum UpdateErrorKind {
     NoCurrentVersion,
     NoLatestVersion,
     GitHibResponseToRustStructConversionFail,
+    UnableToDetermineFileStructure,
+    BinaryDownloadFail,
+    CorruptedBinaryDownload,
+    CreateFileFail,
 }
 
 impl fmt::Display for UpdateErrorKind {
@@ -203,6 +231,12 @@ impl fmt::Display for UpdateErrorKind {
             UpdateErrorKind::GitHibResponseToRustStructConversionFail => {
                 write!(f, "unable to convert GitHub response to Rust struct")
             }
+            UpdateErrorKind::UnableToDetermineFileStructure => {
+                write!(f, "Unable to determine system's file structure")
+            }
+            UpdateErrorKind::BinaryDownloadFail => write!(f, "unable to retrieve fetch tmgr the latest executable from GitHub repo, try again later"),
+            UpdateErrorKind::CorruptedBinaryDownload => write!(f, "unable to convert downloaded executable to bytes"),
+            UpdateErrorKind::CreateFileFail => write!(f, "unable to create file in downloads folder"),
         }
     }
 }
