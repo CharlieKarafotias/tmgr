@@ -1,3 +1,5 @@
+# 0.4.1
+- Bug fix for new `update` command. There was an issue with the request model not matching api response from Github
 # 0.4.0
 - Added in new `update` command to facilitate updating tmgr to the latest version
 # 0.3.0
