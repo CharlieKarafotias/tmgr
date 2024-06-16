@@ -15,6 +15,7 @@ use semver::Version;
 
 use crate::parser::state_mgr::State;
 
+#[derive(Debug)]
 struct UpdateInfo {
     needs_update: bool,
     binary_download_url: String,
