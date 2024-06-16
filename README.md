@@ -6,7 +6,7 @@ A command line tool to track your tasks, organized using Sqlite3 databases.
 ### Installation 
 - MacOS:
     - Download the latest release from Github repository. The file to download is named `tmgr`.
-        - [Release page (v0.4.1)](https://github.com/CharlieKarafotias/tmgr/releases/tag/v0.4.1)
+        - [Release page (latest)](https://github.com/CharlieKarafotias/tmgr/releases/latest)
         - [Direct download link (v0.4.1)](https://github.com/CharlieKarafotias/tmgr/releases/download/v0.4.1/tmgr)
     - In the downloads folder, you should see a new file named `tmgr`
     - Open terminal and run the command `cd Downloads && chmod 751 ./tmgr`. This command will move your directory to the downloads folder and make `tmgr` an executable program
