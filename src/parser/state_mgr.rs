@@ -1,10 +1,12 @@
-use core::panic;
-use std::env::current_exe;
-use std::fs::{File, OpenOptions};
-use std::io::{self, BufRead, Read, Seek, Write};
-use std::path::{Path, PathBuf};
-use std::{error, fmt};
+use std::{
+    env::current_exe,
+    fmt,
+    fs::{File, OpenOptions},
+    io::{self, BufRead, Read, Seek, Write},
+    path::{Path, PathBuf},
+};
 
+// --- State Manager ---
 pub struct State {
     db_dir: Option<String>,
     db_var: Option<String>,
@@ -12,17 +14,18 @@ pub struct State {
 }
 
 impl State {
-    #[allow(unused)]
     pub fn get_path(&self) -> String {
         self.path.clone()
     }
+
     pub fn get_db_dir(&self) -> Option<String> {
         self.db_dir.clone()
     }
-    #[allow(unused)]
+
     pub fn get_db_var(&self) -> Option<String> {
         self.db_var.clone()
     }
+
     pub fn get_db_var_full_path(&self) -> Option<String> {
         match (&self.db_dir, &self.db_var) {
             (Some(db_dir), Some(db_var)) => {
@@ -33,8 +36,12 @@ impl State {
             _ => None,
         }
     }
-    pub fn new(path: Option<&Path>) -> Self {
-        let mut config_path = current_exe().unwrap();
+
+    pub fn new(path: Option<&Path>) -> Result<Self, StateManagerError> {
+        let mut config_path = current_exe().map_err(|e| StateManagerError {
+            kind: StateManagerErrorKind::IoError,
+            message: e.to_string(),
+        })?;
         config_path.pop(); // remove executable name
         config_path.push("tmgr_config.toml");
         let default_path = Path::new(&config_path);
@@ -44,100 +51,138 @@ impl State {
             None => default_path,
         };
 
+        let path_as_str = f.to_str().ok_or(StateManagerError {
+            kind: StateManagerErrorKind::StringConversionError,
+            message: "Failed to convert path to string".to_string(),
+        })?;
+
         let mut state_res = Self {
             db_dir: None,
             db_var: None,
-            path: f.to_str().unwrap().to_string(),
+            path: path_as_str.to_string(),
         };
 
-        match f.try_exists() {
-            Ok(true) => {
-                // read in values
-                if let Ok(lines) = read_lines(f) {
-                    // Consumes the iterator, returns an (Optional) String
-                    for line in lines.map_while(|x| x.ok()) {
-                        match line.split_once('=') {
-                            Some((key, value)) => match key.trim() {
-                                "db_dir" => {
-                                    if value.trim() == "\"\"" {
-                                        state_res.db_dir = None
-                                    } else {
-                                        state_res.db_dir =
-                                            Some(value.trim().replace('\"', "").to_string());
-                                    }
-                                }
-                                "db_var" => {
-                                    if value.trim() == "\"\"" {
-                                        state_res.db_var = None
-                                    } else {
-                                        state_res.db_var =
-                                            Some(value.trim().replace('\"', "").to_string());
-                                    }
-                                }
-                                _ => panic!(
+        let file_exists = f.try_exists().map_err(|e| StateManagerError {
+            kind: StateManagerErrorKind::ConfigFileNotFound,
+            message: format!("State manager config file not found: {}", e),
+        })?;
+
+        if file_exists {
+            // read in values
+            let lines = read_lines(f).map_err(|e| StateManagerError {
+                kind: StateManagerErrorKind::IoError,
+                message: format!("Failed to read lines from config file: {}", e),
+            })?;
+
+            // Consumes the iterator, returns an (Optional) String
+            for line in lines.map_while(|x| x.ok()) {
+                match line.split_once('=') {
+                    Some((key, value)) => match key.trim() {
+                        "db_dir" => {
+                            if value.trim() == "\"\"" {
+                                state_res.db_dir = None
+                            } else {
+                                state_res.db_dir = Some(value.trim().replace('\"', "").to_string());
+                            }
+                        }
+                        "db_var" => {
+                            if value.trim() == "\"\"" {
+                                state_res.db_var = None
+                            } else {
+                                state_res.db_var = Some(value.trim().replace('\"', "").to_string());
+                            }
+                        }
+                        _ => {
+                            return Err(StateManagerError {
+                                kind: StateManagerErrorKind::UnknownStateVariable,
+                                message: format!(
                                     "State manager encountered variable not being tracked {} = {}",
                                     key, value
                                 ),
-                            },
-                            None => panic!("Invalid state manager config file"),
+                            })
                         }
+                    },
+                    None => {
+                        return Err(StateManagerError {
+                            kind: StateManagerErrorKind::InvalidConfigFileStructure,
+                            message: "Invalid config file structure".to_string(),
+                        })
                     }
                 }
             }
-            Ok(false) => {
-                let mut file = match File::create(f) {
-                    Err(why) => {
-                        panic!("couldn't create {:#?}: {}", &f, why)
-                    }
-                    Ok(file) => file,
-                };
+        } else {
+            let mut file = File::create(f).map_err(|e| StateManagerError {
+                kind: StateManagerErrorKind::IoError,
+                message: format!("Failed to create config file: {}", e),
+            })?;
 
-                let initial_values: &str = "db_dir = \"\"\ndb_var = \"\"\n";
-                match file.write_all(initial_values.as_bytes()) {
-                    Err(why) => panic!("couldn't write to {:#?}: {}", &f, why),
-                    Ok(_) => println!("successfully wrote to {:#?}", &f),
-                }
+            let initial_values: &str = "db_dir = \"\"\ndb_var = \"\"\n";
 
-                // update state - empty string is None
-                state_res.db_dir = None;
-                state_res.db_var = None;
-            }
-            Err(e) => {
-                println!("ERROR: State manager config file not found: {}", e);
-            }
+            file.write_all(initial_values.as_bytes())
+                .map_err(|e| StateManagerError {
+                    kind: StateManagerErrorKind::IoError,
+                    message: format!("Failed to write to config file: {}", e),
+                })?;
+            println!("successfully wrote to {:#?}", &f);
+
+            // update state - empty string is None
+            state_res.db_dir = None;
+            state_res.db_var = None;
         }
-        state_res
+        Ok(state_res)
     }
-    pub fn update_var(&mut self, key: &str, value: &str) -> Result<(), Box<dyn std::error::Error>> {
+
+    pub fn update_var(&mut self, key: &str, value: &str) -> Result<(), StateManagerError> {
         // load in file
-        let mut f = OpenOptions::new().read(true).write(true).open(&self.path)?;
+        let mut f = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(&self.path)
+            .map_err(|e| StateManagerError {
+                kind: StateManagerErrorKind::IoError,
+                message: format!("Failed to open config file: {}", e),
+            })?;
+
         let mut buf: String = String::new();
-        f.read_to_string(&mut buf)?;
+        f.read_to_string(&mut buf).map_err(|e| StateManagerError {
+            kind: StateManagerErrorKind::IoError,
+            message: format!("Failed to read from config file: {}", e),
+        })?;
 
         // update state
         match key {
             "db_dir" => {
                 self.db_dir = Some(value.to_string());
-                update_var_in_file(f, buf, "db_dir".to_string(), value.to_string())?;
+                update_var_in_file(f, buf, "db_dir".to_string(), value.to_string()).map_err(
+                    |e| StateManagerError {
+                        kind: StateManagerErrorKind::IoError,
+                        message: format!("Failed to write to config file: {}", e),
+                    },
+                )?;
                 Ok(())
             }
             "db_var" => {
                 self.db_var = Some(value.to_string());
-                update_var_in_file(f, buf, "db_var".to_string(), value.to_string())?;
+                update_var_in_file(f, buf, "db_var".to_string(), value.to_string()).map_err(
+                    |e| StateManagerError {
+                        kind: StateManagerErrorKind::IoError,
+                        message: format!("Failed to write to config file: {}", e),
+                    },
+                )?;
                 Ok(())
             }
-            _ => Err(StateManagerError::new(
-                format!(
+            _ => Err(StateManagerError {
+                kind: StateManagerErrorKind::UpdateVariableFailed,
+                message: format!(
                     "state manager encountered variable not being tracked {}",
                     key
-                )
-                .as_str(),
-                StateManagerErrorKind::UpdateVariableFailed,
-            )
-            .into()),
+                ),
+            }),
         }
     }
 }
+
+// --- Helper Functions ---
 
 // The output is wrapped in a Result to allow matching on errors.
 // Returns an Iterator to the Reader of the lines of the file.
@@ -183,24 +228,37 @@ fn pad_sides(s: &str) -> String {
     s.push('\"');
     s
 }
-#[derive(Debug)]
-pub enum StateManagerErrorKind {
-    UpdateVariableFailed,
-}
 
+// --- StateManagerError ---
 #[derive(Debug)]
 pub struct StateManagerError {
     kind: StateManagerErrorKind,
     message: String,
 }
 
+#[derive(Debug)]
+pub enum StateManagerErrorKind {
+    ConfigFileNotFound,
+    InvalidConfigFileStructure,
+    IoError,
+    StringConversionError,
+    UpdateVariableFailed,
+    UnknownStateVariable,
+}
+
 impl fmt::Display for StateManagerErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            StateManagerErrorKind::UpdateVariableFailed => write!(
-                f,
-                "state manager failed to update variable hint: retry the command"
-            ),
+            StateManagerErrorKind::UpdateVariableFailed => {
+                write!(f, "state manager failed to update variable in config file")
+            }
+            StateManagerErrorKind::IoError => write!(f, "io error occurred"),
+            StateManagerErrorKind::StringConversionError => write!(f, "string conversion error"),
+            StateManagerErrorKind::ConfigFileNotFound => write!(f, "config file not found"),
+            StateManagerErrorKind::UnknownStateVariable => write!(f, "unknown state variable"),
+            StateManagerErrorKind::InvalidConfigFileStructure => {
+                write!(f, "invalid config file structure")
+            }
         }
     }
 }
@@ -211,17 +269,7 @@ impl fmt::Display for StateManagerError {
     }
 }
 
-impl StateManagerError {
-    pub fn new(message: &str, kind: StateManagerErrorKind) -> StateManagerError {
-        StateManagerError {
-            kind,
-            message: message.to_string(),
-        }
-    }
-}
-
-impl error::Error for StateManagerError {}
-
+// --- Unit Tests ---
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -234,7 +282,7 @@ mod tests {
         let f = temp_file.path();
 
         // new state with temp path
-        let state = State::new(Some(f));
+        let state = State::new(Some(f)).unwrap();
 
         // Verify that db_dir and db_var are initially None
         assert_eq!(state.db_dir, None);
@@ -251,7 +299,7 @@ mod tests {
         temp_file.write_all(initial_values.as_bytes()).unwrap();
 
         let f = temp_file.path();
-        let state = State::new(Some(f));
+        let state = State::new(Some(f)).unwrap();
 
         assert_eq!(state.db_dir, Some("test1".to_string()));
         assert_eq!(state.db_var, Some("test2".to_string()));

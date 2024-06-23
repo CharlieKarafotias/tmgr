@@ -1,3 +1,7 @@
+# 0.4.2
+- Improved the error handling experience by standardizing approach to errors in TMGR
+- Refactored `init` command.
+- Removed old error pattern using Box
 # 0.4.1
 - Bug fix for new `update` command. There was an issue with the request model not matching api response from Github
 # 0.4.0
