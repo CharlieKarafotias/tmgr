@@ -1,7 +1,7 @@
 mod commands;
 mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
-use commands::{db_cmds, status_cmds, todo_cmds, update_cmds};
+use commands::{db_cmds, status_cmds, todo_cmds, update_cmds, TmgrResult};
 use state_mgr::State;
 
 // Clap structs (CLI constructs)
@@ -122,29 +122,32 @@ impl std::fmt::Display for TaskPriority {
 pub fn run_cli() {
     let input = Cli::parse();
     let mut state = State::new(None);
-    match input {
+    let res: TmgrResult<()> = match input {
         Cli {
             command: Command::Database {
                 command: db_command,
             },
         } => match db_command {
-            Database::Add { name } => db_cmds::db_add(&mut state, name),
-            Database::Delete { name } => db_cmds::db_delete(&mut state, name),
-            Database::List => db_cmds::db_list(&mut state),
-            Database::Set { name } => db_cmds::db_set(&mut state, name),
-            Database::SetDirectory { path } => db_cmds::db_set_directory(&mut state, path),
+            Database::Add { name } => db_cmds::db_add(&mut state, name).map_err(|e| e.into()),
+            Database::Delete { name } => db_cmds::db_delete(&mut state, name).map_err(|e| e.into()),
+            Database::List => db_cmds::db_list(&mut state).map_err(|e| e.into()),
+            Database::Set { name } => db_cmds::db_set(&mut state, name).map_err(|e| e.into()),
+            Database::SetDirectory { path } => {
+                db_cmds::db_set_directory(&mut state, path).map_err(|e| e.into())
+            }
         },
         Cli {
             command: Command::Status,
-        } => status_cmds::get_status(&state),
+        } => status_cmds::get_status(&state).map_err(|e| e.into()),
         Cli {
             command: Command::Init,
         } => {
             let db_name = "init_db".to_string();
-            db_cmds::db_set_directory(&mut state, ".".to_string());
-            db_cmds::db_add(&mut state, db_name.clone());
-            db_cmds::db_set(&mut state, db_name);
+            let _ = db_cmds::db_set_directory(&mut state, ".".to_string());
+            let _ = db_cmds::db_add(&mut state, db_name.clone());
+            let _ = db_cmds::db_set(&mut state, db_name);
             println!("Initializer complete!");
+            Ok(())
         }
         Cli {
             command: Command::Todo {
@@ -155,19 +158,24 @@ pub fn run_cli() {
                 name,
                 priority,
                 description,
-            } => todo_cmds::add(&mut state, name, priority, description),
-            Todo::Complete { id } => todo_cmds::complete(&mut state, id),
-            Todo::Delete { id } => todo_cmds::delete(&mut state, id),
-            Todo::List { all } => todo_cmds::list(&mut state, all),
+            } => todo_cmds::add(&mut state, name, priority, description).map_err(|e| e.into()),
+            Todo::Complete { id } => todo_cmds::complete(&mut state, id).map_err(|e| e.into()),
+            Todo::Delete { id } => todo_cmds::delete(&mut state, id).map_err(|e| e.into()),
+            Todo::List { all } => todo_cmds::list(&mut state, all).map_err(|e| e.into()),
             Todo::Update {
                 id,
                 name,
                 priority,
                 description,
-            } => todo_cmds::update(&mut state, id, name, priority, description),
+            } => {
+                todo_cmds::update(&mut state, id, name, priority, description).map_err(|e| e.into())
+            }
         },
         Cli {
             command: Command::Update,
-        } => update_cmds::update(&state),
+        } => update_cmds::update(&state).map_err(|e| e.into()),
+    };
+    if let Err(e) = res {
+        println!("ERROR: {}", e)
     }
 }

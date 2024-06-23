@@ -22,49 +22,27 @@ struct UpdateInfo {
 }
 
 /// Updates the current executable to the latest version
-pub fn update(state: &State) {
+pub fn update(state: &State) -> Result<(), UpdateError> {
     println!("Checking repository for updates...");
-    match check_for_updates() {
-        Ok(UpdateInfo {
-            needs_update,
-            binary_download_url,
-        }) => {
-            if needs_update {
-                match download_binary_to_downloads_folder(binary_download_url) {
-                    Ok(new_binary_download_path) => {
-                        match find_existing_executable(state) {
-                            Ok(path_to_existing_executable) => {
-                                match delete_existing_binary(path_to_existing_executable.as_str()) {
-                                    Ok(_) => {
-                                        // update downloaded binary name from tmgr_new to tmgr
-                                        let mut new_binary_path =
-                                            PathBuf::from(path_to_existing_executable);
-                                        new_binary_path.set_file_name("tmgr");
-                                        // move new binary from download folder to bin of current executable
-                                        let result = move_new_binary(
-                                            new_binary_download_path,
-                                            new_binary_path,
-                                        );
-                                        if result.is_ok() {
-                                            println!("Update complete");
-                                        } else {
-                                            println!("ERROR: {}", result.unwrap_err());
-                                        }
-                                    }
-                                    Err(e) => println!("ERROR: {}", e),
-                                }
-                            }
-                            Err(e) => println!("ERROR: {}", e),
-                        }
-                    }
-                    Err(e) => println!("ERROR: {}", e),
-                }
-            } else {
-                println!("Already on latest version");
-            }
-        }
-        Err(e) => println!("ERROR: {}", e),
+    let UpdateInfo {
+        needs_update,
+        binary_download_url,
+    } = check_for_updates()?;
+
+    if needs_update {
+        let new_binary_download_path = download_binary_to_downloads_folder(binary_download_url)?;
+        let path_to_existing_executable = find_existing_executable(state)?;
+        delete_existing_binary(path_to_existing_executable.as_str())?;
+        // update downloaded binary name from tmgr_new to tmgr
+        let mut new_binary_path = PathBuf::from(path_to_existing_executable);
+        new_binary_path.set_file_name("tmgr");
+        // move new binary from download folder to bin of current executable
+        move_new_binary(new_binary_download_path, new_binary_path)?;
+        println!("Update complete");
+    } else {
+        println!("Already on latest version");
     }
+    Ok(())
 }
 
 #[tokio::main]
@@ -220,8 +198,9 @@ fn move_new_binary(
     })
 }
 
+// --- Update Errors ---
 #[derive(Debug)]
-struct UpdateError {
+pub struct UpdateError {
     kind: UpdateErrorKind,
     message: String,
 }
