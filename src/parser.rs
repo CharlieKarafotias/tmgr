@@ -1,7 +1,7 @@
 mod commands;
 mod state_mgr;
 use clap::{Parser, Subcommand, ValueEnum};
-use commands::{db_cmds, status_cmds, todo_cmds, update_cmds, TmgrResult};
+use commands::{db_cmds, init_cmds, status_cmds, todo_cmds, update_cmds, TmgrResult};
 use state_mgr::State;
 
 // Clap structs (CLI constructs)
@@ -141,14 +141,7 @@ pub fn run_cli() {
         } => status_cmds::get_status(&state).map_err(|e| e.into()),
         Cli {
             command: Command::Init,
-        } => {
-            let db_name = "init_db".to_string();
-            let _ = db_cmds::db_set_directory(&mut state, ".".to_string());
-            let _ = db_cmds::db_add(&mut state, db_name.clone());
-            let _ = db_cmds::db_set(&mut state, db_name);
-            println!("Initializer complete!");
-            Ok(())
-        }
+        } => init_cmds::initialize(&mut state).map_err(|e| e.into()),
         Cli {
             command: Command::Todo {
                 command: todo_command,
