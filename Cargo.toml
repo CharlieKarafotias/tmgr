@@ -13,7 +13,7 @@ clap = { version = "4.5.6", features = ["derive"] }
 comfy-table = "7.1.1"
 directories = "5.0.1"
 dotenv = "0.15.0"
-reqwest = { version = "0.12.4", features = ["json"] }
+reqwest = { version = "0.12.5", features = ["json"] }
 rusqlite = { version = "0.31.0", features = ["chrono"] }
 rust_search = "2.1.0"
 semver = "1.0.23"
