@@ -109,11 +109,11 @@ async fn download_binary_to_downloads_folder(
 ) -> Result<PathBuf, UpdateError> {
     // get download directory of the current system
     let system_file_structure = UserDirs::new().ok_or(UpdateError {
-        message: "ERROR: Unable to determine system's file structure".to_string(),
+        message: "Unable to determine system's file structure".to_string(),
         kind: UpdateErrorKind::UnableToDetermineFileStructure,
     })?;
     let download_dir_path = system_file_structure.download_dir().ok_or(UpdateError {
-        message: "ERROR: Unable to determine download directory".to_string(),
+        message: "Unable to determine download directory".to_string(),
         kind: UpdateErrorKind::UnableToDetermineFileStructure,
     })?;
 
@@ -173,7 +173,7 @@ fn find_existing_executable(state: &State) -> Result<String, UpdateError> {
     } else {
         Err(UpdateError {
             message: format!(
-                "ERROR: No existing binary found in {}",
+                "No existing binary found in {}",
                 existing_executable_path.display()
             ),
             kind: UpdateErrorKind::NoExistingBinary,

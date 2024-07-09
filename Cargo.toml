@@ -10,6 +10,7 @@ repository = "https://github.com/charliekarafotias/tmgr"
 [dependencies]
 chrono = "0.4.38"
 clap = { version = "4.5.6", features = ["derive"] }
+colored = "2.1.0"
 comfy-table = "7.1.1"
 directories = "5.0.1"
 dotenv = "0.15.0"
