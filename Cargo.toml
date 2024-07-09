@@ -17,7 +17,7 @@ reqwest = { version = "0.12.5", features = ["json"] }
 rusqlite = { version = "0.31.0", features = ["chrono"] }
 rust_search = "2.1.0"
 semver = "1.0.23"
-serde = { version = "1.0.203", features = ["derive"] }
+serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.120"
 tempdir = "0.3.7"
 tempfile = "3.10.1"
