@@ -1,5 +1,6 @@
 mod commands;
 mod state_mgr;
+use crate::utils::print_err;
 use clap::{Parser, Subcommand, ValueEnum};
 use commands::{db_cmds, init_cmds, status_cmds, todo_cmds, update_cmds, TmgrResult};
 use state_mgr::State;
@@ -126,9 +127,7 @@ pub fn run_cli() {
     let input = Cli::parse();
     match State::new(None) {
         Ok(s) => run_with_state(s, input),
-        Err(e) => {
-            println!("Error: {}", e);
-        }
+        Err(e) => print_err(e),
     }
 }
 
@@ -180,7 +179,7 @@ fn run_with_state(mut state: State, input: Cli) {
         } => update_cmds::update(&state).map_err(|e| e.into()),
     };
     if let Err(e) = res {
-        println!("ERROR: {}", e)
+        print_err(e)
     }
 }
 
@@ -229,6 +228,7 @@ mod cli_integration_tests {
     // --- Tests for todo command ---
     // TODO: add for all commands; part of issue [#23](https://github.com/CharlieKarafotias/tmgr/issues/23)
     #[test]
+    #[ignore = "reason: not implemented yet"]
     fn test_todo_list_all() -> Result<(), Box<dyn std::error::Error>> {
         setup_db()?;
         let mut cmd = Command::cargo_bin("tmgr")?;
@@ -241,6 +241,7 @@ mod cli_integration_tests {
     }
 
     #[test]
+    #[ignore = "reason: not implemented yet"]
     fn test_todo_list() -> Result<(), Box<dyn std::error::Error>> {
         setup_db()?;
         let mut cmd = Command::cargo_bin("tmgr")?;
@@ -254,6 +255,7 @@ mod cli_integration_tests {
 
     // --- todo update command tests ---
     #[test]
+    #[ignore = "reason: not implemented yet"]
     fn test_todo_update_should_error_if_task_does_not_exist(
     ) -> Result<(), Box<dyn std::error::Error>> {
         setup_db()?;

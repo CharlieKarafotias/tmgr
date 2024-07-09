@@ -1,5 +1,7 @@
 # 0.4.3
 - Bug fix for `todo update` command. When updating a task, it is no longer required to provide all fields.
+- Error logs are now red
+- When  `tmgr` errors, the exit code is now 1 instead of 0
 # 0.4.2
 - Improved the error handling experience by standardizing approach to errors in TMGR
 - Refactored `init` command.
