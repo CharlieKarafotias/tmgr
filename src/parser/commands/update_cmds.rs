@@ -22,15 +22,16 @@ struct UpdateInfo {
 }
 
 /// Updates the current executable to the latest version
-pub fn update(state: &State) -> Result<(), UpdateError> {
+pub async fn update(state: &State) -> Result<(), UpdateError> {
     println!("Checking repository for updates...");
     let UpdateInfo {
         needs_update,
         binary_download_url,
-    } = check_for_updates()?;
+    } = check_for_updates().await?;
 
     if needs_update {
-        let new_binary_download_path = download_binary_to_downloads_folder(binary_download_url)?;
+        let new_binary_download_path =
+            download_binary_to_downloads_folder(binary_download_url).await?;
         let path_to_existing_executable = find_existing_executable(state)?;
         delete_existing_binary(path_to_existing_executable.as_str())?;
         // update downloaded binary name from tmgr_new to tmgr
@@ -45,7 +46,6 @@ pub fn update(state: &State) -> Result<(), UpdateError> {
     Ok(())
 }
 
-#[tokio::main]
 async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
     let repo_link = env!("CARGO_PKG_REPOSITORY");
     let url: Vec<&str> = repo_link.split('/').rev().collect();
@@ -103,7 +103,6 @@ async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
     }
 }
 
-#[tokio::main]
 async fn download_binary_to_downloads_folder(
     binary_download_url: String,
 ) -> Result<PathBuf, UpdateError> {

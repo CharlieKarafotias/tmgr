@@ -123,15 +123,15 @@ impl std::fmt::Display for TaskPriority {
 }
 
 // Calls the CLI and runs the correct command
-pub fn run_cli() {
+pub async fn run_cli() {
     let input = Cli::parse();
     match State::new(None) {
-        Ok(s) => run_with_state(s, input),
+        Ok(s) => run_with_state(s, input).await,
         Err(e) => print_err(e),
     }
 }
 
-fn run_with_state(mut state: State, input: Cli) {
+async fn run_with_state(mut state: State, input: Cli) {
     let res: TmgrResult<()> = match input {
         Cli {
             command: Command::Database {
@@ -148,7 +148,7 @@ fn run_with_state(mut state: State, input: Cli) {
         },
         Cli {
             command: Command::Status,
-        } => status_cmds::get_status(&state).map_err(|e| e.into()),
+        } => status_cmds::get_status(&state).await.map_err(|e| e.into()),
         Cli {
             command: Command::Init,
         } => init_cmds::initialize(&mut state).map_err(|e| e.into()),

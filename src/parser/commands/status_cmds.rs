@@ -4,7 +4,7 @@ use super::db_cmds::db::DB;
 use comfy_table::{modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL, ContentArrangement, Table};
 use std::fmt::{self};
 
-pub fn get_status(state: &State) -> Result<(), StatusError> {
+pub async fn get_status(state: &State) -> Result<(), StatusError> {
     println!("Dumping State Manager Variables...");
     let mut state_mgr_table = Table::new();
     state_mgr_table
@@ -19,21 +19,24 @@ pub fn get_status(state: &State) -> Result<(), StatusError> {
     ]);
     state_mgr_table.add_row(vec![
         "db_var",
-        &state.get_db_var().unwrap_or("None".to_string()),
+        &state.get_db_name().unwrap_or("None".to_string()),
         "Current Database Name",
     ]);
     println!("{state_mgr_table}");
 
     println!();
     println!("Dumping Current Database Stats...");
-    let db_res = DB::new(state).map_err(|e| StatusError {
+    let db_res = DB::new(state).await.map_err(|e| StatusError {
         kind: StatusErrorKind::DatabaseError,
         message: e.to_string(),
     })?;
-    let count = DB::count_tasks(&db_res).map_err(|e| StatusError {
-        kind: StatusErrorKind::DatabaseError,
-        message: e.to_string(),
-    })?;
+    let count = DB::count_tasks(&db_res)
+        .await
+        .map_err(|e| StatusError {
+            kind: StatusErrorKind::DatabaseError,
+            message: e.to_string(),
+        })?
+        .unwrap_or(0);
     println!("Record Count: {count}");
     Ok(())
 }

@@ -3,7 +3,7 @@ use std::{
     fmt,
     fs::{File, OpenOptions},
     io::{self, BufRead, Read, Seek, Write},
-    path::{Path, PathBuf},
+    path::Path,
 };
 
 // --- State Manager ---
@@ -22,19 +22,8 @@ impl State {
         self.db_dir.clone()
     }
 
-    pub fn get_db_var(&self) -> Option<String> {
+    pub fn get_db_name(&self) -> Option<String> {
         self.db_var.clone()
-    }
-
-    pub fn get_db_var_full_path(&self) -> Option<String> {
-        match (&self.db_dir, &self.db_var) {
-            (Some(db_dir), Some(db_var)) => {
-                let mut path_to_db = PathBuf::from(db_dir).join(db_var);
-                path_to_db.set_extension("db");
-                path_to_db.to_str().map(|s| s.to_string())
-            }
-            _ => None,
-        }
     }
 
     pub fn new(path: Option<&Path>) -> Result<Self, StateManagerError> {
