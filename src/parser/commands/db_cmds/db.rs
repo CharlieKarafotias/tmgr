@@ -9,17 +9,8 @@ use surrealdb::{
 };
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Task {
-    pub name: String,
-    pub priority: String,
-    pub description: Option<String>,
-    pub created_on: DateTime<Local>,
-    pub completed_on: Option<DateTime<Local>>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
 pub struct TaskWithId {
-    pub id: Thing,
+    pub id: Option<Thing>,
     pub name: String,
     pub priority: String,
     pub description: Option<String>,
@@ -87,7 +78,8 @@ impl DB {
         let res = self
             .conn
             .create("task")
-            .content(Task {
+            .content(TaskWithId {
+                id: None,
                 name,
                 priority,
                 description,
@@ -140,73 +132,61 @@ impl DB {
         }
     }
 
-    // TODO: finish these two then fix other errors then add tests
-    pub fn complete_todo(&self, id: i64) -> Result<usize, DatabaseError> {
-        let sql = "UPDATE tasks SET completed_on = (?) WHERE id = (?)";
-        let mut stmt = self.conn.prepare(sql).map_err(|e| DatabaseError {
-            kind: DatabaseErrorKind::SQLiteError,
-            message: e.to_string(),
-        })?;
-        let rows_updated = stmt
-            .execute(params![Utc::now(), id])
+    pub async fn complete_todo(&self, id: String) -> Result<Vec<TaskWithId>, DatabaseError> {
+        #[derive(Serialize)]
+        struct TaskCompleted {
+            completed_on: Option<DateTime<Local>>,
+        }
+        let res: Option<Vec<TaskWithId>> = self
+            .conn
+            .update(("task", &id))
+            .merge(TaskCompleted {
+                completed_on: Some(Local::now()),
+            })
+            .await
             .map_err(|e| DatabaseError {
-                kind: DatabaseErrorKind::SQLiteError,
+                kind: DatabaseErrorKind::SurrealDBError,
                 message: e.to_string(),
             })?;
-        match rows_updated {
-            0 => Err(DatabaseError {
+        match res {
+            None => Err(DatabaseError {
                 kind: DatabaseErrorKind::EntryNotFound,
                 message: format!("Task with id {id} not found"),
             }),
-            rows_updated => Ok(rows_updated),
+            Some(res) => Ok(res),
         }
     }
 
-    pub fn update_todo(
+    pub async fn update_todo(
         &self,
-        id: i64,
+        id: String,
         new_name: Option<String>,
         new_priority: Option<String>,
         new_description: Option<String>,
-    ) -> Result<usize, DatabaseError> {
-        let mut update_sql = "UPDATE tasks SET".to_string();
-
-        // TODO: definitely a better way to add in these param_values, maybe a map on Some values instead of if lets
-        let mut param_values: Vec<rusqlite::types::Value> = Vec::new();
-
-        if let Some(name) = new_name {
-            update_sql.push_str(" name = (?),");
-            param_values.push(name.clone().into());
-        }
-        if let Some(priority) = new_priority {
-            update_sql.push_str(" priority = (?),");
-            param_values.push(priority.clone().into());
-        }
-        if let Some(description) = new_description {
-            update_sql.push_str(" description = (?),");
-            param_values.push(description.clone().into());
-        }
-
-        // remove trailing comma
-        update_sql.pop();
-        update_sql.push_str(" WHERE id = (?);");
-        param_values.push(id.into());
-
-        // TODO: in future, replace ? (error propagation) with actual error and wrap with one of the db_errors defined in db_errors.rs
-        let rows_updated = self
+    ) -> Result<Vec<TaskWithId>, DatabaseError> {
+        // TODO: might be wrong, need to test
+        let res: Option<Vec<TaskWithId>> = self
             .conn
-            .execute(&update_sql, rusqlite::params_from_iter(param_values))
+            .update(("task", &id))
+            .merge(TaskWithId {
+                id: None,
+                name: new_name.unwrap_or_default(),
+                priority: new_priority.unwrap_or_default(),
+                description: new_description,
+                created_on: Local::now(),
+                completed_on: None, // TODO: definitely wrong
+            })
+            .await
             .map_err(|e| DatabaseError {
-                kind: DatabaseErrorKind::SQLiteError,
+                kind: DatabaseErrorKind::SurrealDBError,
                 message: e.to_string(),
             })?;
-
-        match rows_updated {
-            0 => Err(DatabaseError {
+        match res {
+            None => Err(DatabaseError {
                 kind: DatabaseErrorKind::EntryNotFound,
                 message: format!("Task with id {id} not found"),
             }),
-            rows_updated => Ok(rows_updated),
+            Some(res) => Ok(res),
         }
     }
 }

@@ -49,12 +49,12 @@ enum Todo {
     /// Mark a task as complete
     Complete {
         /// The id of the task
-        id: i64,
+        id: String,
     },
     /// Delete a task
     Delete {
         /// The id of the task
-        id: i64,
+        id: String,
     },
     /// List the tasks in the database. By default, this will only list in progress tasks.
     List {
@@ -65,7 +65,7 @@ enum Todo {
     /// Update an existing task
     Update {
         /// The id of the task
-        id: i64,
+        id: String,
         #[arg(short, long)]
         /// A short description of the task
         name: Option<String>,
@@ -161,22 +161,28 @@ async fn run_with_state(mut state: State, input: Cli) {
                 name,
                 priority,
                 description,
-            } => todo_cmds::add(&mut state, name, priority, description).map_err(|e| e.into()),
-            Todo::Complete { id } => todo_cmds::complete(&mut state, id).map_err(|e| e.into()),
-            Todo::Delete { id } => todo_cmds::delete(&mut state, id).map_err(|e| e.into()),
-            Todo::List { all } => todo_cmds::list(&mut state, all).map_err(|e| e.into()),
+            } => todo_cmds::add(&mut state, name, priority, description)
+                .await
+                .map_err(|e| e.into()),
+            Todo::Complete { id } => todo_cmds::complete(&mut state, id)
+                .await
+                .map_err(|e| e.into()),
+            Todo::Delete { id } => todo_cmds::delete(&mut state, id)
+                .await
+                .map_err(|e| e.into()),
+            Todo::List { all } => todo_cmds::list(&mut state, all).await.map_err(|e| e.into()),
             Todo::Update {
                 id,
                 name,
                 priority,
                 description,
-            } => {
-                todo_cmds::update(&mut state, id, name, priority, description).map_err(|e| e.into())
-            }
+            } => todo_cmds::update(&mut state, id, name, priority, description)
+                .await
+                .map_err(|e| e.into()),
         },
         Cli {
             command: Command::Update,
-        } => update_cmds::update(&state).map_err(|e| e.into()),
+        } => update_cmds::update(&state).await.map_err(|e| e.into()),
     };
     if let Err(e) = res {
         print_err(e)
