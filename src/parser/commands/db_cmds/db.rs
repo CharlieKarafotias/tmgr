@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use surrealdb::{
     engine::any::{self, Any},
+    opt::PatchOp,
     sql::Thing,
     Surreal,
 };
@@ -50,7 +51,7 @@ impl DB {
         })?;
 
         // Open or create database file
-        db = any::connect(format!("file://{}", db_directory))
+        db = any::connect(format!("file://{}.db", db_directory))
             .await
             .map_err(|e| DatabaseError {
                 kind: DatabaseErrorKind::SurrealDBError,
@@ -140,9 +141,7 @@ impl DB {
         let res: Option<Vec<TaskWithId>> = self
             .conn
             .update(("task", &id))
-            .merge(TaskCompleted {
-                completed_on: Some(Local::now()),
-            })
+            .patch(PatchOp::replace("/completed_on", Some(Local::now())))
             .await
             .map_err(|e| DatabaseError {
                 kind: DatabaseErrorKind::SurrealDBError,

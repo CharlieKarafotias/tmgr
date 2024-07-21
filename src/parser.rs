@@ -125,7 +125,7 @@ impl std::fmt::Display for TaskPriority {
 // Calls the CLI and runs the correct command
 pub async fn run_cli() {
     let input = Cli::parse();
-    match State::new(None) {
+    match State::new(None, None, None) {
         Ok(s) => run_with_state(s, input).await,
         Err(e) => print_err(e),
     }
@@ -138,7 +138,9 @@ async fn run_with_state(mut state: State, input: Cli) {
                 command: db_command,
             },
         } => match db_command {
-            Database::Add { name } => db_cmds::db_add(&mut state, name).map_err(|e| e.into()),
+            Database::Add { name } => db_cmds::db_add(&mut state, name)
+                .await
+                .map_err(|e| e.into()),
             Database::Delete { name } => db_cmds::db_delete(&mut state, name).map_err(|e| e.into()),
             Database::List => db_cmds::db_list(&mut state).map_err(|e| e.into()),
             Database::Set { name } => db_cmds::db_set(&mut state, name).map_err(|e| e.into()),
@@ -151,7 +153,9 @@ async fn run_with_state(mut state: State, input: Cli) {
         } => status_cmds::get_status(&state).await.map_err(|e| e.into()),
         Cli {
             command: Command::Init,
-        } => init_cmds::initialize(&mut state).map_err(|e| e.into()),
+        } => init_cmds::initialize(&mut state)
+            .await
+            .map_err(|e| e.into()),
         Cli {
             command: Command::Todo {
                 command: todo_command,

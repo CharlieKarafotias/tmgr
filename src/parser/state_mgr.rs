@@ -3,7 +3,7 @@ use std::{
     fmt,
     fs::{File, OpenOptions},
     io::{self, BufRead, Read, Seek, Write},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 // --- State Manager ---
@@ -26,18 +26,16 @@ impl State {
         self.db_var.clone()
     }
 
-    pub fn new(path: Option<&Path>) -> Result<Self, StateManagerError> {
-        let mut config_path = current_exe().map_err(|e| StateManagerError {
-            kind: StateManagerErrorKind::IoError,
-            message: e.to_string(),
-        })?;
-        config_path.pop(); // remove executable name
-        config_path.push("tmgr_config.toml");
-        let default_path = Path::new(&config_path);
+    pub fn new(
+        db_dir: Option<String>,
+        db_var: Option<String>,
+        path: Option<&Path>,
+    ) -> Result<Self, StateManagerError> {
+        let config_path = default_config_path()?;
 
         let f = match path {
             Some(p) => p,
-            None => default_path,
+            None => config_path.as_path(),
         };
 
         let path_as_str = f.to_str().ok_or(StateManagerError {
@@ -46,8 +44,8 @@ impl State {
         })?;
 
         let mut state_res = Self {
-            db_dir: None,
-            db_var: None,
+            db_dir,
+            db_var,
             path: path_as_str.to_string(),
         };
 
@@ -56,7 +54,7 @@ impl State {
             message: format!("State manager config file not found: {}", e),
         })?;
 
-        if file_exists {
+        if file_exists && state_res.db_dir.is_none() && state_res.db_var.is_none() {
             // read in values
             let lines = read_lines(f).map_err(|e| StateManagerError {
                 kind: StateManagerErrorKind::IoError,
@@ -105,7 +103,11 @@ impl State {
                 message: format!("Failed to create config file: {}", e),
             })?;
 
-            let initial_values: &str = "db_dir = \"\"\ndb_var = \"\"\n";
+            let initial_values: String = format!(
+                "db_dir = {} \ndb_var = {} \n",
+                state_res.db_dir.clone().unwrap_or("\"\"".to_string()),
+                state_res.db_var.clone().unwrap_or("\"\"".to_string())
+            );
 
             file.write_all(initial_values.as_bytes())
                 .map_err(|e| StateManagerError {
@@ -113,10 +115,6 @@ impl State {
                     message: format!("Failed to write to config file: {}", e),
                 })?;
             println!("successfully wrote to {:#?}", &f);
-
-            // update state - empty string is None
-            state_res.db_dir = None;
-            state_res.db_var = None;
         }
         Ok(state_res)
     }
@@ -218,6 +216,17 @@ fn pad_sides(s: &str) -> String {
     s
 }
 
+/// Constructs the default config path (directory_of_executable/tmgr_config.toml)
+fn default_config_path() -> Result<PathBuf, StateManagerError> {
+    let mut config_path = current_exe().map_err(|e| StateManagerError {
+        kind: StateManagerErrorKind::IoError,
+        message: e.to_string(),
+    })?;
+    config_path.pop(); // remove executable name
+    config_path.push("tmgr_config.toml");
+    Ok(config_path)
+}
+// --- Helper Functions End --
 // --- StateManagerError ---
 #[derive(Debug)]
 pub struct StateManagerError {
@@ -271,7 +280,7 @@ mod tests {
         let f = temp_file.path();
 
         // new state with temp path
-        let state = State::new(Some(f)).unwrap();
+        let state = State::new(None, None, Some(f)).unwrap();
 
         // Verify that db_dir and db_var are initially None
         assert_eq!(state.db_dir, None);
@@ -283,15 +292,41 @@ mod tests {
     fn test_new_state_existing_file() {
         // Create a temporary file
         let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+
         // Write initial values to the file
         let initial_values: &str = "db_dir = \"test1\"\ndb_var = \"test2\"\n";
         temp_file.write_all(initial_values.as_bytes()).unwrap();
 
         let f = temp_file.path();
-        let state = State::new(Some(f)).unwrap();
+        let state = State::new(None, None, Some(f)).unwrap();
 
         assert_eq!(state.db_dir, Some("test1".to_string()));
         assert_eq!(state.db_var, Some("test2".to_string()));
         assert_eq!(state.path, f.to_str().unwrap().to_string());
+    }
+
+    #[test]
+    fn test_new_state_with_values() {
+        // Create a temporary file
+        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+
+        // Write initial values to the file
+        let db_dir = Some("test1".to_string());
+        let db_var = Some("test2".to_string());
+
+        let f = temp_file.path();
+        let state = State::new(db_dir, db_var, Some(temp_file.path())).unwrap();
+
+        assert_eq!(state.db_dir, Some("test1".to_string()));
+        assert_eq!(state.db_var, Some("test2".to_string()));
+        assert_eq!(state.path, f.to_str().unwrap().to_string());
+        // temp_file should have proper format
+        let mut buffer = String::new();
+        temp_file
+            .read_to_string(&mut buffer)
+            .expect("failed to read value to buffer");
+
+        // Verify that db_dir and db_var are not None
+        assert_eq!(buffer, "db_dir = test1 \ndb_var = test2 \n");
     }
 }
