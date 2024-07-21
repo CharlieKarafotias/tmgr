@@ -9,39 +9,20 @@ use super::super::state_mgr::State;
 // --- Database Commands ---
 /// Adds a new database with the specified name.
 pub async fn db_add(state: &mut State, name: String) -> Result<(), DatabaseError> {
-    let mut db;
-    if state.get_db_dir().is_none() {
-        db = DB::new(state).await.map_err(|e| DatabaseError {
-            kind: DatabaseErrorKind::SurrealDBError,
+    let db = connect_to_db(state).await?;
+    db.set_db(&name).await.map_err(|e| DatabaseError {
+        kind: DatabaseErrorKind::SurrealDBError,
+        message: e.to_string(),
+    })?;
+
+    // Update state variable
+    state
+        .update_var("db_var", &name)
+        .map_err(|e| DatabaseError {
+            kind: DatabaseErrorKind::IoError,
             message: e.to_string(),
         })?;
-    }
     Ok(())
-    // let path = state.get_db_dir().ok_or(DatabaseError {
-    //     kind: DatabaseErrorKind::DirectoryNotSet,
-    //     message: format!("Unable to add database {}", name),
-    // })?;
-    // // Create a new database file with provided name.
-    // let mut db_path = PathBuf::from(&path).join(&name);
-    // db_path.set_extension("db");
-    // let path_exists = db_path.try_exists().map_err(|e| DatabaseError {
-    //     kind: DatabaseErrorKind::IoError,
-    //     message: format!("Unable to add database {}: {}", name, e),
-    // })?;
-
-    // if path_exists {
-    //     Err(DatabaseError {
-    //         kind: DatabaseErrorKind::AlreadyExists,
-    //         message: format!("Unable to add database {}", name),
-    //     })
-    // } else {
-    //     fs::File::create(&db_path).map_err(|e| DatabaseError {
-    //         kind: DatabaseErrorKind::IoError,
-    //         message: format!("Unable to create database {}: {}", name, e),
-    //     })?;
-    //     println!("Successfully created database with name: {}", name);
-    //     Ok(())
-    // }
 }
 
 // TODO: if database being deleted is the currently set database, set current db_var in the state to empty
@@ -235,48 +216,29 @@ async fn connect_to_db(state: &mut State) -> Result<DB, DatabaseError> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-    use std::process::Command;
+    use tempfile::NamedTempFile;
 
-    use crate::parser::state_mgr::State;
+    use crate::parser::state_mgr::{State, States};
 
     #[tokio::test]
     async fn test_db_add() {
         std::env::set_var("TMGR_TEST", "true");
-        let temp_dir = tempfile::tempdir().unwrap();
-        let db_name = "test_db".to_string();
-        // let mut state = State::new(Some(temp_dir.path())).unwrap();
+        let temp_file = NamedTempFile::new().unwrap();
+        let mut state = State::new(
+            Some(temp_file.path()),
+            Some(States {
+                db_var: Some("other_db".to_string()),
+                db_dir: Some(temp_file.path().to_str().unwrap().to_string()),
+            }),
+        )
+        .unwrap();
 
-        // super::db_add(&mut state, db_name.clone()).await.unwrap();
-
-        // Expect to see a new directory named tmgr in the temp directory
-
-        // Expect db_dir to be set in state to the temp_dir path
-
-        // Expect to see update db_var in state
-
-        // Expect DB's database to be same name as test_db
-
-        let mut cmd = Command::new("tmgr");
-        cmd.arg("db");
-        cmd.arg("set");
-        cmd.arg(db_name.clone());
-        cmd.output().unwrap();
-
-        let db_path = PathBuf::from(temp_dir.path());
-        let db_file_path = db_path.join(db_name.clone());
-        assert!(db_file_path.exists());
-
-        let output = Command::new("tmgr")
-            .arg("db")
-            .arg("set")
-            .arg(db_name.clone())
-            .output()
+        // Add a new database with different name
+        super::db_add(&mut state, "test_db".to_string())
+            .await
             .unwrap();
-        assert!(output.status.success());
-        assert_eq!(
-            String::from_utf8(output.stdout).unwrap(),
-            format!("database set to {}\n", db_name)
-        );
+
+        // Expect db_var to be updated to new database name
+        assert_eq!(state.get_db_name().unwrap(), "test_db".to_string());
     }
 }

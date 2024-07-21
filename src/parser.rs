@@ -125,7 +125,7 @@ impl std::fmt::Display for TaskPriority {
 // Calls the CLI and runs the correct command
 pub async fn run_cli() {
     let input = Cli::parse();
-    match State::new(None, None, None) {
+    match State::new(None, None) {
         Ok(s) => run_with_state(s, input).await,
         Err(e) => print_err(e),
     }

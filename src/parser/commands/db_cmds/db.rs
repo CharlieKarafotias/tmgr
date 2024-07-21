@@ -188,4 +188,11 @@ impl DB {
             Some(res) => Ok(res),
         }
     }
+
+    pub async fn set_db(&self, name: &str) -> Result<(), DatabaseError> {
+        self.conn.use_db(name).await.map_err(|e| DatabaseError {
+            kind: DatabaseErrorKind::SurrealDBError,
+            message: e.to_string(),
+        })
+    }
 }
