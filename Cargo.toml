@@ -25,5 +25,5 @@ tempfile = "3.10.1"
 tokio = { version = "1.38.0", features = ["full"] }
 
 [dev-dependencies]
-assert_cmd = "2.0.14"
+assert_cmd = "2.0.15"
 predicates = "3.1.0"
