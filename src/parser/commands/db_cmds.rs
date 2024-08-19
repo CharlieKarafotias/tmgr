@@ -27,44 +27,18 @@ pub async fn db_add(state: &mut State, name: String) -> Result<(), DatabaseError
 
 // TODO: if database being deleted is the currently set database, set current db_var in the state to empty
 /// Deletes the database with the specified name.
-pub fn db_delete(state: &mut State, name: String) -> Result<(), DatabaseError> {
-    let path = state.get_db_dir().ok_or(DatabaseError {
-        kind: DatabaseErrorKind::DirectoryNotSet,
-        message: format!("Unable to remove database {}", name),
-    })?;
-
-    let mut db_path = PathBuf::from(&path).join(&name);
-    db_path.set_extension("db");
-    if db_path.is_file() {
-        fs::remove_file(&db_path).map_err(|e| DatabaseError {
-            kind: DatabaseErrorKind::IoError,
-            message: format!("Unable to remove database {}: {}", name, e),
-        })?;
-        Ok(())
-    } else {
-        Err(DatabaseError {
-            kind: DatabaseErrorKind::DoesNotExist,
-            message: format!("Unable to remove database {}", name),
-        })
-    }
+pub async fn db_delete(state: &mut State, name: String) -> Result<(), DatabaseError> {
+    let db = connect_to_db(state).await?;
+    db.drop_db(&name).await.map_err(|e| DatabaseError {
+        kind: DatabaseErrorKind::SurrealDBError,
+        message: e.to_string(),
+    })
 }
 
 /// Lists all the databases in the current directory and displays their names to the console in alphabetical order.
-pub fn db_list(state: &mut State) -> Result<(), DatabaseError> {
-    let path = state.get_db_dir().ok_or(DatabaseError {
-        kind: DatabaseErrorKind::DirectoryNotSet,
-        message: "Unable to list databases".to_string(),
-    })?;
-    let dbs = fs::read_dir(path).map_err(|e| DatabaseError {
-        kind: DatabaseErrorKind::IoError,
-        message: format!("Unable to read directory containing databases: {}", e),
-    })?;
-
-    let mut dbs: Vec<String> = dbs
-        .flatten()
-        .map(|entry| drop_file_extension(entry.file_name().to_str().unwrap_or("")))
-        .collect();
-    dbs.sort();
+pub async fn db_list(state: &mut State) -> Result<(), DatabaseError> {
+    let db = connect_to_db(state).await?;
+    let dbs = db.list_dbs().await?;
     let mut table = Table::new();
     table
         .set_header(vec!["Database Name"])
@@ -208,10 +182,7 @@ impl fmt::Display for DatabaseError {
 }
 
 async fn connect_to_db(state: &mut State) -> Result<DB, DatabaseError> {
-    DB::new(state).await.map_err(|e| DatabaseError {
-        kind: DatabaseErrorKind::SurrealDBError,
-        message: e.to_string(),
-    })
+    DB::new(state).await
 }
 
 #[cfg(test)]

@@ -141,8 +141,10 @@ async fn run_with_state(mut state: State, input: Cli) {
             Database::Add { name } => db_cmds::db_add(&mut state, name)
                 .await
                 .map_err(|e| e.into()),
-            Database::Delete { name } => db_cmds::db_delete(&mut state, name).map_err(|e| e.into()),
-            Database::List => db_cmds::db_list(&mut state).map_err(|e| e.into()),
+            Database::Delete { name } => db_cmds::db_delete(&mut state, name)
+                .await
+                .map_err(|e| e.into()),
+            Database::List => db_cmds::db_list(&mut state).await.map_err(|e| e.into()),
             Database::Set { name } => db_cmds::db_set(&mut state, name).map_err(|e| e.into()),
             Database::SetDirectory { path } => {
                 db_cmds::db_set_directory(&mut state, path).map_err(|e| e.into())
