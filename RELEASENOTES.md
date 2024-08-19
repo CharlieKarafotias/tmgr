@@ -1,3 +1,5 @@
+# 0.4.4
+- Dependency updates
 # 0.4.3
 - Bug fix for `todo update` command. When updating a task, it is no longer required to provide all fields.
 - Error logs are now red
