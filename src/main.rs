@@ -1,8 +1,8 @@
-mod parser;
-mod utils;
-use parser::run_cli;
+mod cli;
+mod commands;
 
-#[tokio::main]
-async fn main() {
-    run_cli().await
+use cli::parser;
+
+fn main() {
+    parser::run();
 }

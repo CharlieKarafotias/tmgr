@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="44dd43bd-6cfe-4b2a-ade8-e7783d1d7c7c" name="Changes" comment="adding db commands">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/cli/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/cli/model.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/cli/parser.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/add.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/complete.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/db/db.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/db/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/delete.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/list.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/status.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/update.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/upgrade.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/view.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands/db_cmds.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands/db_cmds/db.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands/init_cmds.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands/status_cmds.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands/todo_cmds.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands/update_cmds.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/commands/update_cmds/request_models.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/parser/state_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils.rs" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Rust File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="kn2wt22k" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="2ksLaLSZ9IMQawDYN6vLtUYol9X" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Cargo.Run tmgr.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;com.codeium.enabled&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;29-migrate-from-sqlite3-to-surrealdb-new&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.cargo.check&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/cli" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Run tmgr" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="run --package tmgr --bin tmgr" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Cargo.Run tmgr" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="44dd43bd-6cfe-4b2a-ade8-e7783d1d7c7c" name="Changes" comment="" />
+      <created>1724067400139</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1724067400139</updated>
+      <workItem from="1724067402151" duration="42000" />
+      <workItem from="1724067459122" duration="137000" />
+      <workItem from="1724068334419" duration="973000" />
+      <workItem from="1724102230410" duration="1053000" />
+      <workItem from="1724108984753" duration="2216000" />
+      <workItem from="1724113077280" duration="3495000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="adding db commands" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding db commands" />
+  </component>
+</project>
