@@ -3,9 +3,12 @@ use super::model::Task;
 use crate::cli::model::TaskPriority;
 use surrealdb::sql::Datetime;
 
-#[tokio::main]
-pub(crate) async fn run(name: String, priority: TaskPriority, description: Option<String>) {
-    let db = DB::new().await;
+pub(crate) async fn run(
+    db: &DB,
+    name: String,
+    priority: TaskPriority,
+    description: Option<String>,
+) {
     let _task: Vec<Task> = db
         .client
         .create("task")

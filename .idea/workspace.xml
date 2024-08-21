@@ -8,17 +8,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44dd43bd-6cfe-4b2a-ade8-e7783d1d7c7c" name="Changes" comment="adding db commands">
-      <change afterPath="$PROJECT_DIR$/src/commands/model.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/tests/add_test.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/commands/tests/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cli/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/cli/parser.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/add.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/add.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/complete.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/complete.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/db.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/db.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/delete.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/delete.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/list.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/list.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/status.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/status.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/update.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/update.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/upgrade.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/upgrade.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/view.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/view.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,7 +119,7 @@
       <workItem from="1724068334419" duration="973000" />
       <workItem from="1724102230410" duration="1053000" />
       <workItem from="1724108984753" duration="2216000" />
-      <workItem from="1724113077280" duration="8248000" />
+      <workItem from="1724113077280" duration="10801000" />
     </task>
     <servers />
   </component>

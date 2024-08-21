@@ -2,8 +2,16 @@ use crate::cli::model::{Cli, Command};
 use crate::commands;
 use clap::Parser;
 
-pub fn run() {
+#[tokio::main]
+pub async fn run() {
     let input = Cli::parse();
+    #[allow(clippy::needless_late_init)]
+    let db: commands::db::DB;
+    if cfg!(test) {
+        db = commands::db::DB::new_test().await;
+    } else {
+        db = commands::db::DB::new().await;
+    }
 
     match input.command {
         Command::Add {
@@ -11,19 +19,19 @@ pub fn run() {
             priority,
             description,
         } => {
-            commands::add::run(name, priority, description);
+            commands::add::run(&db, name, priority, description).await;
         }
         Command::Complete { id } => {
-            commands::complete::run(id);
+            commands::complete::run(&db, id).await;
         }
         Command::Delete { id } => {
-            commands::delete::run(id);
+            commands::delete::run(&db, id).await;
         }
         Command::List { all } => {
-            commands::list::run(all);
+            commands::list::run(&db, all).await;
         }
         Command::Status => {
-            commands::status::run();
+            commands::status::run(&db).await;
         }
         Command::Update {
             id,
@@ -31,13 +39,13 @@ pub fn run() {
             priority,
             description,
         } => {
-            commands::update::run(id, name, priority, description);
+            commands::update::run(&db, id, name, priority, description).await;
         }
         Command::Upgrade => {
-            commands::upgrade::run();
+            commands::upgrade::run().await;
         }
         Command::View { id } => {
-            commands::view::run(id);
+            commands::view::run(&db, id).await;
         }
     }
 }

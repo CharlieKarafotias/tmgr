@@ -1,10 +1,8 @@
 use crate::commands::db::DB;
 use crate::commands::model::Task;
 
-#[tokio::main]
-pub(crate) async fn run(all: bool) {
+pub(crate) async fn run(db: &DB, all: bool) {
     // TODO: implement all part vs in progress ones
-    let db = DB::new().await;
     #[allow(clippy::needless_late_init)]
     let tasks: Vec<Task>;
     if all {

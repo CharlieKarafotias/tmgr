@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-pub(crate) fn run() {
+pub(crate) async fn run() {
     todo!("Upgrade command not yet implemented")
 }
 
