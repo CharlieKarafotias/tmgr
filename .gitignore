@@ -1,4 +1,5 @@
 /target
 /databases
+/tmgr_db
 *.db
 *.env

@@ -12,3 +12,4 @@ clap = { version = "4.5.16", features = ["derive"] }
 serde = { version = "1.0.208", features = ["derive"] }
 surrealdb = { version = "1.5.4", features = ["kv-mem", "kv-rocksdb"] }
 tokio = { version = "1.39.3", features = ["macros", "rt-multi-thread"] }
+chrono = "0.4.38"
