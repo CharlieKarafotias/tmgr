@@ -14,7 +14,7 @@ colored = "2.1.0"
 comfy-table = "7.1.1"
 directories = "5.0.1"
 dotenv = "0.15.0"
-reqwest = { version = "0.12.5", features = ["json"] }
+reqwest = { version = "0.12.7", features = ["json"] }
 rusqlite = { version = "0.32.1", features = ["chrono"] }
 rust_search = "2.1.0"
 semver = "1.0.23"
