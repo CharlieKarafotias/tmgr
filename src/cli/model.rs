@@ -22,8 +22,8 @@ pub(crate) enum Command {
     },
     /// Mark a task as complete
     Complete {
-        /// The id of the task
-        id: String,
+        /// The name of the task to update - can be partial
+        name: String,
     },
     /// Delete a task
     Delete {

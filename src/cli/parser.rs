@@ -19,7 +19,7 @@ pub async fn run() {
             priority,
             description,
         } => commands::add::run(&db, name, priority, description).await,
-        Command::Complete { id } => commands::complete::run(&db, id).await,
+        Command::Complete { name } => commands::complete::run(&db, name).await,
         Command::Delete { id } => commands::delete::run(&db, id).await,
         Command::List { all } => commands::list::run(&db, all).await,
         Command::Status => commands::status::run(&db).await,
