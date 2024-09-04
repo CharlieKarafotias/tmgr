@@ -8,7 +8,7 @@ pub(crate) async fn run(
     name: String,
     priority: TaskPriority,
     description: Option<String>,
-) {
+) -> Result<String, Box<dyn std::error::Error>> {
     let _task: Vec<Task> = db
         .client
         .create("task")
@@ -19,8 +19,7 @@ pub(crate) async fn run(
             created_at: Datetime::default(),
             completed_at: None,
         })
-        .await
-        .expect("Could not create task");
+        .await?;
 
-    println!("Task created successfully");
+    Ok("Task created successfully".to_string())
 }

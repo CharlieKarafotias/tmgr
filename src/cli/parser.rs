@@ -13,39 +13,29 @@ pub async fn run() {
         db = commands::db::DB::new().await;
     }
 
-    match input.command {
+    let res: Result<String, Box<dyn std::error::Error>> = match input.command {
         Command::Add {
             name,
             priority,
             description,
-        } => {
-            commands::add::run(&db, name, priority, description).await;
-        }
-        Command::Complete { id } => {
-            commands::complete::run(&db, id).await;
-        }
-        Command::Delete { id } => {
-            commands::delete::run(&db, id).await;
-        }
-        Command::List { all } => {
-            commands::list::run(&db, all).await;
-        }
-        Command::Status => {
-            commands::status::run(&db).await;
-        }
+        } => commands::add::run(&db, name, priority, description).await,
+        Command::Complete { id } => commands::complete::run(&db, id).await,
+        Command::Delete { id } => commands::delete::run(&db, id).await,
+        Command::List { all } => commands::list::run(&db, all).await,
+        Command::Status => commands::status::run(&db).await,
         Command::Update {
             id,
             name,
             priority,
             description,
-        } => {
-            commands::update::run(&db, id, name, priority, description).await;
-        }
-        Command::Upgrade => {
-            commands::upgrade::run().await;
-        }
-        Command::View { id } => {
-            commands::view::run(&db, id).await;
-        }
+        } => commands::update::run(&db, id, name, priority, description).await,
+        Command::Upgrade => commands::upgrade::run().await,
+        Command::View { id } => commands::view::run(&db, id).await,
+    };
+
+    if res.is_err() {
+        println!("{:?}", res);
+    } else {
+        println!("{}", res.unwrap());
     }
 }
