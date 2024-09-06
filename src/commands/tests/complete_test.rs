@@ -8,21 +8,17 @@ use crate::commands::{complete, db};
 async fn given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed() {
     let db = db::DB::new_test().await;
     let res = complete::run(&db, "test".to_string()).await;
-    assert!(res.is_ok());
-    let res_str = res.unwrap();
-    // TODO: check that response of no task updated is returned - when implemented
-    assert_eq!(
-        res_str,
-        "Successfully updated task to completed".to_string()
-    );
+    assert!(res.is_err());
+    let res_str = res.unwrap_err().to_string();
+    assert_eq!(res_str, "Task with name 'test' not found");
 }
 
 #[tokio::test]
 async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_completed() {
     let db = db::DB::new_test().await;
-    let _: Vec<Task> = db
+    let _: Option<Task> = db
         .client
-        .insert("task")
+        .insert(("task", "in progress task"))
         .content(Task {
             name: "in progress task".to_string(),
             priority: TaskPriority::High.to_string(),
@@ -33,11 +29,11 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
         .await
         .unwrap();
     let res = complete::run(&db, "in progress task".to_string()).await;
-    assert!(res.is_ok());
+    // assert!(res.is_ok());
     let res_str = res.unwrap();
     assert_eq!(
         res_str,
-        "Successfully updated task to completed".to_string()
+        "Successfully updated task 'in progress task' to completed".to_string()
     );
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
@@ -45,15 +41,13 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
     assert_ne!(res[0].completed_at, None);
 }
 
-// TODO: this test will not work now because there is no disambiguation between two tasks with the similar names
 #[tokio::test]
-#[ignore]
-async fn given_two_tasks_with_similar_names_when_completing_task_by_name_then_the_task_with_the_closest_name_should_be_completed(
+async fn given_two_tasks_with_similar_names_when_completing_task_by_name_then_the_task_with_the_exact_name_should_be_completed(
 ) {
     let db = db::DB::new_test().await;
-    let _: Vec<Task> = db
+    let _: Option<Task> = db
         .client
-        .insert("task")
+        .insert(("task", "one task"))
         .content(Task {
             name: "one task".to_string(),
             priority: TaskPriority::High.to_string(),
@@ -63,9 +57,9 @@ async fn given_two_tasks_with_similar_names_when_completing_task_by_name_then_th
         })
         .await
         .unwrap();
-    let _: Vec<Task> = db
+    let _: Option<Task> = db
         .client
-        .insert("task")
+        .insert(("task", "one more task"))
         .content(Task {
             name: "one more task".to_string(),
             priority: TaskPriority::Low.to_string(),
@@ -76,12 +70,12 @@ async fn given_two_tasks_with_similar_names_when_completing_task_by_name_then_th
         .await
         .unwrap();
 
-    let res = complete::run(&db, "one t".to_string()).await;
+    let res = complete::run(&db, "one task".to_string()).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
     assert_eq!(
         res_str,
-        "Successfully updated task to completed".to_string()
+        "Successfully updated task 'one task' to completed".to_string()
     );
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();

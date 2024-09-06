@@ -7,9 +7,11 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44dd43bd-6cfe-4b2a-ade8-e7783d1d7c7c" name="Changes" comment="adding db commands">
+    <list default="true" id="44dd43bd-6cfe-4b2a-ade8-e7783d1d7c7c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/add.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/add.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/complete.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/complete.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/commands/tests/add_test.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/tests/add_test.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/commands/tests/complete_test.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/tests/complete_test.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -17,6 +19,7 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="RsBuildProfile:test" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -53,25 +56,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Cargo.Run tmgr.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test commands::tests::list_test::given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;com.codeium.enabled&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;29-migrate-from-sqlite3-to-surrealdb-new&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
-    &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
-    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.cargo.check&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Cargo.Run tmgr.executor": "Run",
+    "Cargo.Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_auto_increment_to_next_id.executor": "Run",
+    "Cargo.Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name.executor": "Run",
+    "Cargo.Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name_field.executor": "Run",
+    "Cargo.Test commands::tests::complete_test::given_existing_tasks_when_completing_a_task_then_the_task_should_be_completed.executor": "Run",
+    "Cargo.Test commands::tests::complete_test::given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed.executor": "Run",
+    "Cargo.Test commands::tests::list_test::given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.rust.reset.selective.auto.import": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.codeium.enabled": "true",
+    "git-widget-placeholder": "29-migrate-from-sqlite3-to-surrealdb-new",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "org.rust.disableDetachedFileInspection/Users/charlie/code/rust/tmgr/src/commands/complete.rs": "true",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/commands" />
@@ -82,9 +94,10 @@
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
   </component>
-  <component name="RunManager" selected="Cargo.Test commands::tests::list_test::given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned">
-    <configuration name="Run tmgr" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="run --package tmgr --bin tmgr" />
+  <component name="RunManager" selected="Cargo.Test commands::tests::complete_test::given_existing_tasks_when_completing_a_task_then_the_task_should_be_completed">
+    <configuration name="Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_auto_increment_to_next_id" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="buildProfileId" value="test" />
+      <option name="command" value="test --package tmgr --bin tmgr commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_auto_increment_to_next_id -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -100,8 +113,59 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test commands::tests::list_test::given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package tmgr --bin tmgr commands::tests::list_test::given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned -- --exact" />
+    <configuration name="Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package tmgr --bin tmgr commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name_field" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package tmgr --bin tmgr commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name_field -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test commands::tests::complete_test::given_existing_tasks_when_completing_a_task_then_the_task_should_be_completed" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package tmgr --bin tmgr commands::tests::complete_test::given_existing_tasks_when_completing_a_task_then_the_task_should_be_completed -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test commands::tests::complete_test::given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package tmgr --bin tmgr commands::tests::complete_test::given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -119,8 +183,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Cargo.Test commands::tests::list_test::given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned" />
-        <item itemvalue="Cargo.Run tmgr" />
+        <item itemvalue="Cargo.Test commands::tests::complete_test::given_existing_tasks_when_completing_a_task_then_the_task_should_be_completed" />
+        <item itemvalue="Cargo.Test commands::tests::complete_test::given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed" />
+        <item itemvalue="Cargo.Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name" />
+        <item itemvalue="Cargo.Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name_field" />
+        <item itemvalue="Cargo.Test commands::tests::add_test::given_the_add_command_when_adding_a_task_then_the_id_should_auto_increment_to_next_id" />
       </list>
     </recent_temporary>
   </component>
@@ -144,7 +211,11 @@
       <workItem from="1724758142939" duration="2050000" />
       <workItem from="1725448388047" duration="123000" />
       <workItem from="1725448518797" duration="3677000" />
-      <workItem from="1725461979438" duration="391000" />
+      <workItem from="1725461979438" duration="1129000" />
+      <workItem from="1725537345954" duration="1168000" />
+      <workItem from="1725565108758" duration="64000" />
+      <workItem from="1725565191030" duration="365000" />
+      <workItem from="1725565562196" duration="5425000" />
     </task>
     <servers />
   </component>
@@ -154,5 +225,16 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="adding db commands" />
     <option name="LAST_COMMIT_MESSAGE" value="adding db commands" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/commands/tests/complete_test.rs</url>
+          <line>7</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
