@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use surrealdb::engine::any::connect;
 use surrealdb::{engine::any::Any, Surreal};
 
@@ -7,10 +8,9 @@ pub(crate) struct DB {
 
 impl DB {
     pub(crate) async fn new() -> Self {
-        // if env has testing flag, use memory db else use file db
-        let client = connect("file://tmgr_db")
+        let client = connect(format!("file://{}", Self::get_db_file_path().display()))
             .await
-            .expect("Could not connect to file database");
+            .expect("Could not create/connect to file database");
         client
             .use_ns("tmgr_ns")
             .use_db("tmgr_db")
@@ -29,5 +29,13 @@ impl DB {
             .await
             .expect("Could not set namespace and database");
         Self { client }
+    }
+
+    pub(crate) fn get_db_file_path() -> PathBuf {
+        let exe_path = std::env::current_exe().expect("Could not get executable path");
+        let dir_path = exe_path
+            .parent()
+            .expect("Could not get executable directory");
+        dir_path.join("tmgr_db")
     }
 }
