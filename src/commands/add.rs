@@ -19,7 +19,8 @@ pub(crate) async fn run(
             created_at: Datetime::default(),
             completed_at: None,
         })
-        .await?;
+        .await
+        .map_err(|_| format!("Failed to create task '{name}'."))?;
 
     Ok(format!("Task '{name}' created successfully"))
 }
