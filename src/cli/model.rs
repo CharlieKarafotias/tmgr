@@ -22,13 +22,13 @@ pub(crate) enum Command {
     },
     /// Mark a task as complete
     Complete {
-        /// The name of the task to update - can be partial
+        /// The name of the task to update
         name: String,
     },
     /// Delete a task
     Delete {
-        /// The id of the task
-        id: String,
+        /// The name of the task to delete
+        name: String,
     },
     /// List all tasks. By default, this will only list in-progress tasks.
     List {
@@ -40,8 +40,8 @@ pub(crate) enum Command {
     Status,
     /// Update a task
     Update {
-        /// The id of the task
-        id: String,
+        /// The current name of the task to update
+        current_name: String,
         #[arg(short, long)]
         /// A short description of the task
         name: Option<String>,

@@ -3769,6 +3769,7 @@ version = "1.0.0"
 dependencies = [
  "clap",
  "serde",
+ "serde_json",
  "surrealdb",
  "tokio",
 ]

@@ -20,15 +20,15 @@ pub async fn run() {
             description,
         } => commands::add::run(&db, name, priority, description).await,
         Command::Complete { name } => commands::complete::run(&db, name).await,
-        Command::Delete { id } => commands::delete::run(&db, id).await,
+        Command::Delete { name } => commands::delete::run(&db, name).await,
         Command::List { all } => commands::list::run(&db, all).await,
         Command::Status => commands::status::run(&db).await,
         Command::Update {
-            id,
+            current_name,
             name,
             priority,
             description,
-        } => commands::update::run(&db, id, name, priority, description).await,
+        } => commands::update::run(&db, current_name, name, priority, description).await,
         Command::Upgrade => commands::upgrade::run().await,
         Command::View { id } => commands::view::run(&db, id).await,
     };
