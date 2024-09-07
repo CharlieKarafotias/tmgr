@@ -7,4 +7,5 @@ mod delete_test;
 mod list_test;
 mod status_test;
 mod update_test;
+mod upgrade_test;
 mod view_test;
