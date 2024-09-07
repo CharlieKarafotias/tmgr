@@ -30,7 +30,7 @@ pub async fn run() {
             description,
         } => commands::update::run(&db, current_name, name, priority, description).await,
         Command::Upgrade => commands::upgrade::run().await,
-        Command::View { id } => commands::view::run(&db, id).await,
+        Command::View { name } => commands::view::run(&db, name).await,
     };
 
     if res.is_err() {

@@ -56,8 +56,8 @@ pub(crate) enum Command {
     Upgrade,
     /// View a specific task
     View {
-        /// The id of the task
-        id: String,
+        /// The name of the task to view
+        name: String,
     },
 }
 

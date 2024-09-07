@@ -6,3 +6,4 @@ mod delete_test;
 #[cfg(test)]
 mod list_test;
 mod update_test;
+mod view_test;
