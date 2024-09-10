@@ -31,7 +31,7 @@ pub(crate) async fn run() -> Result<String, Box<dyn std::error::Error>> {
     }
 }
 
-async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
+pub(crate) async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
     // get latest release from github
     let client = reqwest::Client::new();
     let res = client
@@ -79,7 +79,7 @@ async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
     }
 }
 
-fn latest_release_url() -> String {
+pub(crate) fn latest_release_url() -> String {
     let repo_link = env!("CARGO_PKG_REPOSITORY");
     let url: Vec<&str> = repo_link.split('/').rev().collect();
     let repo = url[0];
@@ -87,7 +87,7 @@ fn latest_release_url() -> String {
     format!("https://api.github.com/repos/{github_account}/{repo}/releases/latest",)
 }
 
-async fn download_binary_to_downloads_folder(
+pub(crate) async fn download_binary_to_downloads_folder(
     binary_download_url: String,
 ) -> Result<PathBuf, UpdateError> {
     // get download directory of the current system
@@ -138,14 +138,14 @@ async fn download_binary_to_downloads_folder(
     Ok(full_path)
 }
 
-fn delete_existing_binary(existing_binary_path: &PathBuf) -> Result<(), UpdateError> {
+pub(crate) fn delete_existing_binary(existing_binary_path: &PathBuf) -> Result<(), UpdateError> {
     fs::remove_file(existing_binary_path).map_err(|e| UpdateError {
         message: e.to_string(),
         kind: UpdateErrorKind::UnableToDeleteExistingBinary,
     })
 }
 
-fn move_new_binary(
+pub(crate) fn move_new_binary(
     existing_binary_path: PathBuf,
     new_binary_path: PathBuf,
 ) -> Result<(), UpdateError> {
@@ -155,7 +155,7 @@ fn move_new_binary(
     })
 }
 
-struct UpdateInfo {
+pub(crate) struct UpdateInfo {
     binary_download_url: String,
     latest_version: String,
     needs_update: bool,
