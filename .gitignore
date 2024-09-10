@@ -3,3 +3,5 @@
 /tmgr_db
 *.db
 *.env
+/.idea
+/.vscode
