@@ -1,7 +1,8 @@
-mod parser;
-mod utils;
-use parser::run_cli;
+mod cli;
+mod commands;
+
+use cli::parser;
 
 fn main() {
-    run_cli()
+    parser::run();
 }

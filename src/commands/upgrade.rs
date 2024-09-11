@@ -1,65 +1,41 @@
-mod request_models;
-use std::{
-    fmt,
-    fs::{self, File, Permissions},
-    io::Write,
-    os::unix::fs::PermissionsExt,
-    path::PathBuf,
-};
-
 use directories::UserDirs;
-use request_models::GithubReleaseResponse;
 use reqwest::header::USER_AGENT;
-use rust_search::{FilterExt, SearchBuilder};
 use semver::Version;
+use serde::Deserialize;
+use std::fs::{File, Permissions};
+use std::io::Write;
+use std::os::unix::fs::PermissionsExt;
+use std::path::PathBuf;
+use std::{env::current_exe, fmt, fs};
 
-use crate::parser::state_mgr::State;
-
-#[derive(Debug)]
-struct UpdateInfo {
-    needs_update: bool,
-    binary_download_url: String,
-}
-
-/// Updates the current executable to the latest version
-pub fn update(state: &State) -> Result<(), UpdateError> {
+pub(crate) async fn run() -> Result<String, Box<dyn std::error::Error>> {
     println!("Checking repository for updates...");
-    let UpdateInfo {
-        needs_update,
-        binary_download_url,
-    } = check_for_updates()?;
+    let update_info = check_for_updates().await.map_err(|e| e.to_string())?;
 
-    if needs_update {
-        let new_binary_download_path = download_binary_to_downloads_folder(binary_download_url)?;
-        let path_to_existing_executable = find_existing_executable(state)?;
-        delete_existing_binary(path_to_existing_executable.as_str())?;
-        // update downloaded binary name from tmgr_new to tmgr
-        let mut new_binary_path = PathBuf::from(path_to_existing_executable);
-        new_binary_path.set_file_name("tmgr");
+    if update_info.needs_update {
+        let new_binary_download_path =
+            download_binary_to_downloads_folder(update_info.binary_download_url)
+                .await
+                .map_err(|e| e.to_string())?;
+        let path_to_existing_executable = current_exe()?;
+        delete_existing_binary(&path_to_existing_executable).map_err(|e| e.to_string())?;
         // move new binary from download folder to bin of current executable
-        move_new_binary(new_binary_download_path, new_binary_path)?;
-        println!("Update complete");
+        move_new_binary(new_binary_download_path, path_to_existing_executable)
+            .map_err(|e| e.to_string())?;
+        Ok(format!(
+            "Update complete: v{} -> v{}",
+            update_info.current_version, update_info.latest_version
+        ))
     } else {
-        println!("Already on latest version");
+        Ok("Already on latest version".to_string())
     }
-    Ok(())
 }
 
-#[tokio::main]
-async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
-    let repo_link = env!("CARGO_PKG_REPOSITORY");
-    let url: Vec<&str> = repo_link.split('/').rev().collect();
-    let repo = url[0];
-    let github_account = url[1];
-    let github_latest_release_url = format!(
-        "https://api.github.com/repos/{}/{}/releases/latest",
-        github_account, repo
-    );
-
+pub(crate) async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
     // get latest release from github
     let client = reqwest::Client::new();
     let res = client
-        .get(github_latest_release_url)
+        .get(latest_release_url())
         .header(USER_AGENT, "tmgr-rust")
         .send()
         .await
@@ -67,8 +43,6 @@ async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
             message: e.to_string(),
             kind: UpdateErrorKind::RepoCheckFail,
         })?;
-
-    // convert response to struct
     let latest_release = res
         .json::<GithubReleaseResponse>()
         .await
@@ -92,8 +66,10 @@ async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
 
     if !latest_release.assets.is_empty() {
         Ok(UpdateInfo {
+            current_version: current_version.to_string(),
             needs_update: latest_version_github > current_version,
             binary_download_url: latest_release.assets[0].browser_download_url.clone(),
+            latest_version: latest_version_github.to_string(),
         })
     } else {
         Err(UpdateError {
@@ -103,8 +79,15 @@ async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
     }
 }
 
-#[tokio::main]
-async fn download_binary_to_downloads_folder(
+pub(crate) fn latest_release_url() -> String {
+    let repo_link = env!("CARGO_PKG_REPOSITORY");
+    let url: Vec<&str> = repo_link.split('/').rev().collect();
+    let repo = url[0];
+    let github_account = url[1];
+    format!("https://api.github.com/repos/{github_account}/{repo}/releases/latest",)
+}
+
+pub(crate) async fn download_binary_to_downloads_folder(
     binary_download_url: String,
 ) -> Result<PathBuf, UpdateError> {
     // get download directory of the current system
@@ -155,40 +138,14 @@ async fn download_binary_to_downloads_folder(
     Ok(full_path)
 }
 
-fn find_existing_executable(state: &State) -> Result<String, UpdateError> {
-    // Path to existing state manager (stored at same place as executable)
-    let mut existing_executable_path = PathBuf::from(state.get_path());
-    // Remove the file name of the config to get the path to the directory
-    existing_executable_path.pop();
-    // Search for tmgr in the same directory
-    let search: Vec<String> = SearchBuilder::default()
-        .search_input("tmgr")
-        .location(&existing_executable_path)
-        .custom_filter(|dir| dir.metadata().unwrap().is_file())
-        .strict()
-        .build()
-        .collect();
-    if !search.is_empty() {
-        Ok(search[0].clone())
-    } else {
-        Err(UpdateError {
-            message: format!(
-                "No existing binary found in {}",
-                existing_executable_path.display()
-            ),
-            kind: UpdateErrorKind::NoExistingBinary,
-        })
-    }
-}
-
-fn delete_existing_binary(existing_binary_path: &str) -> Result<(), UpdateError> {
+pub(crate) fn delete_existing_binary(existing_binary_path: &PathBuf) -> Result<(), UpdateError> {
     fs::remove_file(existing_binary_path).map_err(|e| UpdateError {
         message: e.to_string(),
         kind: UpdateErrorKind::UnableToDeleteExistingBinary,
     })
 }
 
-fn move_new_binary(
+pub(crate) fn move_new_binary(
     existing_binary_path: PathBuf,
     new_binary_path: PathBuf,
 ) -> Result<(), UpdateError> {
@@ -198,11 +155,11 @@ fn move_new_binary(
     })
 }
 
-// --- Update Errors ---
-#[derive(Debug)]
-pub struct UpdateError {
-    kind: UpdateErrorKind,
-    message: String,
+pub(crate) struct UpdateInfo {
+    binary_download_url: String,
+    latest_version: String,
+    needs_update: bool,
+    current_version: String,
 }
 
 #[derive(Debug)]
@@ -216,9 +173,15 @@ enum UpdateErrorKind {
     BinaryDownloadFail,
     CorruptedBinaryDownload,
     CreateFileFail,
-    NoExistingBinary,
     UnableToDeleteExistingBinary,
     UnableToMoveBinary,
+}
+
+// --- Update Errors ---
+#[derive(Debug)]
+pub struct UpdateError {
+    kind: UpdateErrorKind,
+    message: String,
 }
 
 impl fmt::Display for UpdateErrorKind {
@@ -246,7 +209,6 @@ impl fmt::Display for UpdateErrorKind {
             UpdateErrorKind::BinaryDownloadFail => write!(f, "unable to retrieve fetch tmgr the latest executable from GitHub repo, try again later"),
             UpdateErrorKind::CorruptedBinaryDownload => write!(f, "unable to convert downloaded executable to bytes"),
             UpdateErrorKind::CreateFileFail => write!(f, "unable to create file in downloads folder"),
-            UpdateErrorKind::NoExistingBinary => write!(f, "unable to find existing executable on system"),
             UpdateErrorKind::UnableToDeleteExistingBinary => write!(f, "unable to delete existing executable"),
             UpdateErrorKind::UnableToMoveBinary => write!(f, "unable to move downloaded executable to bin of current executable"),
         }
@@ -257,4 +219,20 @@ impl fmt::Display for UpdateError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} (update error: {})", self.message, self.kind)
     }
+}
+
+// -- Request Models --
+#[derive(Default, Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct GithubReleaseResponse {
+    #[serde(rename = "tag_name")]
+    tag_name: String,
+    assets: Vec<Asset>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Asset {
+    #[serde(rename = "browser_download_url")]
+    browser_download_url: String,
 }

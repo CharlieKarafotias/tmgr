@@ -1,6 +1,6 @@
 [package]
 name = "tmgr"
-version = "0.4.4"
+version = "1.0.0"
 edition = "2021"
 authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 repository = "https://github.com/charliekarafotias/tmgr"
@@ -8,22 +8,14 @@ repository = "https://github.com/charliekarafotias/tmgr"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.38"
-clap = { version = "4.5.16", features = ["derive"] }
-colored = "2.1.0"
-comfy-table = "7.1.1"
-directories = "5.0.1"
-dotenv = "0.15.0"
-reqwest = { version = "0.12.5", features = ["json"] }
-rusqlite = { version = "0.32.1", features = ["chrono"] }
-rust_search = "2.1.0"
+clap = { version = "4.5.17", features = ["derive"] }
+serde = { version = "1.0.210", features = ["derive"] }
+surrealdb = { version = "1.5.4", features = ["kv-mem", "kv-rocksdb"] }
+tokio = { version = "1.40.0", features = ["macros", "rt-multi-thread"] }
+serde_json = "1.0.128"
+reqwest = { version = "0.12.7", features = ["json"] }
 semver = "1.0.23"
-serde = { version = "1.0.208", features = ["derive"] }
-serde_json = "1.0.125"
-tempdir = "0.3.7"
-tempfile = "3.12.0"
-tokio = { version = "1.39.3", features = ["full"] }
+directories = "5.0.1"
 
 [dev-dependencies]
-assert_cmd = "2.0.16"
-predicates = "3.1.2"
+tempfile = "3.12.0"
