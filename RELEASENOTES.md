@@ -8,7 +8,10 @@
     - Removal of `init` command
     - Removal of `todo` command. These commands were refactored to top level commands.
 - Addition of `view` command
-- Addition of `reopen` command
+
+# 0.4.4
+
+- Dependency updates
 
 # 0.4.3
 
