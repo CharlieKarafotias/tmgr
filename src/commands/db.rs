@@ -8,9 +8,12 @@ pub(crate) struct DB {
 
 impl DB {
     pub(crate) async fn new() -> Self {
-        let client = connect(format!("file://{}", Self::get_db_file_path().display()))
-            .await
-            .expect("Could not create/connect to file database");
+        let client = connect(format!(
+            "surrealkv://{}",
+            Self::get_db_file_path().display()
+        ))
+        .await
+        .expect("Could not create/connect to file database");
         client
             .use_ns("tmgr_ns")
             .use_db("tmgr_db")
