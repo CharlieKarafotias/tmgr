@@ -9,10 +9,11 @@ pub(crate) async fn run(
     priority: TaskPriority,
     description: Option<String>,
 ) -> Result<String, Box<dyn std::error::Error>> {
-    let _task: Option<Task> = db
+    let task: Option<Task> = db
         .client
-        .create(("task", &name))
+        .create("task")
         .content(Task {
+            id: None,
             name: name.clone(),
             priority: priority.to_string(),
             description,
@@ -22,5 +23,10 @@ pub(crate) async fn run(
         .await
         .map_err(|_| format!("Failed to create task '{name}'."))?;
 
-    Ok(format!("Task '{name}' created successfully"))
+    if let Some(task) = task {
+        let id = task.id.unwrap_or_default();
+        Ok(format!("Task '{id}' created successfully"))
+    } else {
+        Err("Failed to create task".to_string().into())
+    }
 }

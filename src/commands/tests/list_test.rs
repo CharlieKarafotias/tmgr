@@ -28,6 +28,7 @@ async fn given_existing_tasks_when_listing_all_tasks_then_all_tasks_should_be_re
         .client
         .insert("task")
         .content(Task {
+            id: None,
             name: "test".to_string(),
             priority: TaskPriority::High.to_string(),
             description: None,
@@ -51,6 +52,7 @@ async fn given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progre
         .client
         .insert("task")
         .content(Task {
+            id: None,
             name: "in progress task".to_string(),
             priority: TaskPriority::High.to_string(),
             description: None,
@@ -63,6 +65,7 @@ async fn given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progre
         .client
         .insert("task")
         .content(Task {
+            id: None,
             name: "Completed task".to_string(),
             priority: TaskPriority::High.to_string(),
             description: None,

@@ -1,5 +1,10 @@
 # Release Notes
 
+# 1.1.0
+
+- Updated to use version 2 of SurrealDB
+- Improvement made to CLI interactions, tasks are now based on ID instead of name
+
 # 1.0.0
 
 - Migration from SqLite3 to SurrealDB
