@@ -3,7 +3,6 @@ use crate::commands::model::Task;
 use crate::commands::{db, view};
 
 #[tokio::test]
-#[ignore]
 async fn given_no_existing_task_when_viewing_a_task_then_error_should_be_returned() {
     let db = db::DB::new_test().await;
     let res = view::run(&db, "randomID".to_string()).await;
@@ -13,7 +12,6 @@ async fn given_no_existing_task_when_viewing_a_task_then_error_should_be_returne
 }
 
 #[tokio::test]
-#[ignore]
 async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_returned() {
     let db = db::DB::new_test().await;
     let _: Vec<Task> = db
@@ -35,6 +33,44 @@ async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_return
     assert_eq!(
         res_str,
         "Task starting with id 'DefinitelyNotTheID' was not found"
+    );
+}
+
+#[tokio::test]
+async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_returned() {
+    let db = db::DB::new_test().await;
+    let _: Vec<Task> = db
+        .client
+        .insert("task")
+        .content(Task {
+            id: None,
+            name: "test".to_string(),
+            priority: TaskPriority::Medium.to_string(),
+            description: Some("some description".to_string()),
+            created_at: Default::default(),
+            completed_at: None,
+        })
+        .await
+        .unwrap();
+    let _: Vec<Task> = db
+        .client
+        .insert("task")
+        .content(Task {
+            id: None,
+            name: "test2".to_string(),
+            priority: TaskPriority::Medium.to_string(),
+            description: Some("some description".to_string()),
+            created_at: Default::default(),
+            completed_at: None,
+        })
+        .await
+        .unwrap();
+    let res = view::run(&db, "".to_string()).await;
+    assert!(res.is_err());
+    let res_str = res.unwrap_err().to_string();
+    assert_eq!(
+        res_str,
+        "Multiple tasks found, provide more characters of the id"
     );
 }
 
