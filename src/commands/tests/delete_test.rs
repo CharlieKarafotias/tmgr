@@ -1,4 +1,3 @@
-// #![allow(unused_imports)]
 use crate::cli::model::TaskPriority;
 use crate::commands::{db, delete, model::Task};
 
