@@ -22,6 +22,7 @@ async fn given_existing_tasks_when_running_status_command_then_tasks_should_be_r
         .client
         .insert("task")
         .content(Task {
+            id: None,
             name: "test".to_string(),
             priority: TaskPriority::Medium.to_string(),
             description: None,
@@ -46,6 +47,7 @@ async fn given_a_completed_task_when_running_status_command_then_the_task_should
         .client
         .insert("task")
         .content(Task {
+            id: None,
             name: "test".to_string(),
             priority: TaskPriority::Medium.to_string(),
             description: None,

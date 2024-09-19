@@ -55,28 +55,5 @@ async fn given_the_add_command_when_adding_a_new_task_then_the_command_should_re
     let res = add::run(&db, "test".to_string(), TaskPriority::Medium, None).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert_eq!(res_str, "Task 'test' created successfully".to_string());
-}
-
-#[tokio::test]
-async fn given_the_add_command_when_adding_a_task_then_the_id_should_be_the_name() {
-    let db = db::DB::new_test().await;
-    let res = add::run(&db, "test".to_string(), TaskPriority::Medium, None).await;
-    assert!(res.is_ok());
-    let res_str = res.unwrap();
-    assert_eq!(res_str, "Task 'test' created successfully".to_string());
-    let db_res: Option<Task> = db.client.select(("task", "test")).await.unwrap();
-    assert!(db_res.is_some());
-    assert_eq!(db_res.iter().len(), 1);
-}
-
-#[tokio::test]
-async fn given_a_task_already_exists_in_database_when_adding_a_task_then_error_should_be_returned()
-{
-    let db = db::DB::new_test().await;
-    let _ = add::run(&db, "test".to_string(), TaskPriority::Medium, None).await;
-    let res = add::run(&db, "test".to_string(), TaskPriority::Medium, None).await;
-    assert!(res.is_err());
-    let res_str = res.unwrap_err().to_string();
-    assert_eq!(res_str, "Failed to create task 'test'.".to_string());
+    assert!(res_str.contains("created successfully"));
 }

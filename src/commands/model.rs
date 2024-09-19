@@ -1,7 +1,20 @@
-use surrealdb::sql::Datetime;
+use serde::{Deserialize, Deserializer, Serialize};
+use surrealdb::sql::{Datetime, Thing};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+// defining custom deserializer as surrealdb doesn't support it natively
+// see https://github.com/orgs/surrealdb/discussions/2686
+fn thing_to_string<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let t = Thing::deserialize(deserializer)?;
+    Ok(Some(t.to_raw()))
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub(crate) struct Task {
+    #[serde(deserialize_with = "thing_to_string")]
+    pub(crate) id: Option<String>,
     pub(crate) name: String,
     pub(crate) priority: String,
     pub(crate) description: Option<String>,

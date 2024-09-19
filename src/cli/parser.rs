@@ -19,18 +19,18 @@ pub async fn run() {
             priority,
             description,
         } => commands::add::run(&db, name, priority, description).await,
-        Command::Complete { name } => commands::complete::run(&db, name).await,
-        Command::Delete { name } => commands::delete::run(&db, name).await,
+        Command::Complete { id } => commands::complete::run(&db, id).await,
+        Command::Delete { id } => commands::delete::run(&db, id).await,
         Command::List { all } => commands::list::run(&db, all).await,
         Command::Status => commands::status::run(&db).await,
         Command::Update {
-            current_name,
+            id,
             name,
             priority,
             description,
-        } => commands::update::run(&db, current_name, name, priority, description).await,
+        } => commands::update::run(&db, id, name, priority, description).await,
         Command::Upgrade => commands::upgrade::run().await,
-        Command::View { name } => commands::view::run(&db, name).await,
+        Command::View { id } => commands::view::run(&db, id).await,
     };
 
     if res.is_err() {

@@ -1,5 +1,10 @@
 # Release Notes
 
+# 2.0.0
+
+- Updated to use version 2 of SurrealDB
+- Breaking change: Tasks are now based off ID instead of name. This improves the user experience with CLI interactions.
+
 # 1.0.0
 
 - Migration from SqLite3 to SurrealDB
@@ -22,13 +27,13 @@
 
 # 0.4.2
 
-- Improved the error handling experience by standardizing approach to errors in TMGR
+- Improved the error handling experience by standardizing approach to errors in tmgr
 - Refactored `init` command.
 - Removed old error pattern using Box
 
 # 0.4.1
 
-- Bug fix for new `update` command. There was an issue with the request model not matching api response from Github
+- Bug fix for new `update` command. There was an issue with the request model not matching api response from GitHub
 
 # 0.4.0
 
