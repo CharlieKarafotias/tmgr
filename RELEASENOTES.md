@@ -9,6 +9,7 @@
     - `1` for general errors
     - `2` for CLI usage errors
 - `clap` dependency bumped to v4.5.18
+- Updated readme
 
 # 2.0.0
 
