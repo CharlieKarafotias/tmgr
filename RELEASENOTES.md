@@ -1,5 +1,16 @@
 # Release Notes
 
+# 2.1.0
+
+- Improved result handling experience by standardizing approach to errors in `tmgr`
+- Fixed issue where commands were printing results where String was derived from `Debug` trait. [See here](https://github.com/CharlieKarafotias/tmgr/issues/73#issuecomment-2365190468) for details.
+- Fixed exit codes for project:
+    - `0` for success
+    - `1` for general errors
+    - `2` for CLI usage errors
+- `clap` dependency bumped to v4.5.18
+- Updated readme
+
 # 2.0.0
 
 - Updated to use version 2 of SurrealDB

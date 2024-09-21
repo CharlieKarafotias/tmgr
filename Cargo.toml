@@ -1,6 +1,6 @@
 [package]
 name = "tmgr"
-version = "2.0.0"
+version = "2.1.0"
 edition = "2021"
 authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 repository = "https://github.com/charliekarafotias/tmgr"
@@ -8,7 +8,7 @@ repository = "https://github.com/charliekarafotias/tmgr"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4.5.17", features = ["derive"] }
+clap = { version = "4.5.18", features = ["derive"] }
 serde = { version = "1.0.210", features = ["derive"] }
 surrealdb = { version = "2.0.1", features = ["kv-mem", "kv-surrealkv"] }
 tokio = { version = "1.40.0", features = ["macros", "rt-multi-thread"] }
@@ -16,6 +16,7 @@ serde_json = "1.0.128"
 reqwest = { version = "0.12.7", features = ["json"] }
 semver = "1.0.23"
 directories = "5.0.1"
+colored = "2.1.0"
 
 [dev-dependencies]
 tempfile = "3.12.0"

@@ -16,8 +16,8 @@ pub(crate) async fn run(db: &DB, all: bool) -> Result<String, Box<dyn std::error
         .into_iter()
         .map(|t| {
             format!(
-                "ID: {:?}: {} - {} ({})",
-                t.id,
+                "ID: {}: {} - {} ({})",
+                t.id.unwrap_or_else(|| "Unable to determine ID".to_string()),
                 t.name,
                 t.description.unwrap_or_default(),
                 t.priority
