@@ -1,17 +1,16 @@
 use crate::cli::model::{Cli, Command};
+use crate::cli::result_handler::handle_result;
 use crate::commands;
 use clap::Parser;
 
 #[tokio::main]
-pub async fn run() {
+pub async fn run() -> i32 {
     let input = Cli::parse();
-    #[allow(clippy::needless_late_init)]
-    let db: commands::db::DB;
-    if cfg!(test) {
-        db = commands::db::DB::new_test().await;
+    let db = if cfg!(test) {
+        commands::db::DB::new_test().await
     } else {
-        db = commands::db::DB::new().await;
-    }
+        commands::db::DB::new().await
+    };
 
     let res: Result<String, Box<dyn std::error::Error>> = match input.command {
         Command::Add {
@@ -33,9 +32,7 @@ pub async fn run() {
         Command::View { id } => commands::view::run(&db, id).await,
     };
 
-    if res.is_err() {
-        println!("{:?}", res);
-    } else {
-        println!("{}", res.unwrap());
-    }
+    let result = handle_result(res).await;
+    println!("{}", result.result_string);
+    result.exit_code
 }
