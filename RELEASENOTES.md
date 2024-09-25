@@ -1,5 +1,9 @@
 # Release Notes
 
+# 2.1.1
+
+- The `list` and `view` commands now utilize ascii_table crate for output. This improves readability.
+
 # 2.1.0
 
 - Improved result handling experience by standardizing approach to errors in `tmgr`

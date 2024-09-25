@@ -1,28 +1,39 @@
 use crate::commands::db::DB;
 use crate::commands::model::Task;
+use comfy_table::Table;
 
 pub(crate) async fn run(db: &DB, all: bool) -> Result<String, Box<dyn std::error::Error>> {
-    #[allow(clippy::needless_late_init)]
-    let tasks: Vec<Task>;
-    if all {
-        tasks = db.client.select("task").await?;
+    let tasks: Vec<Task> = if all {
+        db.client.select("task").await?
     } else {
         let query = "SELECT * FROM task WHERE completed_at IS None";
-        tasks = db.client.query(query).await?.take(0).unwrap();
+        db.client.query(query).await?.take(0).unwrap()
     };
 
-    // TODO: add table implementation here instead of this
-    Ok(tasks
-        .into_iter()
-        .map(|t| {
-            format!(
-                "ID: {}: {} - {} ({})",
-                t.id.unwrap_or_else(|| "Unable to determine ID".to_string()),
-                t.name,
-                t.description.unwrap_or_default(),
-                t.priority
-            )
-        })
-        .collect::<Vec<String>>()
-        .join("\n"))
+    let mut table = Table::new();
+    table
+        .set_content_arrangement(comfy_table::ContentArrangement::Dynamic)
+        .set_header(vec![
+            "id",
+            "name",
+            "priority",
+            "description",
+            "created_at",
+            "completed_at",
+        ]);
+
+    for t in tasks {
+        table.add_row(vec![
+            &t.id.unwrap_or("Unable to determine ID".to_string()),
+            &t.name,
+            &t.priority,
+            &t.description.unwrap_or_default(),
+            &t.created_at.to_string(),
+            &t.completed_at
+                .map(|s| s.to_string())
+                .unwrap_or("In progress".to_string()),
+        ]);
+    }
+
+    Ok(table.to_string())
 }

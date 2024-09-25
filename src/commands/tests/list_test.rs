@@ -9,7 +9,7 @@ async fn given_no_existing_tasks_when_listing_all_tasks_then_no_tasks_should_be_
     let res = list::run(&db, true).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert!(res_str.is_empty());
+    assert!(!res_str.contains("task:"));
 }
 
 #[tokio::test]
@@ -18,7 +18,7 @@ async fn given_no_existing_tasks_when_listing_in_progress_tasks_then_no_tasks_sh
     let res = list::run(&db, false).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert!(res_str.is_empty());
+    assert!(!res_str.contains("task:"));
 }
 
 #[tokio::test]
