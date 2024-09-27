@@ -13,3 +13,20 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+-   repo: local
+    hooks:
+    -   id: cargo-build-release
+        name: cargo-build-release
+        stages: [post-merge]
+        entry: cargo build --release
+        language: system
+        types: [rust]
+        pass_filenames: false
+        always_run: true
+    -   id: github-release
+        name: github-release
+        stages: [post-merge]
+        entry: gh release create "v$(cargo run -- -V | cut -d ' ' -f 2)" ./target/release/tmgr --latest --generate-notes
+        language: system
+        pass_filenames: false
+        always_run: true

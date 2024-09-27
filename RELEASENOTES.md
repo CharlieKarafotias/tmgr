@@ -1,5 +1,10 @@
 # Release Notes
 
+# 2.1.2
+
+- Bumped `surrealdb` dependency from `2.0.1` to `2.0.2`
+- Added pre-commit hook for automating release
+
 # 2.1.1
 
 - The `list` and `view` commands now utilize ascii_table crate for output. This improves readability.

@@ -53,6 +53,14 @@ If you wish to change the source code, you can follow the steps below:
    ensure [Pre-commit](https://pre-commit.com/#install) is installed on your computer. This project utilizes pre-commit
    to ensure consistency throughout commits.
 
+### Release a change
+
+If you wish to release a new version of `tmgr`, follow the steps below:
+1. Ensure [Pre-commit](https://pre-commit.com/#install) is installed on your computer
+2. Open a pull request on the `tmgr` repository
+3. Review the PR and merge to `main` branch locally 
+4. When the merge occurs locally, the pre-commit script will run. This runs `cargo build -r && gh release create`
+
 ## CLI Commands
 
 `tmgr` has the following commands:
