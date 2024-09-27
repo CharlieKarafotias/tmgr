@@ -22,6 +22,7 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+        verbose: true
         always_run: true
     -   id: github-release
         name: github-release
@@ -29,4 +30,5 @@ repos:
         entry: gh release create "v$(cargo run -- -V | cut -d ' ' -f 2)" ./target/release/tmgr --latest --generate-notes
         language: system
         pass_filenames: false
+        verbose: true
         always_run: true
