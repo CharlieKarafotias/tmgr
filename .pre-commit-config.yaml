@@ -27,7 +27,7 @@ repos:
     -   id: github-release
         name: github-release
         stages: [post-merge]
-        entry: version=$(./target/release/tmgr -V | cut -d ' ' -f 2) && gh release create v$version ./target/release/tmgr --latest --generate-notes
+        entry: sh gh-release-script.sh
         language: system
         pass_filenames: false
         verbose: true
