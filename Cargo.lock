@@ -2766,9 +2766,9 @@ dependencies = [
 
 [[package]]
 name = "reblessive"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "568fde39e6aec674be99c9dd38b4c79040faf31038bd5a41ab1908db00c2319b"
+checksum = "1d4f118ca848dfd632a8c0883f9aacd6b58da548eb0629a78cafee3d330938da"
 
 [[package]]
 name = "redox_syscall"
@@ -3584,9 +3584,9 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "surrealdb"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39763f42366823f524ded4e423420fe990352a18665f00151521ea49f590d33e"
+checksum = "d96e77fb57ae0883b520410cf3892b8f7a66cc59ed2e1d4e22393f2017f51d07"
 dependencies = [
  "arrayvec",
  "async-channel 1.9.0",
@@ -3625,9 +3625,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-core"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12d8339a5d2968dedee86705482becc6a6181a07cc30ed2e674526a81bd7389e"
+checksum = "0e17b65d1ccc533b44774a567f4bca122347cc57a13c41efb2d44bf316cbd7e4"
 dependencies = [
  "addr",
  "ahash 0.8.11",
@@ -3721,9 +3721,9 @@ dependencies = [
 
 [[package]]
 name = "surrealkv"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40ac63abeb621f728a556d63004756b70ff6dd9b9805c4d8e2e26c16bbed6097"
+checksum = "f7d5229be1d8f2500842c02549665735ae3cf6265ba5afd0eab44fae7397e1b4"
 dependencies = [
  "ahash 0.8.11",
  "async-channel 2.1.1",
@@ -4268,12 +4268,9 @@ dependencies = [
 
 [[package]]
 name = "vart"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e19cf5555815b1ebc839ceb17face450eb0346e09c0acc6ad0e3097ec49dcad"
-dependencies = [
- "hashbrown 0.14.5",
-]
+checksum = "dd6bd87feca9f16f8ad061a454246178acd32881d188262ec377d4e170d63503"
 
 [[package]]
 name = "vcpkg"
