@@ -1,5 +1,11 @@
 # Release Notes
 
+# 2.1.3
+
+- Addressed open issues reported by GitHub vulnerability scanner
+- Bumped `surrealdb` dependency from `2.0.2` to `2.0.4`
+- Bumped `clap` dependency from `4.5.18` to `4.5.20`
+- Bumped `reqwest` dependency from `0.12.7` to `0.12.8`
 # 2.1.2
 
 - Bumped `surrealdb` dependency from `2.0.1` to `2.0.2`
