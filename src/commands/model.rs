@@ -1,4 +1,5 @@
 use serde::{Deserialize, Deserializer, Serialize};
+use std::path::{Path, PathBuf};
 use surrealdb::sql::{Datetime, Thing};
 
 // defining custom deserializer as surrealdb doesn't support it natively
@@ -18,6 +19,7 @@ pub(crate) struct Task {
     pub(crate) name: String,
     pub(crate) priority: String,
     pub(crate) description: Option<String>,
+    pub(crate) work_note: Option<WorkNote>,
     pub(crate) created_at: Datetime,
     pub(crate) completed_at: Option<Datetime>,
 }
@@ -42,4 +44,10 @@ impl std::fmt::Display for Task {
         )?;
         Ok(())
     }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub(crate) struct WorkNote {
+    path: String,
+    task_id: String,
 }

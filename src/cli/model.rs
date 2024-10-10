@@ -36,6 +36,11 @@ pub(crate) enum Command {
         /// List all tasks, including completed ones
         all: bool,
     },
+    /// View & Edit a task's note
+    Note {
+        /// The id of the task (can be partial)
+        id: String,
+    },
     /// Info regarding file locations, current database, general statistics
     Status,
     /// Update a task
