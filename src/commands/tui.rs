@@ -7,8 +7,9 @@ use ratatui::{
         terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
         ExecutableCommand,
     },
-    prelude::{Constraint, Direction, Layout, Style},
+    prelude::{Buffer, Color, Constraint, Direction, Layout, Line, Rect, Style, Widget},
     style::Stylize,
+    text::Span,
     widgets::{Block, HighlightSpacing, List, ListState, Paragraph},
     Terminal,
 };
@@ -17,10 +18,12 @@ use std::io::{stdout, Stdout};
 pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
     println!("Starting TUI...");
     let mut terminal = terminal_setup()?;
+    let style = Style::new().fg(Color::White).bg(Color::Black);
     let mut state = AppState::new(db).await;
 
     loop {
         terminal.draw(|f| {
+            // TODO: factor out into function
             let layout = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(vec![
@@ -29,10 +32,8 @@ pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
                     Constraint::Percentage(10),
                 ])
                 .split(f.area());
-            f.render_widget(
-                Paragraph::new("Task Manager").centered().white().on_black(),
-                layout[0],
-            );
+            render_top_bar(layout[0], f.buffer_mut(), style);
+            // TODO: factor out into function
             f.render_stateful_widget(
                 List::new(
                     state
@@ -42,19 +43,20 @@ pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
                         .collect::<Vec<&str>>(),
                 )
                 .block(Block::bordered().title("Tasks"))
+                .style(style)
                 .highlight_style(Style::new().red().italic())
                 .highlight_symbol(">")
                 .highlight_spacing(HighlightSpacing::WhenSelected),
                 layout[1],
                 &mut state.list_state,
             );
-            f.render_widget(
-                Paragraph::new("Shows possible commands here")
-                    .centered()
-                    .white()
-                    .on_black(),
-                layout[2],
-            );
+            render_bottom_bar(layout[2], f.buffer_mut());
+            // TODO: RENDER overlay here (use app state variable to trigger this to happen)
+            // on enter set the overlay to true
+            // Then use Clear widget to clear area
+            // Then render the overlay
+            // Should show the details of the current task + options to edit
+            // on escape set the overlay to false
         })?;
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
@@ -62,6 +64,7 @@ pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
                     event::KeyCode::Char('q') => break,
                     event::KeyCode::Up => state.list_state.select_previous(),
                     event::KeyCode::Down => state.list_state.select_next(),
+                    event::KeyCode::Enter => todo!("Implement select task"),
                     _ => {}
                 }
             }
@@ -86,6 +89,38 @@ fn terminal_cleanup() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn render_top_bar(area: Rect, buf: &mut Buffer, style: Style) {
+    Paragraph::new("Task Manager (TMGR)")
+        .centered()
+        .style(style)
+        .render(area, buf);
+}
+fn render_bottom_bar(area: Rect, buf: &mut Buffer) {
+    let keys = [
+        ("q", "Quit"),
+        ("↑", "Previous"),
+        ("↓", "Next"),
+        ("Enter", "Select"),
+    ];
+    let spans: Vec<Span> = keys
+        .iter()
+        .flat_map(|(key, desc)| {
+            let key = Span::styled(
+                format!(" {key} "),
+                Style::new().fg(Color::Red).bg(Color::Black),
+            );
+            let desc = Span::styled(
+                format!("- {desc} "),
+                Style::new().fg(Color::White).bg(Color::Black),
+            );
+            [key, desc]
+        })
+        .collect();
+    Line::from(spans)
+        .centered()
+        .style((Color::Indexed(236), Color::Indexed(232)))
+        .render(area, buf);
+}
 struct AppState {
     list_state: ListState,
     tasks: Vec<Task>,
