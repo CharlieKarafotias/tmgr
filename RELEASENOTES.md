@@ -1,12 +1,16 @@
 # Release Notes
 
+# 2.1.4
+
+- Added terminal user interface under the command `tui`
+
 # 2.1.3
 
 - Addressed open issues reported by GitHub vulnerability scanner
 - Bumped `surrealdb` dependency from `2.0.2` to `2.0.4`
 - Bumped `clap` dependency from `4.5.18` to `4.5.20`
 - Bumped `reqwest` dependency from `0.12.7` to `0.12.8`
-- 
+
 # 2.1.2
 
 - Bumped `surrealdb` dependency from `2.0.1` to `2.0.2`
@@ -19,7 +23,8 @@
 # 2.1.0
 
 - Improved result handling experience by standardizing approach to errors in `tmgr`
-- Fixed issue where commands were printing results where String was derived from `Debug` trait. [See here](https://github.com/CharlieKarafotias/tmgr/issues/73#issuecomment-2365190468) for details.
+- Fixed issue where commands were printing results where String was derived from `Debug`
+  trait. [See here](https://github.com/CharlieKarafotias/tmgr/issues/73#issuecomment-2365190468) for details.
 - Fixed exit codes for project:
     - `0` for success
     - `1` for general errors
