@@ -38,6 +38,8 @@ pub(crate) enum Command {
     },
     /// Info regarding file locations, current database, general statistics
     Status,
+    /// Open up terminal user interface for tmgr
+    Tui,
     /// Update a task
     Update {
         /// The id of the task to update (can be partial)

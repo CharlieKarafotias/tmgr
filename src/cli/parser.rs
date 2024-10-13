@@ -22,6 +22,7 @@ pub async fn run() -> i32 {
         Command::Delete { id } => commands::delete::run(&db, id).await,
         Command::List { all } => commands::list::run(&db, all).await,
         Command::Status => commands::status::run(&db).await,
+        Command::Tui => commands::tui::run(&db).await,
         Command::Update {
             id,
             name,
