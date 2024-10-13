@@ -12,20 +12,13 @@ use ratatui::{
     widgets::{Block, HighlightSpacing, List, ListState, Paragraph},
     Terminal,
 };
-use std::cmp::{max, min};
-use std::io::stdout;
+use std::io::{stdout, Stdout};
 
 pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
     println!("Starting TUI...");
-    stdout().execute(EnterAlternateScreen)?;
-    enable_raw_mode()?;
-    let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
-    terminal.clear()?;
-    let mut list_state = ListState::default();
-    let tasks: Vec<Task> = db.client.select("task").await?;
-    if !tasks.is_empty() {
-        list_state.select(Some(0));
-    }
+    let mut terminal = terminal_setup()?;
+    let mut state = AppState::new(db).await;
+
     loop {
         terminal.draw(|f| {
             let layout = Layout::default()
@@ -42,17 +35,18 @@ pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
             );
             f.render_stateful_widget(
                 List::new(
-                    tasks
+                    state
+                        .tasks
                         .iter()
-                        .map(|t| t.name.clone())
-                        .collect::<Vec<String>>(),
+                        .map(|t| t.name.as_str())
+                        .collect::<Vec<&str>>(),
                 )
                 .block(Block::bordered().title("Tasks"))
                 .highlight_style(Style::new().red().italic())
                 .highlight_symbol(">")
                 .highlight_spacing(HighlightSpacing::WhenSelected),
                 layout[1],
-                &mut list_state,
+                &mut state.list_state,
             );
             f.render_widget(
                 Paragraph::new("Shows possible commands here")
@@ -66,21 +60,44 @@ pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
             if let event::Event::Key(key) = event::read()? {
                 match key.code {
                     event::KeyCode::Char('q') => break,
-                    event::KeyCode::Up => list_state
-                        .select(max(Some(0), Some(list_state.selected().unwrap_or(0) - 1))),
-                    event::KeyCode::Down => list_state.select(min(
-                        Some(tasks.len() - 1),
-                        Some(list_state.selected().unwrap_or(0) + 1),
-                    )),
+                    event::KeyCode::Up => state.list_state.select_previous(),
+                    event::KeyCode::Down => state.list_state.select_next(),
                     _ => {}
                 }
             }
         }
     }
 
-    stdout().execute(LeaveAlternateScreen)?;
-    disable_raw_mode()?;
+    terminal_cleanup()?;
     Ok("Exiting TUI...".to_string())
 }
 
-// Custom widget to list the tasks
+fn terminal_setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn std::error::Error>> {
+    stdout().execute(EnterAlternateScreen)?;
+    enable_raw_mode()?;
+    let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
+    terminal.clear()?;
+    Ok(terminal)
+}
+
+fn terminal_cleanup() -> Result<(), Box<dyn std::error::Error>> {
+    stdout().execute(LeaveAlternateScreen)?;
+    disable_raw_mode()?;
+    Ok(())
+}
+
+struct AppState {
+    list_state: ListState,
+    tasks: Vec<Task>,
+}
+
+impl AppState {
+    async fn new(db: &DB) -> Self {
+        let tasks = db.client.select("task").await.unwrap_or_default();
+        let mut list_state = ListState::default();
+        if !tasks.is_empty() {
+            list_state.select(Some(0));
+        }
+        Self { list_state, tasks }
+    }
+}
