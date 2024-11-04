@@ -1,5 +1,12 @@
 # Release Notes
 
+# 2.1.4
+
+- Bumped `serder` dependency from `1.0.210` to `1.0.214`
+- Bumped `tokio` dependency from `1.40.0` to `1.41.0`
+- Bumped `serde_json` dependency from `1.0.128` to `1.0.132`
+- Bumped `reqwest` dependency from `0.12.8` to `0.12.9`
+
 # 2.1.3
 
 - Addressed open issues reported by GitHub vulnerability scanner
