@@ -3,7 +3,6 @@ use crate::commands::model::Task;
 use std::path::Path;
 
 pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::error::Error>> {
-    // TODO: needs to be refactored in order to get true ID
     let res: Vec<Task> = db
         .client
         .query(format!(
