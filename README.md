@@ -67,17 +67,18 @@ If you wish to release a new version of `tmgr`, follow the steps below:
 
 ### Command Reference
 
-| Command Name | Description                                                         |
-|--------------|---------------------------------------------------------------------|
-| add          | adds a new task                                                     |
-| complete     | marks a task as complete                                            |
-| delete       | deletes a task                                                      |
-| list         | lists tasks                                                         |
-| status       | info regarding file locations, current database, general statistics |
-| update       | updates an existing task                                            |
-| upgrade      | upgrades `tmgr` to the latest version                               |
-| view         | shows all information about a specific task                         |
-| help         | prints out CLI usage information                                    |
+| Command Name | Description                                                                           |
+|--------------|---------------------------------------------------------------------------------------|
+| add          | adds a new task                                                                       |
+| complete     | marks a task as complete                                                              |
+| delete       | deletes a task                                                                        |
+| list         | lists tasks                                                                           |
+| note         | creates and/or opens a markdown file to store notes associated with a particular task |
+| status       | info regarding file locations, current database, general statistics                   |
+| update       | updates an existing task                                                              |
+| upgrade      | upgrades `tmgr` to the latest version                                                 |
+| view         | shows all information about a specific task                                           |
+| help         | prints out CLI usage information                                                      |
 
 
 ### Add Command
@@ -125,6 +126,17 @@ like the name, priority, and description.
 - `tmgr list`
 - `tmgr list -a`
     - List all tasks (includes completed tasks)
+
+### Note Command
+
+The `note` command will create a markdown file to store notes associated with a particular task.
+The file will be created in the same location as the database of tasks. To see this location, run `tmgr status`.
+
+#### Usage
+
+- `tmgr note <ID>`
+- `tmgr note '1w08w2'`
+    - Where `1w08w2` is the beginning part of an existing task ID. To find task IDs, run `tmgr list`
 
 ### Status Command
 
