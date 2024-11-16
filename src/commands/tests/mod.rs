@@ -18,4 +18,4 @@ mod upgrade_test;
 mod view_test;
 
 #[cfg(test)]
-mod note;
+mod note_test;
