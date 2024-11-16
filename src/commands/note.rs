@@ -2,7 +2,7 @@ use crate::commands::db::DB;
 use crate::commands::model::Task;
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, ExitStatus};
 use surrealdb::opt::PatchOp;
 
 pub(crate) async fn run(
@@ -77,6 +77,6 @@ pub(crate) fn path_from_id(id: &str) -> PathBuf {
     dir_path.join("tmgr_notes").join(format!("{id}.md"))
 }
 
-fn open_note(note_path: &str) -> std::io::Result<std::process::Output> {
-    Command::new("vi").arg(note_path).output()
+fn open_note(note_path: &str) -> std::io::Result<ExitStatus> {
+    Command::new("vi").arg(note_path).spawn()?.wait()
 }
