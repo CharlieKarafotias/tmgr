@@ -52,6 +52,6 @@ pub(crate) fn generate_update_query(
     if let Some(description) = description {
         query += &format!("description = \"{description}\", ");
     }
-    query = query.trim_end_matches(&[',', ' ']).to_string();
+    query = query.trim_end_matches([',', ' ']).to_string();
     query
 }

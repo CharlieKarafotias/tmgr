@@ -16,19 +16,13 @@ async fn given_no_existing_task_when_viewing_a_task_then_error_should_be_returne
 #[tokio::test]
 async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_returned() {
     let db = db::DB::new_test().await;
-    let _: Vec<Task> = db
-        .client
-        .insert("task")
-        .content(Task {
-            id: None,
-            name: "test".to_string(),
-            priority: TaskPriority::Medium.to_string(),
-            description: Some("some description".to_string()),
-            created_at: Default::default(),
-            completed_at: None,
-        })
-        .await
-        .unwrap();
+    let mut task = Task::default();
+    task.name = "test".to_string();
+    task.priority = TaskPriority::Medium.to_string();
+    task.description = Some("some description".to_string());
+
+    let _: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
+
     let res = view::run(&db, "DefinitelyNotTheID".to_string()).await;
     assert!(res.is_err());
     let res_str = res.unwrap_err().to_string();
@@ -41,32 +35,19 @@ async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_return
 #[tokio::test]
 async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_returned() {
     let db = db::DB::new_test().await;
-    let _: Vec<Task> = db
-        .client
-        .insert("task")
-        .content(Task {
-            id: None,
-            name: "test".to_string(),
-            priority: TaskPriority::Medium.to_string(),
-            description: Some("some description".to_string()),
-            created_at: Default::default(),
-            completed_at: None,
-        })
-        .await
-        .unwrap();
-    let _: Vec<Task> = db
-        .client
-        .insert("task")
-        .content(Task {
-            id: None,
-            name: "test2".to_string(),
-            priority: TaskPriority::Medium.to_string(),
-            description: Some("some description".to_string()),
-            created_at: Default::default(),
-            completed_at: None,
-        })
-        .await
-        .unwrap();
+    let mut task = Task::default();
+    task.name = "test".to_string();
+    task.priority = TaskPriority::Medium.to_string();
+    task.description = Some("some description".to_string());
+
+    let mut task2 = Task::default();
+    task2.name = "test2".to_string();
+    task2.priority = TaskPriority::Medium.to_string();
+    task2.description = Some("some description".to_string());
+
+    let _: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
+    let _: Vec<Task> = db.client.insert("task").content(task2).await.unwrap();
+
     let res = view::run(&db, "".to_string()).await;
     assert!(res.is_err());
     let res_str = res.unwrap_err().to_string();
@@ -79,21 +60,15 @@ async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_
 #[tokio::test]
 async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_returned() {
     let db = db::DB::new_test().await;
-    let date = chrono::DateTime::from_timestamp(0, 0).unwrap();
-    let db_res: Vec<Task> = db
-        .client
-        .insert("task")
-        .content(Task {
-            id: None,
-            name: "test".to_string(),
-            priority: TaskPriority::Medium.to_string(),
-            description: Some("some description".to_string()),
-            created_at: Datetime::from(date),
-            completed_at: None,
-        })
-        .await
-        .unwrap();
+    let mut task = Task::default();
+    task.created_at = Datetime::from(chrono::DateTime::from_timestamp(0, 0).unwrap());
+    task.description = Some("some description".to_string());
+    task.priority = TaskPriority::Medium.to_string();
+    task.name = "test".to_string();
+
+    let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
+
     let res = view::run(&db, id.clone()).await;
     let res_str = res.unwrap();
     assert!(res_str.contains("test"));

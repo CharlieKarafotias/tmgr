@@ -16,3 +16,6 @@ mod update_test;
 mod upgrade_test;
 #[cfg(test)]
 mod view_test;
+
+#[cfg(test)]
+mod note;

@@ -27,20 +27,13 @@ async fn given_existing_tasks_when_listing_all_tasks_then_all_tasks_should_be_re
     let _: Vec<Task> = db
         .client
         .insert("task")
-        .content(Task {
-            id: None,
-            name: "test".to_string(),
-            priority: TaskPriority::High.to_string(),
-            description: None,
-            created_at: Default::default(),
-            completed_at: None,
-        })
+        .content(Task::default())
         .await
         .unwrap();
     let res = list::run(&db, true).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert!(res_str.to_lowercase().contains("test"));
+    assert!(res_str.to_lowercase().contains("a new task"));
     assert!(res_str.to_lowercase().contains("high"));
 }
 
@@ -48,32 +41,13 @@ async fn given_existing_tasks_when_listing_all_tasks_then_all_tasks_should_be_re
 async fn given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned(
 ) {
     let db = db::DB::new_test().await;
-    let _: Vec<Task> = db
-        .client
-        .insert("task")
-        .content(Task {
-            id: None,
-            name: "in progress task".to_string(),
-            priority: TaskPriority::High.to_string(),
-            description: None,
-            created_at: Default::default(),
-            completed_at: None,
-        })
-        .await
-        .unwrap();
-    let _: Vec<Task> = db
-        .client
-        .insert("task")
-        .content(Task {
-            id: None,
-            name: "Completed task".to_string(),
-            priority: TaskPriority::High.to_string(),
-            description: None,
-            created_at: Datetime::default(),
-            completed_at: Some(Datetime::default()),
-        })
-        .await
-        .unwrap();
+    let mut task1 = Task::default();
+    task1.name = "in progress task".to_string();
+    let mut task2 = Task::default();
+    task2.name = "Completed task".to_string();
+    let _: Vec<Task> = db.client.insert("task").content(task1).await.unwrap();
+    let _: Vec<Task> = db.client.insert("task").content(task2).await.unwrap();
+
     let res = list::run(&db, false).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();

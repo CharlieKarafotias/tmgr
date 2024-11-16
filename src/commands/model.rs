@@ -1,5 +1,5 @@
+use crate::cli::model::TaskPriority;
 use serde::{Deserialize, Deserializer, Serialize};
-use std::path::{Path, PathBuf};
 use surrealdb::sql::{Datetime, Thing};
 
 // defining custom deserializer as surrealdb doesn't support it natively
@@ -19,7 +19,7 @@ pub(crate) struct Task {
     pub(crate) name: String,
     pub(crate) priority: String,
     pub(crate) description: Option<String>,
-    pub(crate) work_note: Option<WorkNote>,
+    pub(crate) work_note_path: Option<String>,
     pub(crate) created_at: Datetime,
     pub(crate) completed_at: Option<Datetime>,
 }
@@ -46,8 +46,16 @@ impl std::fmt::Display for Task {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub(crate) struct WorkNote {
-    path: String,
-    task_id: String,
+impl Default for Task {
+    fn default() -> Self {
+        Self {
+            id: None,
+            name: "a new task".to_string(),
+            priority: TaskPriority::High.to_string(),
+            description: None,
+            work_note_path: None,
+            created_at: Datetime::default(),
+            completed_at: None,
+        }
+    }
 }

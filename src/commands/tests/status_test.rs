@@ -21,16 +21,10 @@ async fn given_existing_tasks_when_running_status_command_then_tasks_should_be_r
     let _: Vec<Task> = db
         .client
         .insert("task")
-        .content(Task {
-            id: None,
-            name: "test".to_string(),
-            priority: TaskPriority::Medium.to_string(),
-            description: None,
-            created_at: Default::default(),
-            completed_at: None,
-        })
+        .content(Task::default())
         .await
         .unwrap();
+
     let res = status::run(&db).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
@@ -43,19 +37,10 @@ async fn given_existing_tasks_when_running_status_command_then_tasks_should_be_r
 async fn given_a_completed_task_when_running_status_command_then_the_task_should_be_reported_correctly(
 ) {
     let db = db::DB::new_test().await;
-    let _: Vec<Task> = db
-        .client
-        .insert("task")
-        .content(Task {
-            id: None,
-            name: "test".to_string(),
-            priority: TaskPriority::Medium.to_string(),
-            description: None,
-            created_at: Default::default(),
-            completed_at: Some(Default::default()),
-        })
-        .await
-        .unwrap();
+    let mut task = Task::default();
+    task.completed_at = Some(Default::default());
+    let _: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
+
     let res = status::run(&db).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();

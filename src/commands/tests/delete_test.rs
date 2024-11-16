@@ -1,4 +1,3 @@
-use crate::cli::model::TaskPriority;
 use crate::commands::{db, delete, model::Task};
 
 #[tokio::test]
@@ -16,14 +15,7 @@ async fn given_existing_tasks_when_deleting_a_task_then_the_task_should_be_delet
     let db_res: Vec<Task> = db
         .client
         .insert("task")
-        .content(Task {
-            id: None,
-            name: "test".to_string(),
-            priority: TaskPriority::Medium.to_string(),
-            description: None,
-            created_at: Default::default(),
-            completed_at: None,
-        })
+        .content(Task::default())
         .await
         .unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");

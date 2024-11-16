@@ -17,7 +17,7 @@ pub(crate) async fn run(
             name: name.clone(),
             priority: priority.to_string(),
             description,
-            work_note: None,
+            work_note_path: None,
             created_at: Datetime::default(),
             completed_at: None,
         })
