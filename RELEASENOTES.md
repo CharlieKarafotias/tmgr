@@ -1,12 +1,19 @@
 # Release Notes
 
-# 2.2.0
+# 2.1.4
 
-- Added new work notes feature - store notes for each task using Markdown and relate them to tasks
-- Bumped `clap` dependency from `4.5.18` to `4.5.19`
-- Bumped `surrealdb` dependency from `2.0.2` to `2.0.3`
+- Bumped `serder` dependency from `1.0.210` to `1.0.214`
+- Bumped `tokio` dependency from `1.40.0` to `1.41.0`
+- Bumped `serde_json` dependency from `1.0.128` to `1.0.132`
+- Bumped `reqwest` dependency from `0.12.8` to `0.12.9`
+
+# 2.1.3
+
+- Addressed open issues reported by GitHub vulnerability scanner
+- Bumped `surrealdb` dependency from `2.0.2` to `2.0.4`
+- Bumped `clap` dependency from `4.5.18` to `4.5.20`
 - Bumped `reqwest` dependency from `0.12.7` to `0.12.8`
-
+- 
 # 2.1.2
 
 - Bumped `surrealdb` dependency from `2.0.1` to `2.0.2`
