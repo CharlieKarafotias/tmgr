@@ -2,9 +2,14 @@ use crate::commands::db::DB;
 use crate::commands::model::Task;
 use std::io::Write;
 use std::path::PathBuf;
+use std::process::Command;
 use surrealdb::opt::PatchOp;
 
-pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run(
+    db: &DB,
+    id: String,
+    open_editor: bool,
+) -> Result<String, Box<dyn std::error::Error>> {
     let res: Option<Task> = db
         .client
         .query(format!(
@@ -15,7 +20,9 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::erro
 
     if let Some(task) = res {
         if let Some(note_path) = task.work_note_path {
-            // TODO: Open note in editor
+            if open_editor {
+                open_note(&note_path)?;
+            }
             Ok(note_path)
         } else {
             let task_id = task
@@ -34,37 +41,42 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::erro
             let mut f = std::fs::File::create(&note_path)?;
 
             // write to file
-            let task_header = format!("# Task {task_id} - {task_name}\n");
-            let subheader = format!("## {task_description}, {task_priority}\n");
+            let task_header = format!("# Task {task_id} - {task_name}\n\n");
+            let subheader = format!("## {task_description}, {task_priority}\n\n");
             f.write_all(task_header.as_bytes())?;
             f.write_all(subheader.as_bytes())?;
-            f.write_all(b"# Notes\n")?;
+            f.write_all(b"# Notes\n\n")?;
 
             // close file
             f.flush()?;
 
+            let note_path_string = note_path.to_string_lossy().to_string();
             // Update task
             let _: Option<Task> = db
                 .client
                 .upsert(("task", task_id))
-                .patch(PatchOp::replace(
-                    "/work_note_path",
-                    Some(note_path.to_string_lossy().to_string()),
-                ))
+                .patch(PatchOp::replace("/work_note_path", Some(&note_path_string)))
                 .await?;
 
-            // TODO: Open note in editor
-            Ok(note_path.to_string_lossy().to_string())
+            if open_editor {
+                open_note(&note_path_string)?;
+            }
+
+            Ok(note_path_string)
         }
     } else {
         Err(format!("Task starting with id '{id}' was not found").into())
     }
 }
 
-fn path_from_id(id: &str) -> PathBuf {
+pub(crate) fn path_from_id(id: &str) -> PathBuf {
     let exe_path = std::env::current_exe().expect("Could not get executable path");
     let dir_path = exe_path
         .parent()
         .expect("Could not get executable directory");
     dir_path.join("tmgr_notes").join(format!("{id}.md"))
+}
+
+fn open_note(note_path: &str) -> std::io::Result<std::process::Output> {
+    Command::new("vi").arg(note_path).output()
 }

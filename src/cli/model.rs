@@ -36,10 +36,13 @@ pub(crate) enum Command {
         /// List all tasks, including completed ones
         all: bool,
     },
-    /// View & Edit a task's note
+    /// Creates and/or opens a markdown file to store notes associated with a particular task
     Note {
         /// The id of the task (can be partial)
         id: String,
+        #[arg(short, long)]
+        /// Opens up file in vi editor
+        open: bool,
     },
     /// Info regarding file locations, current database, general statistics
     Status,

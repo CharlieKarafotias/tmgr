@@ -135,8 +135,11 @@ The file will be created in the same location as the database of tasks. To see t
 #### Usage
 
 - `tmgr note <ID>`
-- `tmgr note '1w08w2'`
+  - `tmgr note '1w08w2'`
     - Where `1w08w2` is the beginning part of an existing task ID. To find task IDs, run `tmgr list`
+- `tmgr note <ID> -o`
+  - `tmgr note '1w08w2' -o`
+    - Opens the note file in `vi`
 
 ### Status Command
 
