@@ -1,5 +1,10 @@
 # Release Notes
 
+## 2.2.1
+
+- Improved test file structure
+- Bumped `serde_json` dependency from `1.0.132` to `1.0.133`
+
 ## 2.2.0
 
 - Added a `note` command which allows you to add notes to a task using Markdown
