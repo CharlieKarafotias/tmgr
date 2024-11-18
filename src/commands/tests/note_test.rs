@@ -71,9 +71,11 @@ async fn given_an_existing_task_with_note_when_calling_note_should_not_create_md
     // Create a temp file
     let mut temp_file = tempfile::NamedTempFile::new().expect("Failed to create temp file");
     temp_file.write_all(b"hello world").unwrap();
+    let temp_file_path = temp_file.path().to_string_lossy().to_string();
 
-    let mut task = Task::default();
-    task.work_note_path = Some(temp_file.path().to_string_lossy().to_string());
+    let task = Task::builder()
+        .work_note_path(temp_file_path.clone())
+        .build();
 
     let task: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
 
@@ -83,7 +85,7 @@ async fn given_an_existing_task_with_note_when_calling_note_should_not_create_md
         .expect("Error creating note");
 
     // Should return the path to the note file
-    assert_eq!(res, temp_file.path().to_string_lossy().to_string());
+    assert!(res.eq(temp_file_path.as_str()));
 
     // content of the note file should be the same as the temp file
     let content = std::fs::read_to_string(temp_file.path()).expect("Failed to read temp file");

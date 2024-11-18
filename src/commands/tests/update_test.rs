@@ -37,9 +37,11 @@ async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_
 async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_field_should_be_updated(
 ) {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.name = "test".to_string();
-    task.priority = TaskPriority::Medium.to_string();
+    let task = Task::builder()
+        .name("test".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .build();
+
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 
@@ -62,9 +64,11 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
 async fn given_existing_tasks_when_updating_a_description_field_then_only_that_field_should_be_updated(
 ) {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.name = "test".to_string();
-    task.priority = TaskPriority::Medium.to_string();
+    let task = Task::builder()
+        .name("test".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .build();
+
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 
@@ -93,10 +97,13 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
 #[tokio::test]
 async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should_be_updated() {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.name = "test".to_string();
-    task.priority = TaskPriority::Medium.to_string();
-    task.description = Some("some description".to_string());
+
+    let task = Task::builder()
+        .name("test".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .description("some description".to_string())
+        .build();
+
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 
@@ -123,9 +130,12 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
 async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fields_should_be_updated(
 ) {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.name = "test".to_string();
-    task.priority = TaskPriority::Medium.to_string();
+
+    let task = Task::builder()
+        .name("test".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .build();
+
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 

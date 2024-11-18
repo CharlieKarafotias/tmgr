@@ -59,3 +59,79 @@ impl Default for Task {
         }
     }
 }
+
+#[allow(dead_code)]
+impl Task {
+    pub fn builder() -> TaskBuilder {
+        TaskBuilder {
+            id: None,
+            name: None,
+            priority: None,
+            description: None,
+            work_note_path: None,
+            created_at: None,
+            completed_at: None,
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct TaskBuilder {
+    id: Option<String>,
+    name: Option<String>,
+    priority: Option<String>,
+    description: Option<String>,
+    work_note_path: Option<String>,
+    created_at: Option<Datetime>,
+    completed_at: Option<Datetime>,
+}
+
+#[allow(dead_code)]
+impl TaskBuilder {
+    pub fn id(mut self, id: String) -> Self {
+        self.id = Some(id);
+        self
+    }
+
+    pub fn name(mut self, name: String) -> Self {
+        self.name = Some(name);
+        self
+    }
+
+    pub fn priority(mut self, priority: String) -> Self {
+        self.priority = Some(priority);
+        self
+    }
+
+    pub fn description(mut self, description: String) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub fn work_note_path(mut self, work_note_path: String) -> Self {
+        self.work_note_path = Some(work_note_path);
+        self
+    }
+
+    pub fn created_at(mut self, created_at: Datetime) -> Self {
+        self.created_at = Some(created_at);
+        self
+    }
+
+    pub fn completed_at(mut self, completed_at: Datetime) -> Self {
+        self.completed_at = Some(completed_at);
+        self
+    }
+
+    pub fn build(self) -> Task {
+        Task {
+            id: self.id,
+            name: self.name.unwrap_or_default(),
+            priority: self.priority.unwrap_or_default(),
+            description: self.description,
+            work_note_path: self.work_note_path,
+            created_at: self.created_at.unwrap_or_default(),
+            completed_at: self.completed_at,
+        }
+    }
+}

@@ -1,6 +1,3 @@
-#![allow(unused_imports)]
-
-use crate::cli::model::TaskPriority;
 use crate::commands::model::Task;
 use crate::commands::{db, status};
 
@@ -37,8 +34,8 @@ async fn given_existing_tasks_when_running_status_command_then_tasks_should_be_r
 async fn given_a_completed_task_when_running_status_command_then_the_task_should_be_reported_correctly(
 ) {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.completed_at = Some(Default::default());
+    let task = Task::builder().completed_at(Default::default()).build();
+
     let _: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
 
     let res = status::run(&db).await;

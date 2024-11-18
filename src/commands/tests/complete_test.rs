@@ -1,5 +1,3 @@
-#![allow(unused_imports)]
-
 use crate::cli::model::TaskPriority;
 use crate::commands::model::Task;
 use crate::commands::{complete, db};
@@ -40,10 +38,11 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
 async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the_task_should_stay_the_same(
 ) {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.name = "task to complete".to_string();
-    task.priority = TaskPriority::Medium.to_string();
-    task.description = Some("This is a description of the task".to_string());
+    let task = Task::builder()
+        .name("task to complete".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .description("This is a description of the task".to_string())
+        .build();
 
     let new_task: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
 

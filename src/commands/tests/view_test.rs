@@ -16,10 +16,12 @@ async fn given_no_existing_task_when_viewing_a_task_then_error_should_be_returne
 #[tokio::test]
 async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_returned() {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.name = "test".to_string();
-    task.priority = TaskPriority::Medium.to_string();
-    task.description = Some("some description".to_string());
+
+    let task = Task::builder()
+        .name("test".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .description("some description".to_string())
+        .build();
 
     let _: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
 
@@ -35,15 +37,17 @@ async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_return
 #[tokio::test]
 async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_returned() {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.name = "test".to_string();
-    task.priority = TaskPriority::Medium.to_string();
-    task.description = Some("some description".to_string());
 
-    let mut task2 = Task::default();
-    task2.name = "test2".to_string();
-    task2.priority = TaskPriority::Medium.to_string();
-    task2.description = Some("some description".to_string());
+    let task = Task::builder()
+        .name("test".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .description("some description".to_string())
+        .build();
+    let task2 = Task::builder()
+        .name("test2".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .description("some description".to_string())
+        .build();
 
     let _: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let _: Vec<Task> = db.client.insert("task").content(task2).await.unwrap();
@@ -60,11 +64,15 @@ async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_
 #[tokio::test]
 async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_returned() {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    task.created_at = Datetime::from(chrono::DateTime::from_timestamp(0, 0).unwrap());
-    task.description = Some("some description".to_string());
-    task.priority = TaskPriority::Medium.to_string();
-    task.name = "test".to_string();
+
+    let task = Task::builder()
+        .name("test".to_string())
+        .priority(TaskPriority::Medium.to_string())
+        .description("some description".to_string())
+        .created_at(Datetime::from(
+            chrono::DateTime::from_timestamp(0, 0).unwrap(),
+        ))
+        .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");

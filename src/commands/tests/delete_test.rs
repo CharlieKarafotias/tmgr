@@ -35,10 +35,10 @@ async fn given_existing_tasks_when_deleting_a_task_then_the_task_should_be_delet
 #[tokio::test]
 async fn given_existing_task_with_worknote_when_deleted_then_worknote_should_be_deleted() {
     let db = db::DB::new_test().await;
-    let mut task = Task::default();
-    let file = std::fs::File::create("test.md").expect("Failed to create temp file");
-    task.work_note_path = Some("test.md".to_string());
+    let path = "test.md";
+    let task = Task::builder().work_note_path(path.to_string()).build();
 
+    std::fs::File::create(path).expect("Failed to create temp file");
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 
