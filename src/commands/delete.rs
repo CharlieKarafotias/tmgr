@@ -19,5 +19,5 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::erro
         }
     }
 
-    Ok(format!("Successfully deleted task starting with id '{id}'"))
+    Ok(format!("Successfully deleted task '{task_id}'"))
 }

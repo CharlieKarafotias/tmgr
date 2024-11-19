@@ -24,7 +24,7 @@ pub(crate) async fn run(db: &DB, all: bool) -> Result<String, Box<dyn std::error
 
     for t in tasks {
         table.add_row(vec![
-            &t.id.unwrap_or("Unable to determine ID".to_string()),
+            &t.get_id()?,
             &t.name,
             &t.priority,
             &t.description.unwrap_or_default(),

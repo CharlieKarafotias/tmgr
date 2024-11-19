@@ -32,9 +32,9 @@ pub(crate) async fn run(
 
     let _: Option<Task> = db
         .client
-        .update(("task", task_id))
+        .update(("task", &task_id))
         .merge(update_map)
         .await?;
 
-    Ok(format!("Successfully updated task starting with id '{id}'"))
+    Ok(format!("Successfully updated task '{task_id}'"))
 }
