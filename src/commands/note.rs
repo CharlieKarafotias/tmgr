@@ -18,13 +18,7 @@ pub(crate) async fn run(
         }
         Ok(note_path)
     } else {
-        let task_id = task
-            .id
-            .clone()
-            .expect("Task ID should be set")
-            .strip_prefix("task:")
-            .expect("Task ID should start with task:")
-            .to_string();
+        let task_id = task.get_id()?;
         let task_name = task.name.as_str();
         let task_description = task.description.as_deref().unwrap_or_default();
         let task_priority = task.priority.as_str();
