@@ -25,8 +25,7 @@ pub(crate) async fn run(
         .map_err(|_| format!("Failed to create task '{name}'."))?;
 
     if let Some(task) = task {
-        let id = task.id.unwrap_or_default();
-        Ok(format!("Task '{id}' created successfully"))
+        Ok(format!("Task '{}' created successfully", task.get_id()?))
     } else {
         Err("Failed to create task".to_string().into())
     }

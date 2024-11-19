@@ -8,10 +8,7 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::erro
     table
         .set_content_arrangement(comfy_table::ContentArrangement::Dynamic)
         .set_header(vec!["Key", "Value"])
-        .add_row(vec![
-            "id",
-            &t.id.unwrap_or("Unable to determine ID".to_string()),
-        ])
+        .add_row(vec!["id", &t.get_id()?])
         .add_row(vec!["name", &t.name])
         .add_row(vec!["priority", &t.priority])
         .add_row(vec!["description", &t.description.unwrap_or_default()])

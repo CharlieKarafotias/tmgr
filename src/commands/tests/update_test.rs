@@ -48,10 +48,7 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
     let res = update::run(&db, id.clone(), None, Some(TaskPriority::High), None).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert_eq!(
-        res_str,
-        format!("Successfully updated task starting with id '{id}'")
-    );
+    assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
@@ -82,10 +79,7 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
     .await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert_eq!(
-        res_str,
-        format!("Successfully updated task starting with id '{id}'")
-    );
+    assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
@@ -110,10 +104,7 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
     let res = update::run(&db, id.clone(), Some("test2".to_string()), None, None).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert_eq!(
-        res_str,
-        format!("Successfully updated task starting with id '{id}'")
-    );
+    assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
@@ -149,10 +140,7 @@ async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fiel
     .await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert_eq!(
-        res_str,
-        format!("Successfully updated task starting with id '{id}'")
-    );
+    assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);

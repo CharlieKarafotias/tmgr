@@ -9,9 +9,11 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::erro
 
     let _: Option<Task> = db
         .client
-        .upsert(("task", task_id))
+        .upsert(("task", &task_id))
         .patch(PatchOp::replace("/completed_at", Datetime::default()))
         .await?;
 
-    Ok(format!("Successfully updated task '{id}' to completed"))
+    Ok(format!(
+        "Successfully updated task '{task_id}' to completed"
+    ))
 }
