@@ -1,5 +1,6 @@
 use crate::cli::model::TaskPriority;
 use crate::commands::db::DB;
+use crate::commands::model::Task;
 
 pub(crate) async fn run(
     db: &DB,
@@ -12,46 +13,28 @@ pub(crate) async fn run(
         return Err("No fields to update".into());
     }
 
-    let query = format!(
-        "BEGIN TRANSACTION;\
-        let $res = (SELECT * from task WHERE string::starts_with(<string> id, \"task:{id}\"));\
-        IF count($res) == 0 {{ THROW \"Task starting with id '{id}' was not found\"}};\
-        IF count($res) != 1 {{ THROW \"Multiple tasks found, provide more characters of the id\"}};\
-        let $task_to_update = $res[0];\
-        UPDATE $task_to_update.id SET {};\
-        COMMIT TRANSACTION;",
-        generate_update_query(name, priority, description)
+    let task = db.select_task_by_partial_id(&id).await?;
+    let task_id = task.get_id()?;
+
+    let update_map: std::collections::BTreeMap<&str, String> = std::iter::FromIterator::from_iter(
+        [
+            name.as_ref().map(|name| ("name", name.clone())),
+            priority
+                .as_ref()
+                .map(|priority| ("priority", priority.to_string())),
+            description
+                .as_ref()
+                .map(|description| ("description", description.clone())),
+        ]
+        .into_iter()
+        .flatten(),
     );
 
-    let mut db_res = db.client.query(query).await?;
-    let errors = db_res.take_errors();
-    if !errors.is_empty() {
-        let err = errors
-            .iter()
-            .find(|(_, e)| e.to_string().starts_with("An error occurred:"))
-            .map(|(_, e)| e.to_string().replace("An error occurred: ", ""))
-            .unwrap_or_else(|| "An unknown error occurred".to_string());
-        return Err(err.into());
-    }
+    let _: Option<Task> = db
+        .client
+        .update(("task", task_id))
+        .merge(update_map)
+        .await?;
 
     Ok(format!("Successfully updated task starting with id '{id}'"))
-}
-
-pub(crate) fn generate_update_query(
-    name: Option<String>,
-    priority: Option<TaskPriority>,
-    description: Option<String>,
-) -> String {
-    let mut query = String::new();
-    if let Some(name) = name {
-        query += &format!("name = \"{name}\", ");
-    }
-    if let Some(priority) = priority {
-        query += &format!("priority = \"{priority}\", ");
-    }
-    if let Some(description) = description {
-        query += &format!("description = \"{description}\", ");
-    }
-    query = query.trim_end_matches([',', ' ']).to_string();
-    query
 }

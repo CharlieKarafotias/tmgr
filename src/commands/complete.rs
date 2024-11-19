@@ -1,25 +1,17 @@
 use crate::commands::db::DB;
+use crate::commands::model::Task;
+use surrealdb::opt::PatchOp;
+use surrealdb::sql::Datetime;
 
 pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::error::Error>> {
-    let query = format!(
-        "BEGIN TRANSACTION;\
-        let $res = (SELECT * from task WHERE string::starts_with(<string> id, \"task:{id}\"));\
-        IF count($res) == 0 {{ THROW \"Task starting with id '{id}' was not found\"}};\
-        IF count($res) != 1 {{ THROW \"Multiple tasks found, provide more characters of the id\"}};\
-        let $task_to_update = $res[0];\
-        UPDATE $task_to_update.id SET completed_at = time::now();\
-        COMMIT TRANSACTION;"
-    );
+    let task = db.select_task_by_partial_id(&id).await?;
+    let task_id = task.get_id()?;
 
-    let mut db_res = db.client.query(query).await?;
-    let errors = db_res.take_errors();
-    if !errors.is_empty() {
-        let err = errors
-            .iter()
-            .find(|(_, e)| e.to_string().starts_with("An error occurred:"))
-            .map(|(_, e)| e.to_string().replace("An error occurred: ", ""))
-            .unwrap_or_else(|| "An unknown error occurred".to_string());
-        return Err(err.into());
-    }
+    let _: Option<Task> = db
+        .client
+        .upsert(("task", task_id))
+        .patch(PatchOp::replace("/completed_at", Datetime::default()))
+        .await?;
+
     Ok(format!("Successfully updated task '{id}' to completed"))
 }

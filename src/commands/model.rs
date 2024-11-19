@@ -60,6 +60,32 @@ impl Default for Task {
     }
 }
 
+impl Task {
+    /// Returns the ID of the task as a string, without the "task:" prefix.
+    ///
+    /// If the task ID is not set, this function returns an error.
+    ///
+    /// If the task ID is set, but does not start with "task:", this function returns an error.
+    /// The expected format of task IDs is "task:<id>", where <id> is the id you
+    /// provided when you added the task.
+    ///
+    pub(crate) fn get_id(&self) -> Result<String, Box<dyn std::error::Error>> {
+        let actual_id = &self.id;
+        if let Some(actual_id) = actual_id {
+            let id = actual_id.strip_prefix("task:");
+            match id {
+                Some(id) => Ok(id.to_string()),
+                None => Err(
+                    format!(
+                        "Task ID from database is not prefixed with 'task:'. Expected 'task:<id>', but got '{actual_id}'"
+                    ).into()
+                )
+            }
+        } else {
+            Err("Task ID is not set".into())
+        }
+    }
+}
 #[allow(dead_code)]
 impl Task {
     pub fn builder() -> TaskBuilder {
