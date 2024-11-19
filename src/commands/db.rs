@@ -1,3 +1,4 @@
+use crate::commands::model::Task;
 use std::path::PathBuf;
 use surrealdb::engine::any::connect;
 use surrealdb::{engine::any::Any, Surreal};
@@ -40,5 +41,39 @@ impl DB {
             .parent()
             .expect("Could not get executable directory");
         dir_path.join("tmgr_db")
+    }
+
+    /// Select a task from the database by a partial id.
+    ///
+    /// Returns a Task if exactly one task is found with the given id.
+    /// Returns an error if no tasks are found, or if multiple tasks are found.
+    ///
+    /// The id should be a prefix of the full id of the task you want to select.
+    /// The full id of each task is "task:<id>", where <id> is the id you
+    /// provided when you added the task.
+    pub(crate) async fn select_task_by_partial_id(
+        &self,
+        id: impl Into<String>,
+    ) -> Result<Task, Box<dyn std::error::Error>> {
+        let id_string = id.into();
+        let query = format!(
+            "SELECT * from task WHERE string::starts_with(<string> id, \"task:{}\")",
+            &id_string
+        );
+
+        let res: Vec<Task> = self.client.query(query).await?.take(0)?;
+
+        if res.is_empty() {
+            return Err(format!("Task starting with id '{}' was not found", &id_string).into());
+        }
+
+        if res.len() != 1 {
+            return Err("Multiple tasks found, provide more characters of the id"
+                .to_string()
+                .into());
+        }
+
+        let task = res.into_iter().next().expect("Expected a task");
+        Ok(task)
     }
 }
