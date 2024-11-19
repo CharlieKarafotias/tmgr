@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.2.2
+
+- Reduced duplicate code throughout project by refactoring
+- Updated wording from `task starting with <id>` to `task <id>`
+- Updated output of `view` command to improve readability
+
 ## 2.2.1
 
 - Improved test file structure

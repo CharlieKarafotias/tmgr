@@ -1,6 +1,6 @@
 [package]
 name = "tmgr"
-version = "2.2.1"
+version = "2.2.2"
 edition = "2021"
 authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 repository = "https://github.com/charliekarafotias/tmgr"
