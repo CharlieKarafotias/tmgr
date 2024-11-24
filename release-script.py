@@ -10,7 +10,6 @@ def check_gh_cli_installed():
     return result.returncode == 0
 
 def is_merge_commit():
-    # TODO: this did not work and is a bug
     most_recent_merge = subprocess.run(
         ["git", "rev-list", "--merges", "-n", "1", "HEAD"],
         stdout=subprocess.PIPE,
