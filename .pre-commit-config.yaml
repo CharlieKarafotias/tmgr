@@ -15,19 +15,10 @@ repos:
         pass_filenames: false
 -   repo: local
     hooks:
-    -   id: cargo-build-release
-        name: cargo-build-release
+    -   id: run-release
+        name: run-release
         stages: [post-merge]
-        entry: cargo build --release
-        language: system
-        types: [rust]
-        pass_filenames: false
-        verbose: true
-        always_run: true
-    -   id: github-release
-        name: github-release
-        stages: [post-merge]
-        entry: sh gh-release-script.sh
+        entry: python3 ./release-script.py
         language: system
         pass_filenames: false
         verbose: true

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 2.2.3
+
+- Updated GitHub release script
+- Bumped `surrealdb` dependency from `2.0.4` to `2.1.0`
+
 ## 2.2.2
 
 - Reduced duplicate code throughout project by refactoring
