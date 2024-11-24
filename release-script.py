@@ -10,12 +10,19 @@ def check_gh_cli_installed():
     return result.returncode == 0
 
 def is_merge_commit():
-    result = subprocess.run(
-        ["git", "rev-parse", "-q", "--verify", "MERGE_HEAD"],
+    # TODO: this did not work and is a bug
+    most_recent_merge = subprocess.run(
+        ["git", "rev-list", "--merges", "-n", "1", "HEAD"],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        text=True
     )
-    return result.returncode == 0
+    current_head_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        stdout=subprocess.PIPE,
+        text=True
+    )
+
+    return most_recent_merge.stdout.strip() == current_head_commit.stdout.strip()
 
 def get_current_branch():
     result = subprocess.run(
