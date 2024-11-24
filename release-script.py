@@ -65,7 +65,7 @@ def create_binary_release():
 
 def create_gh_release(version):
     result = subprocess.run(
-        ['gh', 'release create', version, './target/release/tmgr', '--latest', '--generate-notes'],
+        ['gh', 'release', 'create', version, './target/release/tmgr', '--latest', '--generate-notes'],
         stdout=subprocess.PIPE,
         text=True
     )
