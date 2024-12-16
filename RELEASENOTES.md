@@ -1,5 +1,16 @@
 # Release Notes
 
+## 2.2.4
+
+- Bumped `clap` from 4.5.21 to 4.5.23
+- Bumped `serde` from 1.0.215 to 1.0.216
+- Bumped `surrealdb` from 2.1.0 to 2.1.3
+- Bumped `tokio` from 1.41.1 to 1.42.0
+- Bumped `semver` from 1.0.23 to 1.0.24
+- Bumped `colored` from 2.1.0 to 2.2.0
+- Bumped `chrono` from 0.4.38 to 0.4.39
+- Removed unused dependency `serde_json`
+
 ## 2.2.3
 
 - Updated GitHub release script
