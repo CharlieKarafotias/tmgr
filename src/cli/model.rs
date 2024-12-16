@@ -46,6 +46,8 @@ pub(crate) enum Command {
     },
     /// Info regarding file locations, current database, general statistics
     Status,
+    /// Launch the terminal user interface.
+    Tui,
     /// Update a task
     Update {
         /// The id of the task to update (can be partial)

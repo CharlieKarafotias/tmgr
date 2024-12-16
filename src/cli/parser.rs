@@ -23,6 +23,7 @@ pub async fn run() -> i32 {
         Command::List { all } => commands::list::run(&db, all).await,
         Command::Note { id, open } => commands::note::run(&db, id, open).await,
         Command::Status => commands::status::run(&db).await,
+        Command::Tui => commands::tui::run(&db).await,
         Command::Update {
             id,
             name,

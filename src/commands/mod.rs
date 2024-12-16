@@ -11,3 +11,4 @@ pub(crate) mod upgrade;
 pub(crate) mod view;
 
 mod tests;
+pub(crate) mod tui;
