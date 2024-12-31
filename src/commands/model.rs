@@ -12,7 +12,7 @@ where
     Ok(Some(t.to_raw()))
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub(crate) struct Task {
     #[serde(deserialize_with = "thing_to_string")]
     pub(crate) id: Option<String>,

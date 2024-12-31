@@ -87,7 +87,7 @@ impl std::fmt::Display for TaskPriority {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(crate) struct CommandResult<T> {
     message: String,
     result: T,

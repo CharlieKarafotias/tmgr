@@ -2,88 +2,103 @@ use crate::cli::model::CommandResult;
 use crate::commands::db::DB;
 use crate::commands::list;
 use crate::commands::model::Task;
-use ratatui::crossterm::execute;
-use ratatui::crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
-};
-use ratatui::prelude::CrosstermBackend;
-use ratatui::prelude::*;
-use ratatui::widgets::{Block, List};
 use ratatui::{
-    crossterm::event::{self, KeyCode, KeyEventKind},
+    crossterm::{
+        event::{self, KeyCode, KeyEventKind},
+        execute,
+        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    },
+    prelude::*,
     style::Stylize,
-    widgets::Paragraph,
-    CompletedFrame, Terminal,
+    widgets::{Block, List, ListState, Paragraph},
+    Terminal,
 };
 use std::error::Error;
 use std::io;
 
-pub enum CurrentScreen {
+const KEYBIND_QUIT: char = 'q';
+const KEYBIND_EDIT: char = 'e';
+
+enum CurrentScreen {
     Main,
     Editing,
     Exiting,
 }
 
-pub struct App<'a> {
-    pub current_screen: CurrentScreen,
-    pub db: &'a DB,
+struct App<'a> {
+    current_screen: CurrentScreen,
+    db: &'a DB,
+    current_task: ListState,
+    tasks: Vec<Task>,
 }
 
 impl<'a> App<'a> {
-    pub fn new(db: &'a DB) -> Self {
+    fn new(db: &'a DB) -> Self {
         App {
             current_screen: CurrentScreen::Main,
             db,
+            current_task: ListState::default(),
+            tasks: vec![],
         }
     }
 
-    fn render_main<'b>(
-        tasks: &Result<CommandResult<Vec<Task>>, Box<dyn Error>>,
-        terminal: &'b mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    ) -> io::Result<CompletedFrame<'b>> {
-        terminal.draw(|frame| {
-            let layout = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(vec![
-                    Constraint::Percentage(20),
-                    Constraint::Percentage(70),
-                    Constraint::Percentage(10),
-                ])
-                .split(frame.area());
-
-            let title = Paragraph::new("Todo Manager".bold().to_string())
-                .alignment(Alignment::Center)
-                .style(Style::default().fg(Color::Blue));
-            frame.render_widget(title, layout[0]);
-
-            match tasks {
-                Ok(cmd_result) => {
-                    let tasks = cmd_result.result();
-                    let list = List::new(tasks.iter().map(|t| t.name.as_str()))
-                        .block(Block::default().borders(ratatui::widgets::Borders::ALL));
-                    frame.render_widget(list, layout[1]);
-                }
-                Err(e) => {
-                    // TODO: add better error handling
-                    frame.render_widget(Text::from(e.to_string()), layout[1]);
-                }
+    async fn update_tasks(&mut self) {
+        let tasks: Result<CommandResult<Vec<Task>>, Box<dyn Error>> =
+            list::run(self.db, false).await;
+        match tasks {
+            Ok(cmd_result) => {
+                self.tasks = cmd_result.result().to_vec();
             }
-
-            let help_message = Paragraph::new("Press 'q' to quit");
-            frame.render_widget(help_message, layout[2]);
-        })
+            Err(e) => {
+                eprintln!("Error getting tasks: {}", e);
+            }
+        }
     }
 
-    pub async fn run(
+    fn get_tasks(&self) -> &Vec<Task> {
+        &self.tasks
+    }
+
+    fn widget_title() -> Paragraph<'a> {
+        Paragraph::new("Todo Manager".bold().to_string())
+            .alignment(Alignment::Center)
+            .style(Style::default().fg(Color::Blue))
+    }
+
+    fn widget_list(tasks: &[Task]) -> List {
+        List::new(tasks.iter().map(|t| t.name.to_string()))
+            .block(Block::default().borders(ratatui::widgets::Borders::ALL))
+            .highlight_symbol("> ")
+    }
+
+    async fn run(
         &mut self,
         mut terminal: Terminal<CrosstermBackend<io::Stdout>>,
     ) -> io::Result<()> {
-        let tasks: Result<CommandResult<Vec<Task>>, Box<dyn Error>> =
-            list::run(self.db, false).await;
+        self.update_tasks().await;
+
         loop {
             match self.current_screen {
                 CurrentScreen::Main => {
-                    Self::render_main(&tasks, &mut terminal).expect("TODO: panic message");
+                    let l = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints(vec![
+                            Constraint::Percentage(5),
+                            Constraint::Percentage(90),
+                            Constraint::Percentage(5),
+                        ]);
+                    let title_widget = Self::widget_title();
+                    let list_widget = Self::widget_list(self.get_tasks());
+                    let keybind_widget =
+                        Paragraph::new("Press 'q' to quit").alignment(Alignment::Center);
+
+                    terminal.draw(|frame| {
+                        let layout = l.split(frame.area());
+                        frame.render_widget(title_widget, layout[0]);
+                        // TODO: update to stateful
+                        frame.render_widget(list_widget, layout[1]);
+                        frame.render_widget(keybind_widget, layout[2]);
+                    })
                 }
                 CurrentScreen::Editing => {
                     // let _ = Self::render_main(&mut terminal);
@@ -93,13 +108,17 @@ impl<'a> App<'a> {
                     break;
                 }
             }
+            .expect("Could not render terminal");
 
+            // TODO: there's probably a better way
             if let event::Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('e') {
-                    self.current_screen = CurrentScreen::Editing;
-                }
-                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
-                    self.current_screen = CurrentScreen::Exiting;
+                if key.kind == KeyEventKind::Press {
+                    if key.code == KeyCode::Char(KEYBIND_QUIT) {
+                        self.current_screen = CurrentScreen::Exiting;
+                    }
+                    if key.code == KeyCode::Char(KEYBIND_EDIT) {
+                        self.current_screen = CurrentScreen::Editing;
+                    }
                 }
             }
         }
