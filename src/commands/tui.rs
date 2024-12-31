@@ -1,4 +1,6 @@
+use crate::cli::model::CommandResult;
 use crate::commands::db::DB;
+use crate::commands::list;
 use crate::commands::model::Task;
 use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal::{
@@ -6,12 +8,14 @@ use ratatui::crossterm::terminal::{
 };
 use ratatui::prelude::CrosstermBackend;
 use ratatui::prelude::*;
+use ratatui::widgets::{Block, List};
 use ratatui::{
     crossterm::event::{self, KeyCode, KeyEventKind},
     style::Stylize,
     widgets::Paragraph,
     CompletedFrame, Terminal,
 };
+use std::error::Error;
 use std::io;
 
 pub enum CurrentScreen {
@@ -34,7 +38,7 @@ impl<'a> App<'a> {
     }
 
     fn render_main<'b>(
-        tasks: &[Task],
+        tasks: &Result<CommandResult<Vec<Task>>, Box<dyn Error>>,
         terminal: &'b mut Terminal<CrosstermBackend<std::io::Stdout>>,
     ) -> io::Result<CompletedFrame<'b>> {
         terminal.draw(|frame| {
@@ -52,9 +56,18 @@ impl<'a> App<'a> {
                 .style(Style::default().fg(Color::Blue));
             frame.render_widget(title, layout[0]);
 
-            let list = ratatui::widgets::List::new(tasks.iter().map(|t| t.name.clone()))
-                .block(ratatui::widgets::Block::default().borders(ratatui::widgets::Borders::ALL));
-            frame.render_widget(list, layout[1]);
+            match tasks {
+                Ok(cmd_result) => {
+                    let tasks = cmd_result.result();
+                    let list = List::new(tasks.iter().map(|t| t.name.as_str()))
+                        .block(Block::default().borders(ratatui::widgets::Borders::ALL));
+                    frame.render_widget(list, layout[1]);
+                }
+                Err(e) => {
+                    // TODO: add better error handling
+                    frame.render_widget(Text::from(e.to_string()), layout[1]);
+                }
+            }
 
             let help_message = Paragraph::new("Press 'q' to quit");
             frame.render_widget(help_message, layout[2]);
@@ -65,9 +78,8 @@ impl<'a> App<'a> {
         &mut self,
         mut terminal: Terminal<CrosstermBackend<io::Stdout>>,
     ) -> io::Result<()> {
-        // TODO: should be able to just call run list command instead. Refactor how commands work
-        // return actual types instead of strings (make new CommandResult struct)
-        let tasks: Vec<Task> = self.db.client.select("task").await.unwrap();
+        let tasks: Result<CommandResult<Vec<Task>>, Box<dyn Error>> =
+            list::run(self.db, false).await;
         loop {
             match self.current_screen {
                 CurrentScreen::Main => {
@@ -96,7 +108,7 @@ impl<'a> App<'a> {
     }
 }
 
-pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run(db: &DB) -> Result<CommandResult<()>, Box<dyn std::error::Error>> {
     // start terminal
     enable_raw_mode()?;
     execute!(io::stdout(), EnterAlternateScreen)?;
@@ -108,5 +120,6 @@ pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
     // restore terminal
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen,)?;
-    Ok(String::from(""))
+
+    Ok(CommandResult::new("".to_string(), ()))
 }

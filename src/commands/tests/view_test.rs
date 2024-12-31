@@ -77,8 +77,8 @@ async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_retur
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 
-    let res = view::run(&db, id.clone()).await;
-    let res_str = res.unwrap();
+    let res = view::run(&db, id.clone()).await.unwrap();
+    let res_str = res.message();
     assert!(res_str.contains("test"));
     assert!(res_str.contains("medium"));
     assert!(res_str.contains("some description"));

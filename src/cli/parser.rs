@@ -12,29 +12,58 @@ pub async fn run() -> i32 {
         commands::db::DB::new().await
     };
 
-    let res: Result<String, Box<dyn std::error::Error>> = match input.command {
+    let result = match input.command {
         Command::Add {
             name,
             priority,
             description,
-        } => commands::add::run(&db, name, priority, description).await,
-        Command::Complete { id } => commands::complete::run(&db, id).await,
-        Command::Delete { id } => commands::delete::run(&db, id).await,
-        Command::List { all } => commands::list::run(&db, all).await,
-        Command::Note { id, open } => commands::note::run(&db, id, open).await,
-        Command::Status => commands::status::run(&db).await,
-        Command::Tui => commands::tui::run(&db).await,
+        } => {
+            let res = commands::add::run(&db, name, priority, description).await;
+            handle_result(res).await
+        }
+        Command::Complete { id } => {
+            let res = commands::complete::run(&db, id).await;
+            handle_result(res).await
+        }
+        Command::Delete { id } => {
+            let res = commands::delete::run(&db, id).await;
+            handle_result(res).await
+        }
+        Command::List { all } => {
+            let res = commands::list::run(&db, all).await;
+            handle_result(res).await
+        }
+        Command::Note { id, open } => {
+            let res = commands::note::run(&db, id, open).await;
+            handle_result(res).await
+        }
+        Command::Status => {
+            let res = commands::status::run(&db).await;
+            handle_result(res).await
+        }
+        Command::Tui => {
+            let res = commands::tui::run(&db).await;
+            handle_result(res).await
+        }
         Command::Update {
             id,
             name,
             priority,
             description,
-        } => commands::update::run(&db, id, name, priority, description).await,
-        Command::Upgrade => commands::upgrade::run().await,
-        Command::View { id } => commands::view::run(&db, id).await,
+        } => {
+            let res = commands::update::run(&db, id, name, priority, description).await;
+            handle_result(res).await
+        }
+        Command::Upgrade => {
+            let res = commands::upgrade::run().await;
+            handle_result(res).await
+        }
+        Command::View { id } => {
+            let res = commands::view::run(&db, id).await;
+            handle_result(res).await
+        }
     };
 
-    let result = handle_result(res).await;
     println!("{}", result.result_string);
     result.exit_code
 }

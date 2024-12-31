@@ -6,8 +6,8 @@ async fn given_no_existing_tasks_when_listing_all_tasks_then_no_tasks_should_be_
     let db = db::DB::new_test().await;
     let res = list::run(&db, true).await;
     assert!(res.is_ok());
-    let res_str = res.unwrap();
-    assert_eq!(res_str.contains("task:"), false);
+    let res = res.unwrap();
+    assert_eq!(res.message().contains("task:"), false);
 }
 
 #[tokio::test]
@@ -15,8 +15,7 @@ async fn given_no_existing_tasks_when_listing_in_progress_tasks_then_no_tasks_sh
     let db = db::DB::new_test().await;
     let res = list::run(&db, false).await;
     assert!(res.is_ok());
-    let res_str = res.unwrap();
-    assert_eq!(res_str.contains("task:"), false);
+    assert_eq!(res.unwrap().message().contains("task:"), false);
 }
 
 #[tokio::test]
@@ -31,8 +30,8 @@ async fn given_existing_tasks_when_listing_all_tasks_then_all_tasks_should_be_re
     let res = list::run(&db, true).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert!(res_str.to_lowercase().contains("a new task"));
-    assert!(res_str.to_lowercase().contains("high"));
+    assert!(res_str.message().to_lowercase().contains("a new task"));
+    assert!(res_str.message().to_lowercase().contains("high"));
 }
 
 #[tokio::test]
@@ -50,6 +49,12 @@ async fn given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progre
     let res = list::run(&db, false).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert!(res_str.to_lowercase().contains("in progress task"));
-    assert_eq!(res_str.to_lowercase().contains("Completed task"), false);
+    assert!(res_str
+        .message()
+        .to_lowercase()
+        .contains("in progress task"));
+    assert_eq!(
+        res_str.message().to_lowercase().contains("Completed task"),
+        false
+    );
 }

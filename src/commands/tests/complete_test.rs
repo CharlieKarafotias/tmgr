@@ -23,9 +23,9 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
     let id = new_task[0].id.clone().unwrap().replace("task:", "");
     let res = complete::run(&db, id.clone()).await;
 
-    let res_str = res.unwrap();
+    let res = res.unwrap();
     assert_eq!(
-        res_str,
+        res.message(),
         format!("Successfully updated task '{id}' to completed")
     );
 
@@ -49,9 +49,9 @@ async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the
     let id = new_task[0].id.clone().unwrap().replace("task:", "");
     let res = complete::run(&db, id.clone()).await;
     assert!(res.is_ok());
-    let res_str = res.unwrap();
+    let res = res.unwrap();
     assert_eq!(
-        res_str,
+        res.message(),
         format!("Successfully updated task '{id}' to completed")
     );
 

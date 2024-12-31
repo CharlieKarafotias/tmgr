@@ -1,7 +1,8 @@
+use crate::cli::model::CommandResult;
 use crate::commands::db::DB;
 use std::env::current_exe;
 
-pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run(db: &DB) -> Result<CommandResult<String>, Box<dyn std::error::Error>> {
     let mut res = String::new();
     res.push_str("File locations:\n");
     res.push_str(&format!(
@@ -33,7 +34,8 @@ pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
         res.push_str("  total tasks: unable to determine number of tasks in current database\n");
     }
 
-    Ok(res)
+    // TODO: probably want a hashmap/struct returned for each status field
+    Ok(CommandResult::new(res.clone(), res))
 }
 
 struct TaskCount {

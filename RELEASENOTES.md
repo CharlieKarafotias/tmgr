@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.2.4
+
+- New `tui` command to allow for a more interactive experience with tmgr
+
 ## 2.2.3
 
 - Updated GitHub release script

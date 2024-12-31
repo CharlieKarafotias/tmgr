@@ -1,4 +1,4 @@
-use crate::cli::model::TaskPriority;
+use crate::cli::model::{CommandResult, TaskPriority};
 use crate::commands::db::DB;
 use crate::commands::model::Task;
 
@@ -8,7 +8,7 @@ pub(crate) async fn run(
     name: Option<String>,
     priority: Option<TaskPriority>,
     description: Option<String>,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<CommandResult<Task>, Box<dyn std::error::Error>> {
     if name.is_none() && priority.is_none() && description.is_none() {
         return Err("No fields to update".into());
     }
@@ -30,11 +30,18 @@ pub(crate) async fn run(
         .flatten(),
     );
 
-    let _: Option<Task> = db
+    let res: Option<Task> = db
         .client
         .update(("task", &task_id))
         .merge(update_map)
         .await?;
 
-    Ok(format!("Successfully updated task '{task_id}'"))
+    if let Some(task) = res {
+        Ok(CommandResult::new(
+            format!("Successfully updated task '{task_id}'"),
+            task,
+        ))
+    } else {
+        Err("Failed to update task".to_string().into())
+    }
 }

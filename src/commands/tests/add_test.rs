@@ -55,5 +55,5 @@ async fn given_the_add_command_when_adding_a_new_task_then_the_command_should_re
     let res = add::run(&db, "test".to_string(), TaskPriority::Medium, None).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert!(res_str.contains("created successfully"));
+    assert!(res_str.message().contains("created successfully"));
 }

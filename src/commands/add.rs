@@ -1,6 +1,6 @@
 use super::db::DB;
 use super::model::Task;
-use crate::cli::model::TaskPriority;
+use crate::cli::model::{CommandResult, TaskPriority};
 use surrealdb::sql::Datetime;
 
 pub(crate) async fn run(
@@ -8,7 +8,7 @@ pub(crate) async fn run(
     name: String,
     priority: TaskPriority,
     description: Option<String>,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<CommandResult<Task>, Box<dyn std::error::Error>> {
     let task: Option<Task> = db
         .client
         .create("task")
@@ -25,7 +25,10 @@ pub(crate) async fn run(
         .map_err(|_| format!("Failed to create task '{name}'."))?;
 
     if let Some(task) = task {
-        Ok(format!("Task '{}' created successfully", task.get_id()?))
+        Ok(CommandResult::new(
+            format!("Task '{}' created successfully", task.get_id()?),
+            task,
+        ))
     } else {
         Err("Failed to create task".to_string().into())
     }

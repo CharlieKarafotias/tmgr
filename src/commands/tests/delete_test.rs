@@ -22,8 +22,8 @@ async fn given_existing_tasks_when_deleting_a_task_then_the_task_should_be_delet
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
     let res = delete::run(&db, id.clone()).await;
     assert!(res.is_ok());
-    let res_str = res.unwrap();
-    assert_eq!(res_str, format!("Successfully deleted task '{id}'"));
+    let res = res.unwrap();
+    assert_eq!(res.message(), format!("Successfully deleted task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 0);

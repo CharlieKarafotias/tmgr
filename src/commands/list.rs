@@ -1,8 +1,12 @@
+use crate::cli::model::CommandResult;
 use crate::commands::db::DB;
 use crate::commands::model::Task;
 use comfy_table::Table;
 
-pub(crate) async fn run(db: &DB, all: bool) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run(
+    db: &DB,
+    all: bool,
+) -> Result<CommandResult<Vec<Task>>, Box<dyn std::error::Error>> {
     let tasks: Vec<Task> = if all {
         db.client.select("task").await?
     } else {
@@ -22,18 +26,20 @@ pub(crate) async fn run(db: &DB, all: bool) -> Result<String, Box<dyn std::error
             "completed_at",
         ]);
 
-    for t in tasks {
+    for t in &tasks {
         table.add_row(vec![
-            &t.get_id()?,
-            &t.name,
-            &t.priority,
-            &t.description.unwrap_or_default(),
-            &t.created_at.to_string(),
-            &t.completed_at
+            t.get_id()?.as_str(),
+            t.name.as_str(),
+            t.priority.as_str(),
+            t.description.as_deref().unwrap_or_default(),
+            t.created_at.to_string().as_str(),
+            t.completed_at
+                .clone()
                 .map(|s| s.to_string())
-                .unwrap_or("In progress".to_string()),
+                .unwrap_or("In progress".to_string())
+                .as_str(),
         ]);
     }
 
-    Ok(table.to_string())
+    Ok(CommandResult::new(table.to_string(), tasks))
 }

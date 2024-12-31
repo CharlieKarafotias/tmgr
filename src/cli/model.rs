@@ -86,3 +86,23 @@ impl std::fmt::Display for TaskPriority {
             .fmt(f)
     }
 }
+
+#[derive(Debug)]
+pub(crate) struct CommandResult<T> {
+    message: String,
+    result: T,
+}
+
+impl<T> CommandResult<T> {
+    pub(crate) fn new(message: String, result: T) -> Self {
+        Self { message, result }
+    }
+
+    pub(crate) fn message(&self) -> &str {
+        &self.message
+    }
+
+    pub(crate) fn result(&self) -> &T {
+        &self.result
+    }
+}

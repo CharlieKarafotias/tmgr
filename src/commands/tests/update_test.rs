@@ -45,9 +45,10 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 
-    let res = update::run(&db, id.clone(), None, Some(TaskPriority::High), None).await;
-    assert!(res.is_ok());
-    let res_str = res.unwrap();
+    let res = update::run(&db, id.clone(), None, Some(TaskPriority::High), None)
+        .await
+        .unwrap();
+    let res_str = res.message();
     assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
@@ -76,9 +77,9 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
         None,
         Some("new description".to_string()),
     )
-    .await;
-    assert!(res.is_ok());
-    let res_str = res.unwrap();
+    .await
+    .unwrap();
+    let res_str = res.message();
     assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
@@ -101,9 +102,10 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
     let id = db_res[0].id.clone().unwrap().replace("task:", "");
 
-    let res = update::run(&db, id.clone(), Some("test2".to_string()), None, None).await;
-    assert!(res.is_ok());
-    let res_str = res.unwrap();
+    let res = update::run(&db, id.clone(), Some("test2".to_string()), None, None)
+        .await
+        .unwrap();
+    let res_str = res.message();
     assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
@@ -137,9 +139,10 @@ async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fiel
         Some(TaskPriority::High),
         Some("new description".to_string()),
     )
-    .await;
-    assert!(res.is_ok());
-    let res_str = res.unwrap();
+    .await
+    .unwrap();
+
+    let res_str = res.message();
     assert_eq!(res_str, format!("Successfully updated task '{id}'"));
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
