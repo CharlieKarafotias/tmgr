@@ -10,14 +10,17 @@ use ratatui::{
     },
     prelude::*,
     style::Stylize,
-    widgets::{Block, List, ListState, Paragraph},
+    widgets::{Block, List, ListState, Paragraph, Row, Table},
     Terminal,
 };
 use std::error::Error;
 use std::io;
 
-const KEYBIND_QUIT: char = 'q';
-const KEYBIND_EDIT: char = 'e';
+const KEYBIND_COUNT: usize = 4;
+const KEYBIND_QUIT: KeyCode = KeyCode::Char('q');
+const KEYBIND_EDIT: KeyCode = KeyCode::Char('e');
+const KEYBIND_UP: KeyCode = KeyCode::Up;
+const KEYBIND_DOWN: KeyCode = KeyCode::Down;
 
 enum CurrentScreen {
     Main,
@@ -28,7 +31,7 @@ enum CurrentScreen {
 struct App<'a> {
     current_screen: CurrentScreen,
     db: &'a DB,
-    current_task: ListState,
+    list_state: ListState,
     tasks: Vec<Task>,
 }
 
@@ -37,7 +40,7 @@ impl<'a> App<'a> {
         App {
             current_screen: CurrentScreen::Main,
             db,
-            current_task: ListState::default(),
+            list_state: ListState::default(),
             tasks: vec![],
         }
     }
@@ -48,6 +51,9 @@ impl<'a> App<'a> {
         match tasks {
             Ok(cmd_result) => {
                 self.tasks = cmd_result.result().to_vec();
+                if !self.tasks.is_empty() {
+                    self.list_state.select(Some(0));
+                }
             }
             Err(e) => {
                 eprintln!("Error getting tasks: {}", e);
@@ -71,6 +77,38 @@ impl<'a> App<'a> {
             .highlight_symbol("> ")
     }
 
+    fn widget_keybinds() -> Table<'a> {
+        // Renders like:  Key | Description
+        assert_eq!(KEYBIND_COUNT, 4);
+        let rows = vec![
+            Row::new(vec!["↑", "Previous Task"]),
+            Row::new(vec!["↓", "Next Task"]),
+            Row::new(vec!["e", "Edit Current Task"]),
+            Row::new(vec!["q", "Quit"]),
+        ];
+        Table::new(
+            rows,
+            [Constraint::Percentage(10), Constraint::Percentage(90)],
+        )
+        .header(
+            Row::new(vec!["Key", "Action"])
+                .bottom_margin(1)
+                .style(Style::default().add_modifier(Modifier::BOLD)),
+        )
+        .column_spacing(1)
+        .block(Block::default())
+    }
+
+    fn app_layout() -> Layout {
+        Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![
+                Constraint::Percentage(5),
+                Constraint::Percentage(80),
+                Constraint::Percentage(15),
+            ])
+    }
+
     async fn run(
         &mut self,
         mut terminal: Terminal<CrosstermBackend<io::Stdout>>,
@@ -80,45 +118,47 @@ impl<'a> App<'a> {
         loop {
             match self.current_screen {
                 CurrentScreen::Main => {
-                    let l = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints(vec![
-                            Constraint::Percentage(5),
-                            Constraint::Percentage(90),
-                            Constraint::Percentage(5),
-                        ]);
                     let title_widget = Self::widget_title();
                     let list_widget = Self::widget_list(self.get_tasks());
-                    let keybind_widget =
-                        Paragraph::new("Press 'q' to quit").alignment(Alignment::Center);
+                    let keybind_widget = Self::widget_keybinds();
+                    let mut list_state = self.list_state.clone();
 
-                    terminal.draw(|frame| {
-                        let layout = l.split(frame.area());
-                        frame.render_widget(title_widget, layout[0]);
-                        // TODO: update to stateful
-                        frame.render_widget(list_widget, layout[1]);
-                        frame.render_widget(keybind_widget, layout[2]);
-                    })
+                    terminal
+                        .draw(|frame| {
+                            let layout = Self::app_layout().split(frame.area());
+                            frame.render_widget(title_widget, layout[0]);
+                            // TODO: update to stateful
+                            frame.render_stateful_widget(list_widget, layout[1], &mut list_state);
+                            frame.render_widget(keybind_widget, layout[2]);
+                        })
+                        .expect("Could not render main screen");
+
+                    // TODO: there's probably a better way
+                    if let event::Event::Key(key) = event::read()? {
+                        assert_eq!(KEYBIND_COUNT, 4);
+                        if key.kind == KeyEventKind::Press {
+                            if key.code == KEYBIND_QUIT {
+                                self.current_screen = CurrentScreen::Exiting;
+                            }
+                            if key.code == KEYBIND_EDIT {
+                                self.current_screen = CurrentScreen::Editing;
+                            }
+                            if key.code == KEYBIND_UP {
+                                list_state.select_previous();
+                            }
+                            if key.code == KEYBIND_DOWN {
+                                list_state.select_next();
+                            }
+                        }
+                    }
+
+                    self.list_state = list_state;
                 }
                 CurrentScreen::Editing => {
-                    // let _ = Self::render_main(&mut terminal);
                     todo!()
                 }
                 CurrentScreen::Exiting => {
                     break;
-                }
-            }
-            .expect("Could not render terminal");
-
-            // TODO: there's probably a better way
-            if let event::Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press {
-                    if key.code == KeyCode::Char(KEYBIND_QUIT) {
-                        self.current_screen = CurrentScreen::Exiting;
-                    }
-                    if key.code == KeyCode::Char(KEYBIND_EDIT) {
-                        self.current_screen = CurrentScreen::Editing;
-                    }
                 }
             }
         }
