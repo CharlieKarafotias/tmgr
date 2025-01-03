@@ -85,6 +85,27 @@ impl Task {
             Err("Task ID is not set".into())
         }
     }
+
+    pub(crate) fn key_values(&self) -> Vec<(String, String)> {
+        vec![
+            ("id".into(), self.get_id().unwrap_or_default()),
+            ("name".into(), self.name.clone()),
+            ("priority".into(), self.priority.clone()),
+            (
+                "description".into(),
+                self.description.clone().unwrap_or_default(),
+            ),
+            (
+                "work_note_path".into(),
+                self.work_note_path.clone().unwrap_or_default(),
+            ),
+            ("created_at".into(), self.created_at.to_string()),
+            (
+                "completed_at".into(),
+                self.completed_at.clone().unwrap_or_default().to_string(),
+            ),
+        ]
+    }
 }
 #[allow(dead_code)]
 impl Task {

@@ -2,10 +2,11 @@ use crate::commands::{
     model::Task,
     tui::app::{App, CurrentScreen},
 };
+use ratatui::widgets::Padding;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style, Stylize},
-    widgets::{Block, Borders, List, Paragraph},
+    widgets::{Block, Borders, List, Paragraph, Row, Table},
     Frame,
 };
 
@@ -21,8 +22,10 @@ pub(super) fn ui(frame: &mut Frame, app: &mut App) {
         CurrentScreen::Task => {
             let layout = layout(vec![5, 85, 10], Direction::Vertical);
             let l = layout.split(frame.area());
+            let current_task = &app.tasks[app.list_state.selected().expect("No task selected")];
             frame.render_widget(title_widget(), l[0]);
-            frame.render_stateful_widget(list_widget(&app.tasks), l[1], &mut app.list_state);
+            // TODO: add ability to update fields of Task
+            frame.render_widget(edit_widget(current_task), l[1]);
             frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
         }
         _ => {}
@@ -69,11 +72,11 @@ fn list_widget(tasks: &[Task]) -> List {
 /// Returns:
 ///     A `Paragraph` widget configured with the keybindings display.
 fn keybind_widget(app: &App, current_screen: &CurrentScreen) -> Paragraph<'static> {
-    // TODO: add padding (getting error right now when I add padding where the bindings disappear)
     let block = Block::new()
-        .borders(Borders::TOP | Borders::BOTTOM)
+        .borders(Borders::TOP)
         .title_top("Keybinds")
-        .title_alignment(Alignment::Center);
+        .title_alignment(Alignment::Center)
+        .padding(Padding::uniform(1));
 
     let bindings = app
         .get_keybindings(current_screen)
@@ -89,9 +92,22 @@ fn keybind_widget(app: &App, current_screen: &CurrentScreen) -> Paragraph<'stati
         .style(Style::default().fg(Color::Blue))
 }
 
-// TODO: implement edit_widget
-
-// TODO: implement exit_widget
+fn edit_widget(task: &Task) -> Table {
+    let constraints = Constraint::from_percentages([25, 75]);
+    let rows: Vec<Row> = task
+        .key_values()
+        .iter()
+        .map(|(k, v)| Row::new(vec![k.to_string(), v.to_string()]))
+        .collect();
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title("Viewing task ".to_owned() + task.get_id().unwrap_or_default().as_str())
+        .title_alignment(Alignment::Center)
+        .padding(Padding::uniform(1));
+    Table::new(rows, constraints)
+        .block(block)
+        .header(Row::new(vec!["Key", "Value"]))
+}
 
 /// Construct a Layout with the given constraints and direction.
 ///
