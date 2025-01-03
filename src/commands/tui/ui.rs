@@ -10,15 +10,21 @@ use ratatui::{
 };
 
 pub(super) fn ui(frame: &mut Frame, app: &mut App) {
-    match app.current_screen {
+    match app.get_current_screen() {
         CurrentScreen::TaskList => {
             let layout = layout(vec![5, 85, 10], Direction::Vertical);
             let l = layout.split(frame.area());
             frame.render_widget(title_widget(), l[0]);
             frame.render_stateful_widget(list_widget(&app.tasks), l[1], &mut app.list_state);
-            frame.render_widget(keybind_widget(), l[2]);
+            frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
         }
-        CurrentScreen::Task => todo!(),
+        CurrentScreen::Task => {
+            let layout = layout(vec![5, 85, 10], Direction::Vertical);
+            let l = layout.split(frame.area());
+            frame.render_widget(title_widget(), l[0]);
+            frame.render_stateful_widget(list_widget(&app.tasks), l[1], &mut app.list_state);
+            frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
+        }
     }
 }
 
@@ -61,24 +67,20 @@ fn list_widget(tasks: &[Task]) -> List {
 ///
 /// Returns:
 ///     A `Paragraph` widget configured with the keybindings display.
-fn keybind_widget() -> Paragraph<'static> {
+fn keybind_widget(app: &App, current_screen: &CurrentScreen) -> Paragraph<'static> {
     // TODO: add padding (getting error right now when I add padding where the bindings disappear)
     let block = Block::new()
         .borders(Borders::TOP | Borders::BOTTOM)
         .title_top("Keybinds")
         .title_alignment(Alignment::Center);
 
-    // TODO: store bindings by screen instead of this approach
-    let bindings = [
-        ("↑", "Previous Task"),
-        ("↓", "Next Task"),
-        ("Enter", "Select Task"),
-        ("q", "Quit"),
-    ]
-    .iter()
-    .map(|(key, description)| format!("{} - {}", key, description))
-    .collect::<Vec<String>>()
-    .join(" | ");
+    let bindings = app
+        .get_keybindings(current_screen)
+        .unwrap_or(&vec![])
+        .iter()
+        .map(|k| format!("{} - {}", k.key(), k.description()))
+        .collect::<Vec<String>>()
+        .join(" | ");
 
     Paragraph::new(bindings)
         .centered()
