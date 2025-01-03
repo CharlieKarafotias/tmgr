@@ -11,6 +11,7 @@ use std::collections::HashMap;
 pub(super) enum CurrentScreen {
     TaskList,
     Task,
+    Exit,
 }
 
 pub(super) struct App {
@@ -58,10 +59,10 @@ impl App {
                 CurrentScreen::TaskList,
                 vec![
                     KeyBinding::new(KeyCode::Enter, String::from("Select Task"), |app| {
-                        app.set_current_screen(CurrentScreen::Task)
+                        app.current_screen = CurrentScreen::Task
                     }),
                     KeyBinding::new(KeyCode::Char('q'), String::from("Quit"), |app| {
-                        app.set_current_screen(CurrentScreen::TaskList)
+                        app.current_screen = CurrentScreen::Exit
                     }),
                     KeyBinding::new(KeyCode::Up, String::from("Previous Task"), |app| {
                         app.list_state.select_previous()
@@ -76,7 +77,7 @@ impl App {
                 vec![KeyBinding::new(
                     KeyCode::Char('q'),
                     String::from("Quit"),
-                    |app| app.set_current_screen(CurrentScreen::TaskList),
+                    |app| app.current_screen = CurrentScreen::TaskList,
                 )],
             ),
         ]);
@@ -94,39 +95,18 @@ impl App {
         terminal: &mut Terminal<B>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         loop {
+            if self.current_screen == CurrentScreen::Exit {
+                break;
+            }
             terminal.draw(|f| ui(f, self))?;
             if let Event::Key(key) = event::read()? {
-                match key.kind {
-                    // TODO: finish this, need to use keybindings and actions
-                    event::KeyEventKind::Press => match self.current_screen {
-                        CurrentScreen::TaskList => match key.code {
-                            KeyCode::Enter => {
-                                self.set_current_screen(CurrentScreen::Task);
-                            }
-                            KeyCode::Char('q') => {
-                                break;
-                            }
-                            KeyCode::Up => self.list_state.select_previous(),
-                            KeyCode::Down => self.list_state.select_next(),
-                            _ => (),
-                        },
-                        CurrentScreen::Task => match key.code {
-                            KeyCode::Char('q') => {
-                                break;
-                            }
-                            _ => (),
-                        },
-                    },
-                    _ => continue,
+                if key.kind == event::KeyEventKind::Press {
+                    self.get_keybind_action(&self.current_screen, &key.code)
+                        .map_or((), |action| action(self))
                 }
             }
         }
         Ok(())
-    }
-
-    fn set_current_screen(&mut self, screen: CurrentScreen) {
-        self.current_screen = screen;
-        // TODO: update key bindings
     }
 
     pub(super) fn get_current_screen(&self) -> &CurrentScreen {
@@ -135,5 +115,12 @@ impl App {
 
     pub(super) fn get_keybindings(&self, screen: &CurrentScreen) -> Option<&Vec<KeyBinding>> {
         self.keybindings.get(screen)
+    }
+
+    fn get_keybind_action(&self, screen: &CurrentScreen, key: &KeyCode) -> Option<fn(&mut App)> {
+        self.keybindings
+            .get(screen)
+            .and_then(|keybindings| keybindings.iter().find(|kb| kb.key() == *key))
+            .map(|kb| kb.action)
     }
 }

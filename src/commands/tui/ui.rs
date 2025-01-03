@@ -25,6 +25,7 @@ pub(super) fn ui(frame: &mut Frame, app: &mut App) {
             frame.render_stateful_widget(list_widget(&app.tasks), l[1], &mut app.list_state);
             frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
         }
+        _ => {}
     }
 }
 
