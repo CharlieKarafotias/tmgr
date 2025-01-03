@@ -1,8 +1,11 @@
 use crate::commands::db::DB;
+use crate::commands::list;
+use crate::commands::model::Task;
 use crate::commands::tui::ui::ui;
 use ratatui::backend::Backend;
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::Event;
+use ratatui::widgets::ListState;
 use ratatui::Terminal;
 
 pub(super) enum CurrentScreen {
@@ -10,17 +13,26 @@ pub(super) enum CurrentScreen {
     Task,
 }
 
-pub(super) struct App<'a> {
+pub(super) struct App {
     pub(super) current_screen: CurrentScreen,
-    db: &'a DB,
+    pub(super) list_state: ListState,
+    pub(super) tasks: Vec<Task>,
 }
 
-impl<'a> App<'a> {
-    pub(super) fn new(db: &'a DB) -> Self {
-        App {
+impl App {
+    pub(super) async fn new(db: &DB) -> Result<Self, Box<dyn std::error::Error>> {
+        // TODO: could list take in a filter & sort param too?
+        let list_cmd_res = list::run(db, false).await?;
+        // TODO: is there a better way than cloning?
+        let tasks = list_cmd_res.result().clone();
+        let mut list_state = ListState::default();
+        list_state.select_first();
+
+        Ok(App {
             current_screen: CurrentScreen::TaskList,
-            db,
-        }
+            list_state,
+            tasks,
+        })
     }
 
     pub(super) fn run<B: Backend>(
@@ -43,6 +55,8 @@ impl<'a> App<'a> {
                         event::KeyCode::Char('q') => {
                             break;
                         }
+                        event::KeyCode::Up => self.list_state.select_previous(),
+                        event::KeyCode::Down => self.list_state.select_next(),
                         _ => (),
                     },
                     CurrentScreen::Task => todo!("Not implemented yet"),

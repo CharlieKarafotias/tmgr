@@ -1,15 +1,17 @@
+use crate::commands::model::Task;
 use crate::commands::tui::app::{App, CurrentScreen};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout};
 use ratatui::style::{Color, Style, Stylize};
-use ratatui::widgets::{Block, Borders, Paragraph};
+use ratatui::widgets::{Block, Borders, List, Paragraph};
 use ratatui::Frame;
 
-pub(super) fn ui(frame: &mut Frame, app: &App) {
+pub(super) fn ui(frame: &mut Frame, app: &mut App) {
     match app.current_screen {
         CurrentScreen::TaskList => {
             let layout = layout(vec![5, 85, 10], Direction::Vertical);
             let l = layout.split(frame.area());
             frame.render_widget(title_widget(), l[0]);
+            frame.render_stateful_widget(list_widget(&app.tasks), l[1], &mut app.list_state);
             frame.render_widget(keybind_widget(), l[2]);
         }
         CurrentScreen::Task => todo!(),
@@ -28,6 +30,9 @@ fn title_widget() -> Paragraph<'static> {
 }
 
 // TODO: implement list_widget
+fn list_widget(tasks: &[Task]) -> List {
+    List::new(tasks.iter().map(|t| t.name.to_string())).highlight_symbol("> ")
+}
 
 /// Constructs a `Paragraph` widget displaying keybindings for the UI.
 ///
@@ -47,6 +52,7 @@ fn keybind_widget() -> Paragraph<'static> {
         .title_top("Keybinds")
         .title_alignment(Alignment::Center);
 
+    // TODO: store bindings by screen instead of this approach
     let bindings = [
         ("↑", "Previous Task"),
         ("↓", "Next Task"),
