@@ -1,9 +1,13 @@
-use crate::commands::model::Task;
-use crate::commands::tui::app::{App, CurrentScreen};
-use ratatui::layout::{Alignment, Constraint, Direction, Layout};
-use ratatui::style::{Color, Style, Stylize};
-use ratatui::widgets::{Block, Borders, List, Paragraph};
-use ratatui::Frame;
+use crate::commands::{
+    model::Task,
+    tui::app::{App, CurrentScreen},
+};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Color, Style, Stylize},
+    widgets::{Block, Borders, List, Paragraph},
+    Frame,
+};
 
 pub(super) fn ui(frame: &mut Frame, app: &mut App) {
     match app.current_screen {
@@ -29,7 +33,19 @@ fn title_widget() -> Paragraph<'static> {
         .style(Style::default().fg(Color::Blue))
 }
 
-// TODO: implement list_widget
+/// Constructs a `List` widget displaying a list of tasks.
+///
+/// The widget is configured to highlight the currently selected item
+/// with a `"> "` symbol. The list items are the `name`s of the tasks
+/// passed in.
+///
+/// # Arguments
+///
+/// * `tasks`: The tasks to display in the list.
+///
+/// # Returns
+///
+/// A `List` widget displaying the list of tasks.
 fn list_widget(tasks: &[Task]) -> List {
     List::new(tasks.iter().map(|t| t.name.to_string())).highlight_symbol("> ")
 }
@@ -75,6 +91,17 @@ fn keybind_widget() -> Paragraph<'static> {
 
 // TODO: implement exit_widget
 
+/// Construct a Layout with the given constraints and direction.
+///
+/// # Arguments
+///
+/// * `constraints`: A vector of percentages that represent the width of each
+///   item in the layout.
+/// * `direction`: The direction of the layout.
+///
+/// # Returns
+///
+/// A Layout with the given constraints and direction.
 fn layout(constraints: Vec<u16>, direction: Direction) -> Layout {
     let constraints: Vec<Constraint> = constraints
         .iter()
