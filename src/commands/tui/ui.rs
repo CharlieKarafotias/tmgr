@@ -73,7 +73,6 @@ fn keybind_widget() -> Paragraph<'static> {
         ("↑", "Previous Task"),
         ("↓", "Next Task"),
         ("Enter", "Select Task"),
-        ("e", "Edit Current Task"),
         ("q", "Quit"),
     ]
     .iter()

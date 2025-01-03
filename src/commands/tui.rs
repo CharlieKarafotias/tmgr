@@ -19,6 +19,7 @@ pub(crate) async fn run(db: &DB) -> Result<CommandResult<()>, Box<dyn Error>> {
     execute!(io::stdout(), EnterAlternateScreen)?;
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
 
+    // TODO: on a panic, need to find a way to restore the terminal correctly
     let mut app = App::new(db).await?;
     let _res = app.run(&mut terminal);
 

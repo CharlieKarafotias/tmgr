@@ -1,12 +1,11 @@
-use crate::commands::db::DB;
-use crate::commands::list;
-use crate::commands::model::Task;
-use crate::commands::tui::ui::ui;
-use ratatui::backend::Backend;
-use ratatui::crossterm::event;
-use ratatui::crossterm::event::Event;
-use ratatui::widgets::ListState;
-use ratatui::Terminal;
+use crate::commands::{db::DB, list, model::Task, tui::ui::ui};
+
+use ratatui::{
+    backend::Backend,
+    crossterm::event::{self, Event},
+    widgets::ListState,
+    Terminal,
+};
 
 pub(super) enum CurrentScreen {
     TaskList,
@@ -42,24 +41,22 @@ impl App {
         loop {
             terminal.draw(|f| ui(f, self))?;
             if let Event::Key(key) = event::read()? {
-                if key.kind == event::KeyEventKind::Release {
-                    // Skip events that are not KeyEventKind::Press
-                    continue;
-                }
-
-                match self.current_screen {
-                    CurrentScreen::TaskList => match key.code {
-                        event::KeyCode::Char('e') => {
-                            self.current_screen = CurrentScreen::Task;
-                        }
-                        event::KeyCode::Char('q') => {
-                            break;
-                        }
-                        event::KeyCode::Up => self.list_state.select_previous(),
-                        event::KeyCode::Down => self.list_state.select_next(),
-                        _ => (),
+                match key.kind {
+                    event::KeyEventKind::Press => match self.current_screen {
+                        CurrentScreen::TaskList => match key.code {
+                            event::KeyCode::Enter => {
+                                self.current_screen = CurrentScreen::Task;
+                            }
+                            event::KeyCode::Char('q') => {
+                                break;
+                            }
+                            event::KeyCode::Up => self.list_state.select_previous(),
+                            event::KeyCode::Down => self.list_state.select_next(),
+                            _ => (),
+                        },
+                        CurrentScreen::Task => todo!("Not implemented yet"),
                     },
-                    CurrentScreen::Task => todo!("Not implemented yet"),
+                    _ => continue,
                 }
             }
         }
