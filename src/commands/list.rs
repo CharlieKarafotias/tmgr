@@ -1,6 +1,7 @@
 use crate::cli::model::CommandResult;
 use crate::commands::db::DB;
 use crate::commands::model::Task;
+// TODO: update to use ratatui instead, then remove comfy-table dep
 use comfy_table::Table;
 
 pub(crate) async fn run(

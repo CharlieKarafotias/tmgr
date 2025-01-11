@@ -2,31 +2,35 @@ use crate::commands::{
     model::Task,
     tui::app::{App, CurrentScreen},
 };
-use ratatui::widgets::Padding;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Style, Stylize},
-    widgets::{Block, Borders, List, Paragraph, Row, Table},
+    style::{Color, Style},
+    widgets::{Block, Borders, Padding, Paragraph, Row, Table},
     Frame,
 };
 
 pub(super) fn ui(frame: &mut Frame, app: &mut App) {
     match app.get_current_screen() {
-        CurrentScreen::TaskList => {
-            let layout = layout(vec![5, 85, 10], Direction::Vertical);
-            let l = layout.split(frame.area());
-            frame.render_widget(title_widget(), l[0]);
-            frame.render_stateful_widget(list_widget(&app.tasks), l[1], &mut app.list_state);
-            frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
+        CurrentScreen::Main => {
+            let block = outer_block();
+            let inner_area = block.inner(frame.area());
+            let layout = layout(vec![90, 10], Direction::Vertical);
+            let l = layout.split(inner_area);
+
+            frame.render_widget(block, frame.area());
+            // TODO: update to table stateful widget
+            frame.render_stateful_widget(table_widget(&app.tasks), l[0], &mut app.table_state);
+            frame.render_widget(keybind_widget(app, app.get_current_screen()), l[1]);
         }
         CurrentScreen::Task => {
-            let layout = layout(vec![5, 85, 10], Direction::Vertical);
-            let l = layout.split(frame.area());
-            let current_task = &app.tasks[app.list_state.selected().expect("No task selected")];
-            frame.render_widget(title_widget(), l[0]);
-            // TODO: add ability to update fields of Task
-            frame.render_widget(edit_widget(current_task), l[1]);
-            frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
+            todo!("Task edit screen");
+            // let layout = layout(vec![5, 85, 10], Direction::Vertical);
+            // let l = layout.split(frame.area());
+            // let current_task = &app.tasks[app.list_state.selected().expect("No task selected")];
+            // frame.render_widget(title_widget(), l[0]);
+            // // TODO: add ability to update fields of Task
+            // frame.render_widget(edit_widget(current_task), l[1]);
+            // frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
         }
         _ => {}
     }
@@ -34,30 +38,34 @@ pub(super) fn ui(frame: &mut Frame, app: &mut App) {
 
 // --- Widgets ---
 
-/// A centered, blue, bold widget displaying the text `Todo Manager`.
+/// Constructs a `Block` widget used as the outermost border
+/// for all screens in the UI.
 ///
-/// This is used as the title widget in the main UI.
-fn title_widget() -> Paragraph<'static> {
-    Paragraph::new("Todo Manager".bold())
-        .alignment(Alignment::Center)
-        .style(Style::default().fg(Color::Blue))
-}
-
-/// Constructs a `List` widget displaying a list of tasks.
-///
-/// The widget is configured to highlight the currently selected item
-/// with a `"> "` symbol. The list items are the `name`s of the tasks
-/// passed in.
-///
-/// # Arguments
-///
-/// * `tasks`: The tasks to display in the list.
+/// This block is configured to have a centered title with the text
+/// `Todo Task Manager`, and to have a white, all-around border.
 ///
 /// # Returns
 ///
-/// A `List` widget displaying the list of tasks.
-fn list_widget(tasks: &[Task]) -> List {
-    List::new(tasks.iter().map(|t| t.name.to_string())).highlight_symbol("> ")
+/// The constructed `Block` widget.
+fn outer_block() -> Block<'static> {
+    Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::White))
+        .title("Todo Task Manager".to_owned())
+        .title_alignment(Alignment::Center)
+}
+
+fn table_widget(tasks: &[Task]) -> Table {
+    Table::default()
+        .header(Row::new(vec!["ID", "Name", "Created At"]))
+        .rows(tasks.iter().map(|t| {
+            Row::new(vec![
+                t.get_id().unwrap_or_default(),
+                t.name.clone(),
+                t.created_at.format("%D").to_string(),
+            ])
+        }))
+        .highlight_symbol("> ")
 }
 
 /// Constructs a `Paragraph` widget displaying keybindings for the UI.
@@ -82,9 +90,9 @@ fn keybind_widget(app: &App, current_screen: &CurrentScreen) -> Paragraph<'stati
         .get_keybindings(current_screen)
         .unwrap_or(&vec![])
         .iter()
-        .map(|k| format!("{} - {}", k.key(), k.description()))
+        .map(|k| format!("[{}] {}", k.key(), k.description()))
         .collect::<Vec<String>>()
-        .join(" | ");
+        .join("  ");
 
     Paragraph::new(bindings)
         .centered()

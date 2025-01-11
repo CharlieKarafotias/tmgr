@@ -1,24 +1,26 @@
-use crate::commands::{db::DB, list, model::Task, tui::ui::ui};
+use crate::commands::{db::DB, delete, list, model::Task, tui::ui::ui};
 use ratatui::{
     backend::Backend,
     crossterm::event::{self, Event, KeyCode},
-    widgets::ListState,
+    widgets::TableState,
     Terminal,
 };
 use std::collections::HashMap;
 
 #[derive(Eq, Hash, PartialEq)]
 pub(super) enum CurrentScreen {
-    TaskList,
+    Main,
     Task,
     Exit,
 }
 
-pub(super) struct App {
+pub(super) struct App<'a> {
     current_screen: CurrentScreen,
+    db: &'a DB,
     keybindings: HashMap<CurrentScreen, Vec<KeyBinding>>,
-    pub(super) list_state: ListState,
+    pub(super) table_state: TableState,
     pub(super) tasks: Vec<Task>,
+    should_delete: bool, // TODO: turn to actions queue instead that executes all DB actions at end of draw loop
 }
 
 pub(super) struct KeyBinding {
@@ -45,30 +47,36 @@ impl KeyBinding {
     }
 }
 
-impl App {
-    pub(super) async fn new(db: &DB) -> Result<Self, Box<dyn std::error::Error>> {
+impl<'a> App<'a> {
+    pub(super) async fn new(db: &'a DB) -> Result<Self, Box<dyn std::error::Error>> {
         // TODO: could list take in a filter & sort param too?
         let list_cmd_res = list::run(db, false).await?;
         // TODO: is there a better way than cloning?
         let tasks = list_cmd_res.result().clone();
-        let mut list_state = ListState::default();
-        list_state.select_first();
+        let mut table_state = TableState::default();
+        table_state.select_first();
 
         let keybindings = HashMap::from([
             (
-                CurrentScreen::TaskList,
+                CurrentScreen::Main,
                 vec![
-                    KeyBinding::new(KeyCode::Enter, String::from("Select Task"), |app| {
+                    KeyBinding::new(KeyCode::Char('a'), String::from("Add Task"), |app| {
                         app.current_screen = CurrentScreen::Task
+                    }),
+                    KeyBinding::new(KeyCode::Char('e'), String::from("Edit Task"), |app| {
+                        app.current_screen = CurrentScreen::Task
+                    }),
+                    KeyBinding::new(KeyCode::Char('d'), String::from("Delete Task"), |app| {
+                        app.should_delete = true
                     }),
                     KeyBinding::new(KeyCode::Char('q'), String::from("Quit"), |app| {
                         app.current_screen = CurrentScreen::Exit
                     }),
                     KeyBinding::new(KeyCode::Up, String::from("Previous Task"), |app| {
-                        app.list_state.select_previous()
+                        app.table_state.select_previous()
                     }),
                     KeyBinding::new(KeyCode::Down, String::from("Next Task"), |app| {
-                        app.list_state.select_next()
+                        app.table_state.select_next()
                     }),
                 ],
             ),
@@ -77,20 +85,22 @@ impl App {
                 vec![KeyBinding::new(
                     KeyCode::Char('q'),
                     String::from("Quit"),
-                    |app| app.current_screen = CurrentScreen::TaskList,
+                    |app| app.current_screen = CurrentScreen::Main,
                 )],
             ),
         ]);
 
         Ok(App {
-            current_screen: CurrentScreen::TaskList,
+            current_screen: CurrentScreen::Main,
+            db,
             keybindings,
-            list_state,
+            table_state,
             tasks,
+            should_delete: false,
         })
     }
 
-    pub(super) fn run<B: Backend>(
+    pub(super) async fn run<B: Backend>(
         &mut self,
         terminal: &mut Terminal<B>,
     ) -> Result<(), Box<dyn std::error::Error>> {
@@ -104,6 +114,9 @@ impl App {
                     self.get_keybind_action(&self.current_screen, &key.code)
                         .map_or((), |action| action(self))
                 }
+            }
+            if self.should_delete {
+                self.delete_task().await?;
             }
         }
         Ok(())
@@ -122,5 +135,15 @@ impl App {
             .get(screen)
             .and_then(|keybindings| keybindings.iter().find(|kb| kb.key() == *key))
             .map(|kb| kb.action)
+    }
+
+    async fn delete_task(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let task_idx = self.table_state.selected().ok_or("No task selected")?;
+        let task_id = self.tasks[task_idx].get_id()?;
+        delete::run(self.db, task_id).await?;
+        // TODO: after live query implemented, no need to do this
+        self.tasks.remove(task_idx);
+        self.should_delete = false;
+        Ok(())
     }
 }
