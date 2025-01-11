@@ -14,13 +14,19 @@ pub(super) fn ui(frame: &mut Frame, app: &mut App) {
         CurrentScreen::Main => {
             let block = outer_block();
             let inner_area = block.inner(frame.area());
-            let layout = layout(vec![90, 10], Direction::Vertical);
+            let layout = layout(vec![40, 50, 10], Direction::Vertical);
             let l = layout.split(inner_area);
 
             frame.render_widget(block, frame.area());
             // TODO: update to table stateful widget
             frame.render_stateful_widget(table_widget(&app.tasks), l[0], &mut app.table_state);
-            frame.render_widget(keybind_widget(app, app.get_current_screen()), l[1]);
+            frame.render_widget(
+                task_details_widget(
+                    &app.tasks[app.table_state.selected().expect("No task selected")],
+                ),
+                l[1],
+            );
+            frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
         }
         CurrentScreen::Task => {
             todo!("Task edit screen");
@@ -66,6 +72,16 @@ fn table_widget(tasks: &[Task]) -> Table {
             ])
         }))
         .highlight_symbol("> ")
+}
+
+fn task_details_widget(task: &Task) -> Paragraph<'static> {
+    Paragraph::new(task.to_string())
+        .block(
+            Block::default()
+                .title("Task details:")
+                .title_alignment(Alignment::Left),
+        )
+        .style(Style::default())
 }
 
 /// Constructs a `Paragraph` widget displaying keybindings for the UI.

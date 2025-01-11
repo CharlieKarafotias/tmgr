@@ -26,20 +26,20 @@ pub(crate) struct Task {
 
 impl std::fmt::Display for Task {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "Name: \"{}\"", self.name)?;
-        writeln!(f, "Priority: \"{}\"", self.priority)?;
+        writeln!(f, "Name: {}", self.name)?;
+        writeln!(f, "Priority: {}", self.priority)?;
         writeln!(
             f,
-            "Description: \"{}\"",
+            "Description: {}",
             self.description.as_deref().unwrap_or("None")
         )?;
-        writeln!(f, "created_at: {}", self.created_at)?;
+        writeln!(f, "created_at: {}", self.created_at.format("%c"))?;
         writeln!(
             f,
             "completed_at: {}",
             self.completed_at
                 .as_ref()
-                .map(|d| d.to_string())
+                .map(|d| d.format("%c").to_string())
                 .unwrap_or("In progress".to_string())
         )?;
         Ok(())
