@@ -5,7 +5,7 @@ use crate::commands::{
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
-    widgets::{Block, Borders, Padding, Paragraph, Row, Table},
+    widgets::{Block, Borders, Padding, Paragraph, Row, Table, Wrap},
     Frame,
 };
 
@@ -18,7 +18,6 @@ pub(super) fn ui(frame: &mut Frame, app: &mut App) {
             let l = layout.split(inner_area);
 
             frame.render_widget(block, frame.area());
-            // TODO: update to table stateful widget
             frame.render_stateful_widget(table_widget(&app.tasks), l[0], &mut app.table_state);
             frame.render_widget(
                 task_details_widget(
@@ -75,13 +74,14 @@ fn table_widget(tasks: &[Task]) -> Table {
 }
 
 fn task_details_widget(task: &Task) -> Paragraph<'static> {
-    Paragraph::new(task.to_string())
+    let s = format!("Task Details:\n{}", task.to_string()).replace("\n", "\n\n");
+    Paragraph::new(s)
         .block(
             Block::default()
-                .title("Task details:")
-                .title_alignment(Alignment::Left),
+                .borders(Borders::TOP)
+                .padding(Padding::left(2)),
         )
-        .style(Style::default())
+        .wrap(Wrap { trim: true })
 }
 
 /// Constructs a `Paragraph` widget displaying keybindings for the UI.
@@ -114,6 +114,7 @@ fn keybind_widget(app: &App, current_screen: &CurrentScreen) -> Paragraph<'stati
         .centered()
         .block(block)
         .style(Style::default().fg(Color::Blue))
+        .wrap(Wrap { trim: true })
 }
 
 fn edit_widget(task: &Task) -> Table {
