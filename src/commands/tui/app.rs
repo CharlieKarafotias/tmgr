@@ -1,4 +1,4 @@
-use crate::commands::{db::DB, delete, list, model::Task, tui::ui::ui};
+use crate::commands::{complete, db::DB, delete, list, model::Task, tui::ui::ui};
 use ratatui::{
     backend::Backend,
     crossterm::event::{self, Event, KeyCode},
@@ -20,6 +20,7 @@ pub(super) struct App<'a> {
     keybindings: HashMap<CurrentScreen, Vec<KeyBinding>>,
     pub(super) table_state: TableState,
     pub(super) tasks: Vec<Task>,
+    should_complete: bool, // TODO: turn to actions queue instead that executes all DB actions at end of draw loop
     should_delete: bool, // TODO: turn to actions queue instead that executes all DB actions at end of draw loop
 }
 
@@ -63,20 +64,23 @@ impl<'a> App<'a> {
                     KeyBinding::new(KeyCode::Char('a'), String::from("Add Task"), |app| {
                         app.current_screen = CurrentScreen::Task
                     }),
+                    KeyBinding::new(KeyCode::Char('c'), String::from("Complete Task"), |app| {
+                        app.should_complete = true
+                    }),
                     KeyBinding::new(KeyCode::Char('e'), String::from("Edit Task"), |app| {
                         app.current_screen = CurrentScreen::Task
                     }),
                     KeyBinding::new(KeyCode::Char('d'), String::from("Delete Task"), |app| {
                         app.should_delete = true
                     }),
-                    KeyBinding::new(KeyCode::Char('q'), String::from("Quit"), |app| {
-                        app.current_screen = CurrentScreen::Exit
-                    }),
                     KeyBinding::new(KeyCode::Up, String::from("Previous Task"), |app| {
                         app.table_state.select_previous()
                     }),
                     KeyBinding::new(KeyCode::Down, String::from("Next Task"), |app| {
                         app.table_state.select_next()
+                    }),
+                    KeyBinding::new(KeyCode::Char('q'), String::from("Quit"), |app| {
+                        app.current_screen = CurrentScreen::Exit
                     }),
                 ],
             ),
@@ -96,6 +100,7 @@ impl<'a> App<'a> {
             keybindings,
             table_state,
             tasks,
+            should_complete: false,
             should_delete: false,
         })
     }
@@ -114,6 +119,9 @@ impl<'a> App<'a> {
                     self.get_keybind_action(&self.current_screen, &key.code)
                         .map_or((), |action| action(self))
                 }
+            }
+            if self.should_complete {
+                self.complete_task().await?;
             }
             if self.should_delete {
                 self.delete_task().await?;
@@ -135,6 +143,16 @@ impl<'a> App<'a> {
             .get(screen)
             .and_then(|keybindings| keybindings.iter().find(|kb| kb.key() == *key))
             .map(|kb| kb.action)
+    }
+
+    async fn complete_task(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let task_idx = self.table_state.selected().ok_or("No task selected")?;
+        let task_id = self.tasks[task_idx].get_id()?;
+        complete::run(self.db, task_id).await?;
+        // TODO: after live query implemented, no need to do this
+        self.tasks.remove(task_idx);
+        self.should_complete = false;
+        Ok(())
     }
 
     async fn delete_task(&mut self) -> Result<(), Box<dyn std::error::Error>> {

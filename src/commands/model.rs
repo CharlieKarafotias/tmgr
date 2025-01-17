@@ -86,6 +86,7 @@ impl Task {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn key_values(&self) -> Vec<(String, String)> {
         vec![
             ("id".into(), self.get_id().unwrap_or_default()),

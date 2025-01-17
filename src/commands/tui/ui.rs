@@ -29,13 +29,8 @@ pub(super) fn ui(frame: &mut Frame, app: &mut App) {
         }
         CurrentScreen::Task => {
             todo!("Task edit screen");
-            // let layout = layout(vec![5, 85, 10], Direction::Vertical);
-            // let l = layout.split(frame.area());
-            // let current_task = &app.tasks[app.list_state.selected().expect("No task selected")];
-            // frame.render_widget(title_widget(), l[0]);
-            // // TODO: add ability to update fields of Task
-            // frame.render_widget(edit_widget(current_task), l[1]);
-            // frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
+            // let editable_fields = vec!["name", "priority", "description"];
+            // Use [clear widget](https://docs.rs/ratatui/latest/ratatui/widgets/struct.Clear.html)
         }
         _ => {}
     }
@@ -74,7 +69,7 @@ fn table_widget(tasks: &[Task]) -> Table {
 }
 
 fn task_details_widget(task: &Task) -> Paragraph<'static> {
-    let s = format!("Task Details:\n{}", task.to_string()).replace("\n", "\n\n");
+    let s = format!("Task Details:\n{}", task).replace("\n", "\n\n");
     Paragraph::new(s)
         .block(
             Block::default()
