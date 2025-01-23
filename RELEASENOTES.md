@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2.2.5
+
+- Bumped `clap` from 4.5.23 to 4.5.27
+- Bumped `serde` from 1.0.216 to 1.0.217
+- Bumped `surrealdb` from 2.1.3 to 2.1.4
+- Bumped `tokio` from 1.42.0 to 1.43.0
+- Bumped `reqwest` from 0.12.9 to 0.12.12
+- Bumped `semver` from 1.0.24 to 1.0.25
+- Bumped `directories` from 5.0.1 to 6.0.0
+- Bumped `colored` from 2.2.0 to 3.0.0
+- Bumped `tempfile` from 3.14.0 to 3.15.0
+
 ## 2.2.4
 
 - Bumped `clap` from 4.5.21 to 4.5.23
