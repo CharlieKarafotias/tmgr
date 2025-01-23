@@ -3,7 +3,7 @@ use crate::commands::{
     tui::app::{App, CurrentScreen},
 };
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout},
+    layout::{Alignment, Constraint, Direction, Flex, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, Borders, Padding, Paragraph, Row, Table, Wrap},
     Frame,
@@ -28,9 +28,16 @@ pub(super) fn ui(frame: &mut Frame, app: &mut App) {
             frame.render_widget(keybind_widget(app, app.get_current_screen()), l[2]);
         }
         CurrentScreen::Task => {
-            todo!("Task edit screen");
-            // let editable_fields = vec!["name", "priority", "description"];
-            // Use [clear widget](https://docs.rs/ratatui/latest/ratatui/widgets/struct.Clear.html)
+            let task_id = &app.tasks[app.table_state.selected().unwrap_or_default()];
+            let block = Block::bordered()
+                .title(format!(
+                    "Editing task {}",
+                    task_id.get_id().unwrap_or_default()
+                ))
+                .title_alignment(Alignment::Center);
+            let table = popup_table(task_id).block(block);
+            let area = popup_area(frame.area(), 50, 50);
+            frame.render_widget(table, area);
         }
         _ => {}
     }
@@ -112,21 +119,26 @@ fn keybind_widget(app: &App, current_screen: &CurrentScreen) -> Paragraph<'stati
         .wrap(Wrap { trim: true })
 }
 
-fn edit_widget(task: &Task) -> Table {
-    let constraints = Constraint::from_percentages([25, 75]);
-    let rows: Vec<Row> = task
-        .key_values()
-        .iter()
-        .map(|(k, v)| Row::new(vec![k.to_string(), v.to_string()]))
-        .collect();
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .title("Viewing task ".to_owned() + task.get_id().unwrap_or_default().as_str())
-        .title_alignment(Alignment::Center)
-        .padding(Padding::uniform(1));
-    Table::new(rows, constraints)
-        .block(block)
+fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
+    let vertical = Layout::vertical([Constraint::Percentage(percent_x)]).flex(Flex::Center);
+    let horizontal = Layout::horizontal([Constraint::Percentage(percent_y)]).flex(Flex::Center);
+    let [area] = vertical.areas(area);
+    let [area] = horizontal.areas(area);
+    area
+}
+
+fn popup_table(task: &Task) -> Table {
+    Table::default()
         .header(Row::new(vec!["Key", "Value"]))
+        .rows(vec![
+            Row::new(vec!["Name", &task.name]),
+            Row::new(vec!["Priority", &task.priority]),
+            Row::new(vec![
+                "Description",
+                task.description.as_deref().unwrap_or(""),
+            ]),
+        ])
+        .highlight_symbol("> ")
 }
 
 /// Construct a Layout with the given constraints and direction.
