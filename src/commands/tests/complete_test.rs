@@ -35,8 +35,8 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
 }
 
 #[tokio::test]
-async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the_task_should_stay_the_same(
-) {
+async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the_task_should_stay_the_same()
+ {
     let db = db::DB::new_test().await;
     let task = Task::builder()
         .name("task to complete".to_string())

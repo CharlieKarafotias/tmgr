@@ -1,8 +1,9 @@
-use crate::commands::db::DB;
-use crate::commands::model::Task;
-use std::io::Write;
-use std::path::PathBuf;
-use std::process::{Command, ExitStatus};
+use crate::commands::{db::DB, model::Task};
+use std::{
+    io::Write,
+    path::PathBuf,
+    process::{Command, ExitStatus},
+};
 use surrealdb::opt::PatchOp;
 
 pub(crate) async fn run(
@@ -21,7 +22,6 @@ pub(crate) async fn run(
         let task_id = task.get_id()?;
         let task_name = task.name.as_str();
         let task_description = task.description.as_deref().unwrap_or_default();
-        let task_priority = task.priority.as_str();
         let note_path = path_from_id(task_id.as_str());
 
         // create file
@@ -30,10 +30,12 @@ pub(crate) async fn run(
 
         // write to file
         let task_header = format!("# Task {task_id} - {task_name}\n\n");
-        let subheader = format!("## {task_description}, {task_priority}\n\n");
         f.write_all(task_header.as_bytes())?;
-        f.write_all(subheader.as_bytes())?;
-        f.write_all(b"# Notes\n\n")?;
+        if !task_description.is_empty() {
+            let subheader = format!("{task_description}\n\n");
+            f.write_all(subheader.as_bytes())?;
+        }
+        f.write_all(b"## Notes\n\n")?;
 
         // close file
         f.flush()?;
@@ -63,5 +65,6 @@ pub(crate) fn path_from_id(id: &str) -> PathBuf {
 }
 
 fn open_note(note_path: &str) -> std::io::Result<ExitStatus> {
-    Command::new("vi").arg(note_path).spawn()?.wait()
+    let editor = std::env::var("EDITOR").unwrap_or("vi".to_string());
+    Command::new(editor).arg(note_path).spawn()?.wait()
 }

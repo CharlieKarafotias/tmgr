@@ -1,5 +1,20 @@
 # Release Notes
 
+## 2.2.6
+
+- Several improvements to `note` commands behavior
+  - Updates default behavior of note open to use `$EDITOR` environment variable
+  - New note files will have proper markdown specifications on creation
+- Upgraded project from Rust edition 2021 to 2024
+- Dependency updates
+  - Bumped `clap` from 4.5.27 to 4.5.31
+  - Bumped `serde` from 1.0.217 to 1.0.218
+  - Bumped `surrealdb` from 2.1.4 to 2.2.1
+  - Bumped `semver` from 1.0.25 to 1.0.26
+  - Bumped `comfy-table` from 7.1.3 to 7.1.4
+  - Bumped `chrono` from 0.4.39 to 0.4.40
+  - Bumped `tempfile` from 3.15.0 to 3.17.1
+
 ## 2.2.5
 
 - Bumped `clap` from 4.5.23 to 4.5.27

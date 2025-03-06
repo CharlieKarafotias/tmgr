@@ -31,8 +31,8 @@ async fn given_existing_tasks_when_running_status_command_then_tasks_should_be_r
 }
 
 #[tokio::test]
-async fn given_a_completed_task_when_running_status_command_then_the_task_should_be_reported_correctly(
-) {
+async fn given_a_completed_task_when_running_status_command_then_the_task_should_be_reported_correctly()
+ {
     let db = db::DB::new_test().await;
     let task = Task::builder().completed_at(Default::default()).build();
 

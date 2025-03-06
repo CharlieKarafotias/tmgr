@@ -13,8 +13,8 @@ async fn given_no_existing_tasks_when_adding_a_new_task_then_one_task_should_wri
 }
 
 #[tokio::test]
-async fn given_no_existing_tasks_when_adding_a_new_task_with_description_then_one_task_should_write_to_db(
-) {
+async fn given_no_existing_tasks_when_adding_a_new_task_with_description_then_one_task_should_write_to_db()
+ {
     let db = db::DB::new_test().await;
     let _ = add::run(
         &db,
@@ -29,8 +29,8 @@ async fn given_no_existing_tasks_when_adding_a_new_task_with_description_then_on
 }
 
 #[tokio::test]
-async fn given_no_existing_tasks_when_adding_a_new_task_with_low_priority_then_one_task_with_low_priority_should_write_to_db(
-) {
+async fn given_no_existing_tasks_when_adding_a_new_task_with_low_priority_then_one_task_with_low_priority_should_write_to_db()
+ {
     let db = db::DB::new_test().await;
     let _ = add::run(&db, "test".to_string(), TaskPriority::Low, None).await;
     let res: Vec<Task> = db.client.select("task").await.unwrap();
@@ -39,8 +39,8 @@ async fn given_no_existing_tasks_when_adding_a_new_task_with_low_priority_then_o
 }
 
 #[tokio::test]
-async fn given_no_existing_tasks_when_adding_a_new_task_with_medium_priority_then_one_task_with_medium_priority_should_write_to_db(
-) {
+async fn given_no_existing_tasks_when_adding_a_new_task_with_medium_priority_then_one_task_with_medium_priority_should_write_to_db()
+ {
     let db = db::DB::new_test().await;
     let _ = add::run(&db, "test".to_string(), TaskPriority::Medium, None).await;
     let res: Vec<Task> = db.client.select("task").await.unwrap();
@@ -49,8 +49,8 @@ async fn given_no_existing_tasks_when_adding_a_new_task_with_medium_priority_the
 }
 
 #[tokio::test]
-async fn given_the_add_command_when_adding_a_new_task_then_the_command_should_return_success_message(
-) {
+async fn given_the_add_command_when_adding_a_new_task_then_the_command_should_return_success_message()
+ {
     let db = db::DB::new_test().await;
     let res = add::run(&db, "test".to_string(), TaskPriority::Medium, None).await;
     assert!(res.is_ok());

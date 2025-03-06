@@ -13,8 +13,8 @@ async fn given_no_existing_tasks_when_updating_a_task_with_no_params_then_error_
 }
 
 #[tokio::test]
-async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_update_fields_error(
-) {
+async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_update_fields_error()
+ {
     let db = db::DB::new_test().await;
     let db_res: Vec<Task> = db
         .client
@@ -34,8 +34,8 @@ async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_
 
 // -- Basic update 1 param tests --
 #[tokio::test]
-async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_field_should_be_updated(
-) {
+async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_field_should_be_updated()
+ {
     let db = db::DB::new_test().await;
     let task = Task::builder()
         .name("test".to_string())
@@ -58,8 +58,8 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
 }
 
 #[tokio::test]
-async fn given_existing_tasks_when_updating_a_description_field_then_only_that_field_should_be_updated(
-) {
+async fn given_existing_tasks_when_updating_a_description_field_then_only_that_field_should_be_updated()
+ {
     let db = db::DB::new_test().await;
     let task = Task::builder()
         .name("test".to_string())
@@ -118,8 +118,8 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
 // -- Update multiple params tests --
 
 #[tokio::test]
-async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fields_should_be_updated(
-) {
+async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fields_should_be_updated()
+ {
     let db = db::DB::new_test().await;
 
     let task = Task::builder()
