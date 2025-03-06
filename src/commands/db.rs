@@ -1,7 +1,7 @@
 use crate::commands::model::Task;
 use std::path::PathBuf;
 use surrealdb::engine::any::connect;
-use surrealdb::{engine::any::Any, Surreal};
+use surrealdb::{Surreal, engine::any::Any};
 
 pub(crate) struct DB {
     pub(crate) client: Surreal<Any>,

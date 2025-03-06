@@ -206,11 +206,23 @@ impl fmt::Display for UpdateErrorKind {
             UpdateErrorKind::UnableToDetermineFileStructure => {
                 write!(f, "Unable to determine system's file structure")
             }
-            UpdateErrorKind::BinaryDownloadFail => write!(f, "unable to retrieve fetch tmgr the latest executable from GitHub repo, try again later"),
-            UpdateErrorKind::CorruptedBinaryDownload => write!(f, "unable to convert downloaded executable to bytes"),
-            UpdateErrorKind::CreateFileFail => write!(f, "unable to create file in downloads folder"),
-            UpdateErrorKind::UnableToDeleteExistingBinary => write!(f, "unable to delete existing executable"),
-            UpdateErrorKind::UnableToMoveBinary => write!(f, "unable to move downloaded executable to bin of current executable"),
+            UpdateErrorKind::BinaryDownloadFail => write!(
+                f,
+                "unable to retrieve fetch tmgr the latest executable from GitHub repo, try again later"
+            ),
+            UpdateErrorKind::CorruptedBinaryDownload => {
+                write!(f, "unable to convert downloaded executable to bytes")
+            }
+            UpdateErrorKind::CreateFileFail => {
+                write!(f, "unable to create file in downloads folder")
+            }
+            UpdateErrorKind::UnableToDeleteExistingBinary => {
+                write!(f, "unable to delete existing executable")
+            }
+            UpdateErrorKind::UnableToMoveBinary => write!(
+                f,
+                "unable to move downloaded executable to bin of current executable"
+            ),
         }
     }
 }

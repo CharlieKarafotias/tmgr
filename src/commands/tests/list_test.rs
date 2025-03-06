@@ -36,8 +36,8 @@ async fn given_existing_tasks_when_listing_all_tasks_then_all_tasks_should_be_re
 }
 
 #[tokio::test]
-async fn given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned(
-) {
+async fn given_existing_tasks_when_listing_in_progress_tasks_then_only_in_progress_tasks_should_be_returned()
+ {
     let db = db::DB::new_test().await;
     let task1 = Task::builder().name("in progress task".to_string()).build();
     let task2 = Task::builder()
