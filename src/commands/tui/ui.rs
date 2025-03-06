@@ -9,12 +9,13 @@ use ratatui::{
     Frame,
 };
 
+// TODO: move these out into own components instead of defining everything here
 pub(super) fn ui(frame: &mut Frame, app: &mut App) {
     match app.get_current_screen() {
         CurrentScreen::Main => {
             let block = outer_block();
             let inner_area = block.inner(frame.area());
-            let layout = layout(vec![40, 50, 10], Direction::Vertical);
+            let layout = layout(vec![15, 65, 20], Direction::Vertical);
             let l = layout.split(inner_area);
 
             frame.render_widget(block, frame.area());

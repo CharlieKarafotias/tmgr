@@ -110,16 +110,21 @@ impl<'a> App<'a> {
         terminal: &mut Terminal<B>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         loop {
+            // Check termination
             if self.current_screen == CurrentScreen::Exit {
                 break;
             }
+            // Update UI
             terminal.draw(|f| ui(f, self))?;
+            // Handle events
             if let Event::Key(key) = event::read()? {
                 if key.kind == event::KeyEventKind::Press {
                     self.get_keybind_action(&self.current_screen, &key.code)
                         .map_or((), |action| action(self))
                 }
             }
+            // Execute actions to DB
+            // TODO: queue of events to send to db here
             if self.should_complete {
                 self.complete_task().await?;
             }
