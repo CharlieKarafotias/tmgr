@@ -1,12 +1,10 @@
-use crate::commands::db::DB;
-use crate::commands::model::Task;
-use surrealdb::opt::PatchOp;
-use surrealdb::sql::Datetime;
+use super::{db::DB, model::Task};
+use std::error::Error;
+use surrealdb::{opt::PatchOp, sql::Datetime};
 
-pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn Error>> {
     let task = db.select_task_by_partial_id(&id).await?;
-    let task_id = task.get_id()?;
-
+    let task_id = task.id()?;
     let _: Option<Task> = db
         .client
         .upsert(("task", &task_id))

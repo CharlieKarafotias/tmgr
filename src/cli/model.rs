@@ -84,3 +84,9 @@ impl std::fmt::Display for TaskPriority {
             .fmt(f)
     }
 }
+
+impl From<TaskPriority> for String {
+    fn from(priority: TaskPriority) -> Self {
+        priority.to_string()
+    }
+}

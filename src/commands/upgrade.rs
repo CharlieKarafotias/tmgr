@@ -2,13 +2,17 @@ use directories::UserDirs;
 use reqwest::header::USER_AGENT;
 use semver::Version;
 use serde::Deserialize;
-use std::fs::{File, Permissions};
-use std::io::Write;
-use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
-use std::{env::current_exe, fmt, fs};
+use std::{
+    env::current_exe,
+    error::Error,
+    fmt, fs,
+    fs::{File, Permissions},
+    io::Write,
+    os::unix::fs::PermissionsExt,
+    path::PathBuf,
+};
 
-pub(crate) async fn run() -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run() -> Result<String, Box<dyn Error>> {
     println!("Checking repository for updates...");
     let update_info = check_for_updates().await.map_err(|e| e.to_string())?;
 
@@ -32,7 +36,7 @@ pub(crate) async fn run() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 pub(crate) async fn check_for_updates() -> Result<UpdateInfo, UpdateError> {
-    // get latest release from github
+    // get latest release from GitHub
     let client = reqwest::Client::new();
     let res = client
         .get(latest_release_url())
@@ -100,7 +104,7 @@ pub(crate) async fn download_binary_to_downloads_folder(
         kind: UpdateErrorKind::UnableToDetermineFileStructure,
     })?;
 
-    // download binary from github
+    // download binary from GitHUb
     let client = reqwest::Client::new();
     let res = client
         .get(binary_download_url)

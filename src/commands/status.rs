@@ -1,7 +1,7 @@
-use crate::commands::db::DB;
-use std::env::current_exe;
+use super::db::DB;
+use std::{env::current_exe, error::Error};
 
-pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn Error>> {
     let mut res = String::new();
     res.push_str("File locations:\n");
     res.push_str(&format!(
@@ -42,7 +42,7 @@ struct TaskCount {
     total: i32,
 }
 
-async fn get_number_of_tasks(db: &DB) -> Result<TaskCount, Box<dyn std::error::Error>> {
+async fn get_number_of_tasks(db: &DB) -> Result<TaskCount, Box<dyn Error>> {
     let mut db_res = db
         .client
         .query("SELECT count() as total, count(completed_at != None) as completed  FROM task GROUP BY total;")

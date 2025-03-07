@@ -1,32 +1,31 @@
-use crate::commands::{db::DB, model::Task};
+use super::{db::DB, model::Task};
 use std::{
+    env::{current_exe, var},
+    error::Error,
+    fs::{File, create_dir_all},
     io::Write,
     path::PathBuf,
     process::{Command, ExitStatus},
 };
 use surrealdb::opt::PatchOp;
 
-pub(crate) async fn run(
-    db: &DB,
-    id: String,
-    open_editor: bool,
-) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) async fn run(db: &DB, id: String, open_editor: bool) -> Result<String, Box<dyn Error>> {
     let task = db.select_task_by_partial_id(&id).await?;
 
-    if let Some(note_path) = task.work_note_path {
+    if let Some(note_path) = task.work_note_path() {
         if open_editor {
-            open_note(&note_path)?;
+            open_note(note_path)?;
         }
-        Ok(note_path)
+        Ok(note_path.to_string())
     } else {
-        let task_id = task.get_id()?;
-        let task_name = task.name.as_str();
-        let task_description = task.description.as_deref().unwrap_or_default();
+        let task_id = task.id()?;
+        let task_name = task.name();
+        let task_description = task.description().as_deref().unwrap_or_default();
         let note_path = path_from_id(task_id.as_str());
 
         // create file
-        std::fs::create_dir_all(note_path.parent().unwrap())?;
-        let mut f = std::fs::File::create(&note_path)?;
+        create_dir_all(note_path.parent().unwrap())?;
+        let mut f = File::create(&note_path)?;
 
         // write to file
         let task_header = format!("# Task {task_id} - {task_name}\n\n");
@@ -57,7 +56,7 @@ pub(crate) async fn run(
 }
 
 pub(crate) fn path_from_id(id: &str) -> PathBuf {
-    let exe_path = std::env::current_exe().expect("Could not get executable path");
+    let exe_path = current_exe().expect("Could not get executable path");
     let dir_path = exe_path
         .parent()
         .expect("Could not get executable directory");
@@ -65,6 +64,6 @@ pub(crate) fn path_from_id(id: &str) -> PathBuf {
 }
 
 fn open_note(note_path: &str) -> std::io::Result<ExitStatus> {
-    let editor = std::env::var("EDITOR").unwrap_or("vi".to_string());
+    let editor = var("EDITOR").unwrap_or("vi".to_string());
     Command::new(editor).arg(note_path).spawn()?.wait()
 }

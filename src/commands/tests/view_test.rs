@@ -83,5 +83,5 @@ async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_retur
     assert!(res_str.contains("medium"));
     assert!(res_str.contains("some description"));
     assert!(res_str.contains("1970-01-01T00:00:00Z"));
-    assert!(res_str.contains("In progress"));
+    assert!(res_str.contains("In Progress"));
 }

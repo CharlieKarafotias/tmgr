@@ -1,7 +1,9 @@
-use crate::commands::model::Task;
-use std::path::PathBuf;
-use surrealdb::engine::any::connect;
-use surrealdb::{Surreal, engine::any::Any};
+use super::model::Task;
+use std::{error::Error, path::PathBuf};
+use surrealdb::{
+    Surreal,
+    engine::any::{Any, connect},
+};
 
 pub(crate) struct DB {
     pub(crate) client: Surreal<Any>,
@@ -54,7 +56,7 @@ impl DB {
     pub(crate) async fn select_task_by_partial_id(
         &self,
         id: impl Into<String>,
-    ) -> Result<Task, Box<dyn std::error::Error>> {
+    ) -> Result<Task, Box<dyn Error>> {
         let id_string = id.into();
         let query = format!(
             "SELECT * from task WHERE string::starts_with(<string> id, \"task:{}\")",
