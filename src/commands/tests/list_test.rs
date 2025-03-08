@@ -1,5 +1,4 @@
-use super::super::{db, list};
-use crate::commands::model::Task;
+use super::super::{db, list, model::Task};
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_listing_all_tasks_then_no_tasks_should_be_returned() {

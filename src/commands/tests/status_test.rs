@@ -1,5 +1,4 @@
-use crate::commands::model::Task;
-use crate::commands::{db, status};
+use super::super::{db, model::Task, status};
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_running_status_command_then_no_tasks_should_be_reported() {

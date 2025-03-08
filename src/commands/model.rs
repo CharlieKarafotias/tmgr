@@ -1,4 +1,4 @@
-use crate::cli::model::TaskPriority;
+use super::super::cli::model::TaskPriority;
 use serde::{Deserialize, Deserializer, Serialize};
 use surrealdb::sql::{Datetime, Thing};
 

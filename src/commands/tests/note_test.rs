@@ -1,10 +1,10 @@
-use crate::commands::{
+use super::super::{
     db,
     model::Task,
     note::{self, path_from_id},
 };
 use std::{
-    fs::File,
+    fs::{File, read_to_string, remove_file},
     io::{self, BufRead, Write},
     path::Path,
 };
@@ -19,7 +19,7 @@ async fn given_an_existing_task_without_note_when_calling_note_should_create_md_
         .content(Task::default())
         .await
         .unwrap();
-    let id = new_task[0].id.clone().unwrap().replace("task:", "");
+    let id = new_task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
         .expect("Error creating note");
@@ -31,8 +31,7 @@ async fn given_an_existing_task_without_note_when_calling_note_should_create_md_
     assert!(res.ends_with(".md"));
 
     // Clean up by removing the note file
-    std::fs::remove_file(&res)
-        .expect(format!("Failed to delete the note file at path: {res}").as_str());
+    remove_file(&res).expect(format!("Failed to delete the note file at path: {res}").as_str());
 }
 
 #[tokio::test]
@@ -45,7 +44,7 @@ async fn when_creating_note_should_write_correct_header() {
         .content(Task::default())
         .await
         .unwrap();
-    let id = new_task[0].id.clone().unwrap().replace("task:", "");
+    let id = new_task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
         .expect("Error creating note");
@@ -60,8 +59,7 @@ async fn when_creating_note_should_write_correct_header() {
     assert_eq!(lines[3], "");
 
     // Clean up by removing the note file
-    std::fs::remove_file(&res)
-        .expect(format!("Failed to delete the note file at path: {res}").as_str());
+    remove_file(&res).expect(format!("Failed to delete the note file at path: {res}").as_str());
 }
 
 #[tokio::test]
@@ -77,7 +75,7 @@ async fn when_creating_note_with_description_should_write_correct_header() {
         .content(task_to_insert)
         .await
         .unwrap();
-    let id = new_task[0].id.clone().unwrap().replace("task:", "");
+    let id = new_task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
         .expect("Error creating note");
@@ -94,8 +92,7 @@ async fn when_creating_note_with_description_should_write_correct_header() {
     assert_eq!(lines[5], "");
 
     // Clean up by removing the note file
-    std::fs::remove_file(&res)
-        .expect(format!("Failed to delete the note file at path: {res}").as_str());
+    remove_file(&res).expect(format!("Failed to delete the note file at path: {res}").as_str());
 }
 
 #[tokio::test]
@@ -113,7 +110,7 @@ async fn given_an_existing_task_with_note_when_calling_note_should_not_create_md
 
     let task: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
 
-    let id = task[0].id.clone().unwrap().replace("task:", "");
+    let id = task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
         .expect("Error creating note");
@@ -122,7 +119,7 @@ async fn given_an_existing_task_with_note_when_calling_note_should_not_create_md
     assert!(res.eq(temp_file_path.as_str()));
 
     // content of the note file should be the same as the temp file
-    let content = std::fs::read_to_string(temp_file.path()).expect("Failed to read temp file");
+    let content = read_to_string(temp_file.path()).expect("Failed to read temp file");
     assert_eq!(content, "hello world");
 }
 

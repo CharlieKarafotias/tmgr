@@ -1,6 +1,5 @@
-use crate::cli::model::TaskPriority;
-use crate::commands::model::Task;
-use crate::commands::{db, view};
+use super::super::super::cli::model::TaskPriority;
+use super::super::{db, model::Task, view};
 use chrono;
 use surrealdb::sql::Datetime;
 
@@ -75,7 +74,7 @@ async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_retur
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
-    let id = db_res[0].id.clone().unwrap().replace("task:", "");
+    let id = db_res[0].id().unwrap();
 
     let res = view::run(&db, id.clone()).await;
     let res_str = res.unwrap();

@@ -1,5 +1,5 @@
-use crate::cli::model::TaskPriority;
-use crate::commands::{db, model::Task, update};
+use super::super::super::cli::model::TaskPriority;
+use super::super::{db, model::Task, update};
 
 // -- No params tests --
 #[tokio::test]
@@ -22,7 +22,7 @@ async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_
         .content(Task::default())
         .await
         .unwrap();
-    let id = db_res[0].id.clone().unwrap().replace("task:", "");
+    let id = db_res[0].id().unwrap();
 
     let res = update::run(&db, id.clone(), None, None, None).await;
     assert!(res.is_err());
@@ -43,7 +43,7 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
-    let id = db_res[0].id.clone().unwrap().replace("task:", "");
+    let id = db_res[0].id().unwrap();
 
     let res = update::run(&db, id.clone(), None, Some(TaskPriority::High), None).await;
     assert!(res.is_ok());
@@ -52,9 +52,9 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
-    assert_eq!(res[0].name, "test".to_string());
-    assert_eq!(res[0].priority, TaskPriority::High.to_string());
-    assert!(res[0].description.is_none());
+    assert_eq!(res[0].name(), "test");
+    assert_eq!(res[0].priority(), TaskPriority::High.to_string().as_str());
+    assert!(res[0].description().is_none());
 }
 
 #[tokio::test]
@@ -67,7 +67,7 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
-    let id = db_res[0].id.clone().unwrap().replace("task:", "");
+    let id = db_res[0].id().unwrap();
 
     let res = update::run(
         &db,
@@ -83,9 +83,9 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
-    assert_eq!(res[0].name, "test".to_string());
-    assert_eq!(res[0].priority, TaskPriority::Medium.to_string());
-    assert_eq!(res[0].description, Some("new description".to_string()));
+    assert_eq!(res[0].name(), "test");
+    assert_eq!(res[0].priority(), TaskPriority::Medium.to_string().as_str());
+    assert_eq!(res[0].description().as_ref().unwrap(), "new description");
 }
 
 #[tokio::test]
@@ -99,7 +99,7 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
-    let id = db_res[0].id.clone().unwrap().replace("task:", "");
+    let id = db_res[0].id().unwrap();
 
     let res = update::run(&db, id.clone(), Some("test2".to_string()), None, None).await;
     assert!(res.is_ok());
@@ -108,9 +108,9 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
-    assert_eq!(res[0].name, "test2".to_string());
-    assert_eq!(res[0].priority, TaskPriority::Medium.to_string());
-    assert_eq!(res[0].description, Some("some description".to_string()));
+    assert_eq!(res[0].name(), "test2");
+    assert_eq!(res[0].priority(), TaskPriority::Medium.to_string().as_str());
+    assert_eq!(res[0].description().as_ref().unwrap(), "some description");
 }
 
 // -- END Basic update 1 param tests --
@@ -128,7 +128,7 @@ async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fiel
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
-    let id = db_res[0].id.clone().unwrap().replace("task:", "");
+    let id = db_res[0].id().unwrap();
 
     let res = update::run(
         &db,
@@ -144,9 +144,9 @@ async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fiel
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
-    assert_eq!(res[0].name, "test".to_string());
-    assert_eq!(res[0].priority, TaskPriority::High.to_string());
-    assert_eq!(res[0].description, Some("new description".to_string()));
+    assert_eq!(res[0].name(), "test");
+    assert_eq!(res[0].priority(), TaskPriority::High.to_string().as_str());
+    assert_eq!(res[0].description().as_ref().unwrap(), "new description");
 }
 
 // -- END Update multiple params tests --

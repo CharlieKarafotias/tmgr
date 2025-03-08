@@ -1,6 +1,5 @@
-use crate::cli::model::TaskPriority;
-use crate::commands::model::Task;
-use crate::commands::{complete, db};
+use super::super::super::cli::model::TaskPriority;
+use super::super::{complete, db, model::Task};
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed() {
@@ -20,7 +19,7 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
         .content(Task::default())
         .await
         .unwrap();
-    let id = new_task[0].id.clone().unwrap().replace("task:", "");
+    let id = new_task[0].id().unwrap();
     let res = complete::run(&db, id.clone()).await;
 
     let res_str = res.unwrap();
@@ -31,7 +30,7 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
 
     let check_task_completed: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(check_task_completed.len(), 1);
-    assert_ne!(check_task_completed[0].completed_at, None);
+    assert!(check_task_completed[0].completed_at().is_some());
 }
 
 #[tokio::test]
@@ -46,7 +45,7 @@ async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the
 
     let new_task: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
 
-    let id = new_task[0].id.clone().unwrap().replace("task:", "");
+    let id = new_task[0].id().unwrap();
     let res = complete::run(&db, id.clone()).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
@@ -58,11 +57,11 @@ async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
     let first = &res[0];
-    assert!(first.completed_at.is_some());
-    assert_eq!(first.name, "task to complete".to_string());
-    assert_eq!(first.priority, TaskPriority::Medium.to_string());
+    assert!(first.completed_at().is_some());
+    assert_eq!(first.name(), "task to complete");
+    assert_eq!(first.priority(), TaskPriority::Medium.to_string().as_str());
     assert_eq!(
-        first.description,
-        Some("This is a description of the task".to_string())
+        first.description().as_ref().unwrap(),
+        "This is a description of the task"
     );
 }
