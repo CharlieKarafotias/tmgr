@@ -21,7 +21,7 @@ pub(crate) async fn run(
             name.as_ref().map(|name| ("name", name.to_string())),
             priority
                 .as_ref()
-                .map(|priority| ("priority", priority.to_string())),
+                .map(|priority| ("priority", priority.into())),
             description
                 .as_ref()
                 .map(|description| ("description", description.to_string())),

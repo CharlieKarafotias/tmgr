@@ -76,17 +76,18 @@ pub(crate) enum TaskPriority {
     High,
 }
 
-impl std::fmt::Display for TaskPriority {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.to_possible_value()
-            .expect("no values are skipped")
-            .get_name()
-            .fmt(f)
+impl From<&TaskPriority> for String {
+    fn from(priority: &TaskPriority) -> Self {
+        match priority {
+            TaskPriority::Low => "Low".to_string(),
+            TaskPriority::Medium => "Medium".to_string(),
+            TaskPriority::High => "High".to_string(),
+        }
     }
 }
 
-impl From<TaskPriority> for String {
-    fn from(priority: TaskPriority) -> Self {
-        priority.to_string()
+impl std::fmt::Display for TaskPriority {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <&TaskPriority as Into<String>>::into(self).fmt(f)
     }
 }

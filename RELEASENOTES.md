@@ -1,9 +1,19 @@
 # Release Notes
 
-## 2.2.7
+## 2.3.0
 
-- Refactor of code base to improve readability
-- _TODO_ what else changed?
+- Refactor of code base to improve readability and maintainability
+  - All `pub(crate)` visibilities are now `pub(super)` to ensure proper visibility
+  - `TaskPriority` struct now implements `From` trait for `String` type
+  - New `model` module for struct definitions to replace models existing in commands and cli modules
+  - Replaced all legacy code for obtaining the id of a task in favor of `id` method on `Task` struct
+  - Added getters for all fields on `Task` struct
+  - Proper error handling - no more `unwrap` calls in code base
+  - `Task` struct now implements function to retrieve fields required for building tables in `list` and `view` commands
+- Improved test suites for all commands
+- Dependency updates
+  - Bumped `tempfile` from 3.17.1 to 3.18.0
+  - Bumped `tokio` from 1.43.0 to 1.44.0
 
 ## 2.2.6
 

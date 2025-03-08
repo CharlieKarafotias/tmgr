@@ -8,7 +8,7 @@ pub(crate) async fn run(
     priority: TaskPriority,
     description: Option<String>,
 ) -> Result<String, Box<dyn Error>> {
-    let mut task_builder = Task::builder().name(&name).priority(priority);
+    let mut task_builder = Task::builder().name(&name).priority(&priority);
     if let Some(description) = description {
         task_builder = task_builder.description(description);
     }
