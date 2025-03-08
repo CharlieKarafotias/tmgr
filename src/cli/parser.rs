@@ -1,6 +1,10 @@
-use crate::cli::model::{Cli, Command};
-use crate::cli::result_handler::handle_result;
-use crate::commands;
+use super::super::{
+    cli::{
+        model::{Cli, Command},
+        result_handler::handle_result,
+    },
+    commands,
+};
 use clap::Parser;
 
 #[tokio::main]

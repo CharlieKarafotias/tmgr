@@ -21,7 +21,7 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn Error>> {
             "work_note_path",
             t.work_note_path().as_ref().unwrap_or(&"None".to_string()),
         ])
-        .add_row(vec!["created_at", t.created_at.to_string().as_str()])
+        .add_row(vec!["created_at", t.created_at().to_string().as_str()])
         .add_row(vec![
             "completed_at",
             t.completed_at()

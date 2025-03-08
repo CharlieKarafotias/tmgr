@@ -12,19 +12,18 @@ where
     Ok(Some(t.to_raw()))
 }
 
-// TODO: I want these to be only public supers and inside fields private, DO THIS BEFORE MERGE
 // TODO: will probably need to move tests into the actual files they are testing instead of separate folder.
 // Further, should use tests/ directory for Command tests (high level tests like send command and expect response whereas tests inside files are for low level tests)
 #[derive(Deserialize, Serialize, Debug)]
 pub(crate) struct Task {
     #[serde(deserialize_with = "thing_to_string")]
-    pub(crate) id: Option<String>,
-    pub(crate) name: String,
-    pub(crate) priority: String,
-    pub(crate) description: Option<String>,
-    pub(crate) work_note_path: Option<String>,
-    pub(crate) created_at: Datetime,
-    pub(crate) completed_at: Option<Datetime>,
+    id: Option<String>,
+    name: String,
+    priority: String,
+    description: Option<String>,
+    work_note_path: Option<String>,
+    created_at: Datetime,
+    completed_at: Option<Datetime>,
 }
 
 impl std::fmt::Display for Task {
@@ -72,7 +71,7 @@ impl Task {
     /// The expected format of task IDs is "task:<id>", where <id> is the id you
     /// provided when you added the task.
     ///
-    pub(crate) fn id(&self) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn id(&self) -> Result<String, Box<dyn std::error::Error>> {
         let actual_id = &self.id;
         if let Some(actual_id) = actual_id {
             let id = actual_id.strip_prefix("task:");
@@ -114,7 +113,6 @@ impl Task {
     }
 }
 
-#[allow(dead_code)]
 impl Task {
     pub fn builder() -> TaskBuilder {
         TaskBuilder {
@@ -130,7 +128,7 @@ impl Task {
 }
 
 #[derive(Default)]
-pub struct TaskBuilder {
+pub(crate) struct TaskBuilder {
     id: Option<String>,
     name: Option<String>,
     priority: Option<String>,
@@ -142,45 +140,45 @@ pub struct TaskBuilder {
 
 impl TaskBuilder {
     #[allow(dead_code)]
-    pub fn id(mut self, id: impl Into<String>) -> Self {
+    pub(crate) fn id(mut self, id: impl Into<String>) -> Self {
         self.id = Some(id.into());
         self
     }
 
-    pub fn name(mut self, name: impl Into<String>) -> Self {
+    pub(crate) fn name(mut self, name: impl Into<String>) -> Self {
         self.name = Some(name.into());
         self
     }
 
-    pub fn priority(mut self, priority: impl Into<String>) -> Self {
+    pub(crate) fn priority(mut self, priority: impl Into<String>) -> Self {
         self.priority = Some(priority.into());
         self
     }
 
-    pub fn description(mut self, description: impl Into<String>) -> Self {
+    pub(crate) fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
     }
 
     #[allow(dead_code)]
-    pub fn work_note_path(mut self, work_note_path: impl Into<String>) -> Self {
+    pub(crate) fn work_note_path(mut self, work_note_path: impl Into<String>) -> Self {
         self.work_note_path = Some(work_note_path.into());
         self
     }
 
     #[allow(dead_code)]
-    pub fn created_at(mut self, created_at: Datetime) -> Self {
+    pub(crate) fn created_at(mut self, created_at: Datetime) -> Self {
         self.created_at = Some(created_at);
         self
     }
 
     #[allow(dead_code)]
-    pub fn completed_at(mut self, completed_at: Datetime) -> Self {
+    pub(crate) fn completed_at(mut self, completed_at: Datetime) -> Self {
         self.completed_at = Some(completed_at);
         self
     }
 
-    pub fn build(self) -> Task {
+    pub(crate) fn build(self) -> Task {
         Task {
             id: self.id,
             name: self.name.unwrap_or_default(),
