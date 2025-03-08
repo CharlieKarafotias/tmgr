@@ -8,16 +8,19 @@ use surrealdb::sql::Datetime;
 
 #[tokio::test]
 async fn given_no_existing_task_when_viewing_a_task_then_error_should_be_returned() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let res = view::run(&db, "randomID".to_string()).await;
     assert!(res.is_err());
     let res_str = res.unwrap_err().to_string();
-    assert_eq!(res_str, "Task starting with id 'randomID' was not found");
+    assert_eq!(
+        res_str,
+        "Task starting with id 'randomID' was not found (db error: No tasks found) (view error: Database error)"
+    );
 }
 
 #[tokio::test]
 async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_returned() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let task = Task::builder()
         .name("test".to_string())
@@ -32,13 +35,13 @@ async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_return
     let res_str = res.unwrap_err().to_string();
     assert_eq!(
         res_str,
-        "Task starting with id 'DefinitelyNotTheID' was not found"
+        "Task starting with id 'DefinitelyNotTheID' was not found (db error: No tasks found) (view error: Database error)"
     );
 }
 
 #[tokio::test]
 async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_returned() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let task = Task::builder()
         .name("test".to_string())
@@ -59,13 +62,13 @@ async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_
     let res_str = res.unwrap_err().to_string();
     assert_eq!(
         res_str,
-        "Multiple tasks found, provide more characters of the id"
+        "Multiple tasks found, provide more characters of the id (db error: Multiple tasks found) (view error: Database error)"
     );
 }
 
 #[tokio::test]
 async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_returned() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let task = Task::builder()
         .name("test".to_string())

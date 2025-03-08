@@ -1,5 +1,5 @@
+use super::super::model::TmgrError;
 use colored::Colorize;
-use std::error::Error;
 
 enum ExitCode {
     Success = 0,
@@ -20,7 +20,7 @@ impl ResultHandler {
     }
 }
 
-pub(in crate::cli) async fn handle_result(result: Result<String, Box<dyn Error>>) -> ResultHandler {
+pub(in crate::cli) async fn handle_result(result: Result<String, TmgrError>) -> ResultHandler {
     match result {
         Ok(res) => ResultHandler {
             result_string: res,

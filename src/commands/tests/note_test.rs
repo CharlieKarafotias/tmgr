@@ -8,7 +8,7 @@ use std::{
 
 #[tokio::test]
 async fn given_an_existing_task_without_note_when_calling_note_should_create_md_file() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let new_task: Vec<Task> = db
         .client
@@ -33,7 +33,7 @@ async fn given_an_existing_task_without_note_when_calling_note_should_create_md_
 
 #[tokio::test]
 async fn when_creating_note_should_write_correct_header() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let new_task: Vec<Task> = db
         .client
@@ -61,7 +61,7 @@ async fn when_creating_note_should_write_correct_header() {
 
 #[tokio::test]
 async fn when_creating_note_with_description_should_write_correct_header() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let task_to_insert = Task::builder()
         .name("New task".to_string())
         .description("Some description".to_string())
@@ -94,7 +94,7 @@ async fn when_creating_note_with_description_should_write_correct_header() {
 
 #[tokio::test]
 async fn given_an_existing_task_with_note_when_calling_note_should_not_create_md_file() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     // Create a temp file
     let mut temp_file = tempfile::NamedTempFile::new().expect("Failed to create temp file");
@@ -123,7 +123,7 @@ async fn given_an_existing_task_with_note_when_calling_note_should_not_create_md
 #[test]
 fn should_return_filename_with_id_and_md_extension() {
     let id = "123";
-    let path = path_from_id(id);
+    let path = path_from_id(id).unwrap();
     assert!(
         path.to_str()
             .unwrap()

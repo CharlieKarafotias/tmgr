@@ -1,6 +1,6 @@
 use clap::ValueEnum;
 use serde::{Deserialize, Deserializer, Serialize};
-use std::{error::Error, fmt::Display};
+use std::{fmt, fmt::Display};
 use surrealdb::sql::{Datetime, Thing};
 
 // -- Task --
@@ -29,20 +29,24 @@ impl Task {
     /// The expected format of task IDs is "task:<id>", where <id> is the id you
     /// provided when you added the task.
     ///
-    pub(super) fn id(&self) -> Result<String, Box<dyn Error>> {
+    pub(super) fn id(&self) -> Result<String, TaskError> {
         let actual_id = &self.id;
         if let Some(actual_id) = actual_id {
             let id = actual_id.strip_prefix("task:");
             match id {
                 Some(id) => Ok(id.to_string()),
-                None => Err(
-                    format!(
+                None => Err(TaskError {
+                    kind: TaskErrorKind::BadPrefix,
+                    message: format!(
                         "Task ID from database is not prefixed with 'task:'. Expected 'task:<id>', but got '{actual_id}'"
-                    ).into()
-                )
+                    ),
+                }),
             }
         } else {
-            Err("Task ID is not set".into())
+            Err(TaskError {
+                kind: TaskErrorKind::NoId,
+                message: "Task ID is not set".to_string(),
+            })
         }
     }
 
@@ -118,6 +122,34 @@ where
     Ok(Some(t.to_raw()))
 }
 // -- Task --
+
+// -- Task Errors --
+#[derive(Debug)]
+pub enum TaskErrorKind {
+    BadPrefix,
+    NoId,
+}
+
+#[derive(Debug)]
+pub struct TaskError {
+    kind: TaskErrorKind,
+    message: String,
+}
+
+impl Display for TaskError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} (task error: {})", self.message, self.kind)
+    }
+}
+
+impl Display for TaskErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            TaskErrorKind::BadPrefix => write!(f, "Bad prefix"),
+            TaskErrorKind::NoId => write!(f, "No id"),
+        }
+    }
+}
 
 // -- TaskPriority --
 /// Represents the priority of a task.
@@ -234,3 +266,57 @@ impl TaskBuilder {
 }
 
 // -- TaskBuilder --
+
+// -- TmgrError --
+#[derive(Debug)]
+pub struct TmgrError {
+    kind: TmgrErrorKind,
+    message: String,
+}
+
+impl TmgrError {
+    pub fn new(kind: TmgrErrorKind, message: String) -> Self {
+        Self { kind, message }
+    }
+}
+
+impl Display for TmgrError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} (tmgr error: {})", self.message, self.kind)
+    }
+}
+
+#[derive(Debug)]
+pub enum TmgrErrorKind {
+    AddCommand,
+    CompleteCommand,
+    DeleteCommand,
+    ListCommand,
+    MigrateCommand,
+    NoteCommand,
+    StatusCommand,
+    UpdateCommand,
+    UpgradeCommand,
+    ViewCommand,
+    Tmgr,
+}
+
+impl Display for TmgrErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            TmgrErrorKind::AddCommand => write!(f, "Add command error"),
+            TmgrErrorKind::CompleteCommand => write!(f, "Complete command error"),
+            TmgrErrorKind::DeleteCommand => write!(f, "Delete command error"),
+            TmgrErrorKind::ListCommand => write!(f, "List command error"),
+            TmgrErrorKind::MigrateCommand => write!(f, "Migrate command error"),
+            TmgrErrorKind::NoteCommand => write!(f, "Note command error"),
+            TmgrErrorKind::StatusCommand => write!(f, "Status command error"),
+            TmgrErrorKind::UpdateCommand => write!(f, "Update command error"),
+            TmgrErrorKind::UpgradeCommand => write!(f, "Upgrade command error"),
+            TmgrErrorKind::ViewCommand => write!(f, "View command error"),
+            TmgrErrorKind::Tmgr => write!(f, "Tmgr error"),
+        }
+    }
+}
+
+// -- TmgrError --

@@ -4,16 +4,19 @@ use std::{fs::File, path::Path};
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_deleting_a_task_then_no_task_should_be_deleted() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let res = delete::run(&db, "randomID".to_string()).await;
     assert!(res.is_err());
     let res_str = res.unwrap_err().to_string();
-    assert_eq!(res_str, "Task starting with id 'randomID' was not found");
+    assert_eq!(
+        res_str,
+        "Task starting with id 'randomID' was not found (db error: No tasks found) (delete error: Database error)"
+    );
 }
 
 #[tokio::test]
 async fn given_existing_tasks_when_deleting_a_task_then_the_task_should_be_deleted() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let db_res: Vec<Task> = db
         .client
         .insert("task")
@@ -32,7 +35,7 @@ async fn given_existing_tasks_when_deleting_a_task_then_the_task_should_be_delet
 
 #[tokio::test]
 async fn given_existing_task_with_worknote_when_deleted_then_worknote_should_be_deleted() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let path = "test.md";
     let task = Task::builder().work_note_path(path.to_string()).build();
 

@@ -1,10 +1,10 @@
+use super::super::model::{TmgrError, TmgrErrorKind};
 use directories::UserDirs;
 use reqwest::header::USER_AGENT;
 use semver::Version;
 use serde::Deserialize;
 use std::{
     env::current_exe,
-    error::Error,
     fmt, fs,
     fs::{File, Permissions},
     io::Write,
@@ -12,20 +12,20 @@ use std::{
     path::PathBuf,
 };
 
-pub(crate) async fn run() -> Result<String, Box<dyn Error>> {
+pub(crate) async fn run() -> Result<String, UpdateError> {
     println!("Checking repository for updates...");
-    let update_info = check_for_updates().await.map_err(|e| e.to_string())?;
+    let update_info = check_for_updates().await?;
 
     if update_info.needs_update {
         let new_binary_download_path =
-            download_binary_to_downloads_folder(update_info.binary_download_url)
-                .await
-                .map_err(|e| e.to_string())?;
-        let path_to_existing_executable = current_exe()?;
-        delete_existing_binary(&path_to_existing_executable).map_err(|e| e.to_string())?;
+            download_binary_to_downloads_folder(update_info.binary_download_url).await?;
+        let path_to_existing_executable = current_exe().map_err(|e| UpdateError {
+            message: e.to_string(),
+            kind: UpdateErrorKind::UnableToDetermineTmgrExecutablePath,
+        })?;
+        delete_existing_binary(&path_to_existing_executable)?;
         // move new binary from download folder to bin of current executable
-        move_new_binary(new_binary_download_path, path_to_existing_executable)
-            .map_err(|e| e.to_string())?;
+        move_new_binary(new_binary_download_path, path_to_existing_executable)?;
         Ok(format!(
             "Update complete: v{} -> v{}",
             update_info.current_version, update_info.latest_version
@@ -179,6 +179,7 @@ enum UpdateErrorKind {
     CreateFileFail,
     UnableToDeleteExistingBinary,
     UnableToMoveBinary,
+    UnableToDetermineTmgrExecutablePath,
 }
 
 // --- Update Errors ---
@@ -188,45 +189,54 @@ pub struct UpdateError {
     message: String,
 }
 
+impl From<UpdateError> for TmgrError {
+    fn from(err: UpdateError) -> Self {
+        TmgrError::new(TmgrErrorKind::UpgradeCommand, err.to_string())
+    }
+}
+
 impl fmt::Display for UpdateErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             UpdateErrorKind::RepoCheckFail => write!(
                 f,
-                "unable to retrieve fetch tmgr GitHub repo, try again later"
+                "Unable to retrieve fetch tmgr GitHub repo, try again later"
             ),
             UpdateErrorKind::NoDownloadLinkFromGitHub => {
-                write!(f, "no download url for the tmgr executable found on GitHub")
+                write!(f, "No download url for the tmgr executable found on GitHub")
             }
             UpdateErrorKind::NoCurrentVersion => {
-                write!(f, "unable to determine current version of tmgr")
+                write!(f, "Unable to determine current version of tmgr")
             }
             UpdateErrorKind::NoLatestVersion => {
-                write!(f, "unable to determine latest version of tmgr from GitHub")
+                write!(f, "Unable to determine latest version of tmgr from GitHub")
             }
             UpdateErrorKind::GitHibResponseToRustStructConversionFail => {
-                write!(f, "unable to convert GitHub response to Rust struct")
+                write!(f, "Unable to convert GitHub response to Rust struct")
             }
             UpdateErrorKind::UnableToDetermineFileStructure => {
                 write!(f, "Unable to determine system's file structure")
             }
             UpdateErrorKind::BinaryDownloadFail => write!(
                 f,
-                "unable to retrieve fetch tmgr the latest executable from GitHub repo, try again later"
+                "Unable to retrieve fetch tmgr the latest executable from GitHub repo, try again later"
             ),
             UpdateErrorKind::CorruptedBinaryDownload => {
-                write!(f, "unable to convert downloaded executable to bytes")
+                write!(f, "Unable to convert downloaded executable to bytes")
             }
             UpdateErrorKind::CreateFileFail => {
-                write!(f, "unable to create file in downloads folder")
+                write!(f, "Unable to create file in downloads folder")
             }
             UpdateErrorKind::UnableToDeleteExistingBinary => {
-                write!(f, "unable to delete existing executable")
+                write!(f, "Unable to delete existing executable")
             }
             UpdateErrorKind::UnableToMoveBinary => write!(
                 f,
-                "unable to move downloaded executable to bin of current executable"
+                "Unable to move downloaded executable to bin of current executable"
             ),
+            UpdateErrorKind::UnableToDetermineTmgrExecutablePath => {
+                write!(f, "Unable to determine path to existing tmgr executable")
+            }
         }
     }
 }

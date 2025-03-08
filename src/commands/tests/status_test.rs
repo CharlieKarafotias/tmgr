@@ -3,7 +3,7 @@ use super::super::status;
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_running_status_command_then_no_tasks_should_be_reported() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let res = status::run(&db).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
@@ -14,7 +14,7 @@ async fn given_no_existing_tasks_when_running_status_command_then_no_tasks_shoul
 
 #[tokio::test]
 async fn given_existing_tasks_when_running_status_command_then_tasks_should_be_reported() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let _: Vec<Task> = db
         .client
         .insert("task")
@@ -33,7 +33,7 @@ async fn given_existing_tasks_when_running_status_command_then_tasks_should_be_r
 #[tokio::test]
 async fn given_a_completed_task_when_running_status_command_then_the_task_should_be_reported_correctly()
  {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let task = Task::builder().completed_at(Default::default()).build();
 
     let _: Vec<Task> = db.client.insert("task").content(task).await.unwrap();

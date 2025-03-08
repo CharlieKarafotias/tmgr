@@ -6,16 +6,19 @@ use super::super::complete;
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let res = complete::run(&db, "randomID".to_string()).await;
     assert!(res.is_err());
     let res_str = res.unwrap_err().to_string();
-    assert_eq!(res_str, "Task starting with id 'randomID' was not found");
+    assert_eq!(
+        res_str,
+        "Task starting with id 'randomID' was not found (db error: No tasks found) (complete error: Database error)"
+    );
 }
 
 #[tokio::test]
 async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_completed() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let new_task: Vec<Task> = db
         .client
         .insert("task")
@@ -39,7 +42,7 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
 #[tokio::test]
 async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the_task_should_stay_the_same()
  {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let task = Task::builder()
         .name("task to complete".to_string())
         .priority(TaskPriority::Medium)

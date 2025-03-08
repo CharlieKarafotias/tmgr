@@ -7,7 +7,7 @@ use crate::cli::model::TmgrVersion;
 
 #[tokio::test]
 async fn given_no_tasks_in_db_when_migrating_then_no_effect() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let res = migrate::run(&db, TmgrVersion::V2).await;
     let curr_version = format!("v{}", env!("CARGO_PKG_VERSION").split(".").next().unwrap());
@@ -27,7 +27,7 @@ async fn given_no_tasks_in_db_when_migrating_then_no_effect() {
 
 #[tokio::test]
 async fn given_v2_task_in_db_when_migrating_then_task_should_be_migrated() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     // Setup test data using V2 schema
     // Set priority to low (V2). In new model low -> TaskPriority::Low -> Low
     let query = "INSERT INTO task {
@@ -76,7 +76,7 @@ async fn given_v2_task_in_db_when_migrating_then_task_should_be_migrated() {
 
 #[tokio::test]
 async fn given_all_varieties_of_v2_tasks_in_db_when_migrating_then_tasks_should_be_migrated() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     // Setup test data using V2 schema
     let query = "\
     INSERT INTO
@@ -147,7 +147,7 @@ async fn given_all_varieties_of_v2_tasks_in_db_when_migrating_then_tasks_should_
 
 #[tokio::test]
 async fn given_mix_of_v2_v3_tasks_in_db_when_migrating_then_v2_tasks_should_be_migrated() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     // Setup test data using V2 schema
     let query = "\
     INSERT INTO
@@ -197,7 +197,7 @@ async fn given_mix_of_v2_v3_tasks_in_db_when_migrating_then_v2_tasks_should_be_m
 
 #[tokio::test]
 async fn given_v3_task_in_db_when_migrating_then_no_effect() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     add::run(
         &db,
         "V3 task".to_string(),

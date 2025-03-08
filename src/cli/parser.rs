@@ -5,6 +5,7 @@ use super::super::{
     },
     commands,
     db::DB,
+    model::TmgrError,
 };
 use clap::Parser;
 
@@ -17,26 +18,41 @@ pub async fn run() -> i32 {
         DB::new().await
     };
 
-    let res: Result<String, Box<dyn std::error::Error>> = match input.command {
-        Command::Add {
-            name,
-            priority,
-            description,
-        } => commands::add::run(&db, name, priority, description).await,
-        Command::Complete { id } => commands::complete::run(&db, id).await,
-        Command::Delete { id } => commands::delete::run(&db, id).await,
-        Command::List { all } => commands::list::run(&db, all).await,
-        Command::Migrate { from } => commands::migrate::run(&db, from).await,
-        Command::Note { id, open } => commands::note::run(&db, id, open).await,
-        Command::Status => commands::status::run(&db).await,
-        Command::Update {
-            id,
-            name,
-            priority,
-            description,
-        } => commands::update::run(&db, id, name, priority, description).await,
-        Command::Upgrade => commands::upgrade::run().await,
-        Command::View { id } => commands::view::run(&db, id).await,
+    let res: Result<String, TmgrError> = match db {
+        Err(e) => Err(TmgrError::from(e)),
+        Ok(db) => match input.command {
+            Command::Add {
+                name,
+                priority,
+                description,
+            } => commands::add::run(&db, name, priority, description)
+                .await
+                .map_err(TmgrError::from),
+            Command::Complete { id } => commands::complete::run(&db, id)
+                .await
+                .map_err(TmgrError::from),
+            Command::Delete { id } => commands::delete::run(&db, id)
+                .await
+                .map_err(TmgrError::from),
+            Command::List { all } => commands::list::run(&db, all).await.map_err(TmgrError::from),
+            Command::Migrate { from } => commands::migrate::run(&db, from)
+                .await
+                .map_err(TmgrError::from),
+            Command::Note { id, open } => commands::note::run(&db, id, open)
+                .await
+                .map_err(TmgrError::from),
+            Command::Status => commands::status::run(&db).await.map_err(TmgrError::from),
+            Command::Update {
+                id,
+                name,
+                priority,
+                description,
+            } => commands::update::run(&db, id, name, priority, description)
+                .await
+                .map_err(TmgrError::from),
+            Command::Upgrade => commands::upgrade::run().await.map_err(TmgrError::from),
+            Command::View { id } => commands::view::run(&db, id).await.map_err(TmgrError::from),
+        },
     };
 
     let result = handle_result(res).await;

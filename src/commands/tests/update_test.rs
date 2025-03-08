@@ -8,17 +8,20 @@ use super::super::update;
 #[tokio::test]
 async fn given_no_existing_tasks_when_updating_a_task_with_no_params_then_error_should_be_returned()
 {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let res = update::run(&db, "test".to_string(), None, None, None).await;
     assert!(res.is_err());
     let res_str = res.unwrap_err().to_string();
-    assert_eq!(res_str, "No fields to update");
+    assert_eq!(
+        res_str,
+        "No fields to update (update error: No fields to update)"
+    );
 }
 
 #[tokio::test]
 async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_update_fields_error()
  {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let db_res: Vec<Task> = db
         .client
         .insert("task")
@@ -30,7 +33,10 @@ async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_
     let res = update::run(&db, id.clone(), None, None, None).await;
     assert!(res.is_err());
     let res_str = res.unwrap_err().to_string();
-    assert_eq!(res_str, "No fields to update");
+    assert_eq!(
+        res_str,
+        "No fields to update (update error: No fields to update)"
+    );
 }
 
 // -- END No params tests --
@@ -39,7 +45,7 @@ async fn given_a_task_when_updating_a_task_with_no_params_then_should_return_no_
 #[tokio::test]
 async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_field_should_be_updated()
  {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let task = Task::builder()
         .name("test".to_string())
         .priority(TaskPriority::Medium)
@@ -63,7 +69,7 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
 #[tokio::test]
 async fn given_existing_tasks_when_updating_a_description_field_then_only_that_field_should_be_updated()
  {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
     let task = Task::builder()
         .name("test".to_string())
         .priority(TaskPriority::Medium)
@@ -93,7 +99,7 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
 
 #[tokio::test]
 async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should_be_updated() {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let task = Task::builder()
         .name("test".to_string())
@@ -123,7 +129,7 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
 #[tokio::test]
 async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fields_should_be_updated()
  {
-    let db = db::DB::new_test().await;
+    let db = db::DB::new_test().await.expect("Failed to create db");
 
     let task = Task::builder()
         .name("test".to_string())
