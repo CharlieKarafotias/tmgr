@@ -1,5 +1,10 @@
 # Release Notes
 
+## 2.2.7
+
+- Refactor of code base to improve readability
+- _TODO_ what else changed?
+
 ## 2.2.6
 
 - Several improvements to `note` commands behavior
