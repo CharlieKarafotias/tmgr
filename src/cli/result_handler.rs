@@ -1,16 +1,26 @@
 use colored::Colorize;
+use std::error::Error;
 
 enum ExitCode {
     Success = 0,
     Failure = 1,
 }
-pub(crate) struct ResultHandler {
-    pub(crate) result_string: String,
-    pub(crate) exit_code: i32,
+pub(in crate::cli) struct ResultHandler {
+    result_string: String,
+    exit_code: i32,
 }
-pub(crate) async fn handle_result(
-    result: Result<String, Box<dyn std::error::Error>>,
-) -> ResultHandler {
+
+impl ResultHandler {
+    pub(in crate::cli) fn result_string(&self) -> &str {
+        &self.result_string
+    }
+
+    pub(in crate::cli) fn exit_code(&self) -> i32 {
+        self.exit_code
+    }
+}
+
+pub(in crate::cli) async fn handle_result(result: Result<String, Box<dyn Error>>) -> ResultHandler {
     match result {
         Ok(res) => ResultHandler {
             result_string: res,

@@ -55,7 +55,7 @@ pub(crate) async fn run(db: &DB, id: String, open_editor: bool) -> Result<String
     }
 }
 
-pub(crate) fn path_from_id(id: &str) -> PathBuf {
+pub(super) fn path_from_id(id: &str) -> PathBuf {
     let exe_path = current_exe().expect("Could not get executable path");
     let dir_path = exe_path
         .parent()

@@ -40,6 +40,6 @@ pub async fn run() -> i32 {
     };
 
     let result = handle_result(res).await;
-    println!("{}", result.result_string);
-    result.exit_code
+    println!("{}", result.result_string());
+    result.exit_code()
 }
