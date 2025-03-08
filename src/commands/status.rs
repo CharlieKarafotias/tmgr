@@ -1,4 +1,4 @@
-use super::db::DB;
+use super::super::db::DB;
 use std::{env::current_exe, error::Error};
 
 pub(crate) async fn run(db: &DB) -> Result<String, Box<dyn Error>> {

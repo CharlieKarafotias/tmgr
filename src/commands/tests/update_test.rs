@@ -1,5 +1,8 @@
-use super::super::super::cli::model::TaskPriority;
-use super::super::{db, model::Task, update};
+use super::super::super::{
+    db,
+    model::{Task, TaskPriority},
+};
+use super::super::update;
 
 // -- No params tests --
 #[tokio::test]
@@ -39,7 +42,7 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
     let db = db::DB::new_test().await;
     let task = Task::builder()
         .name("test".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
@@ -53,7 +56,7 @@ async fn given_existing_tasks_when_updating_a_priority_field_then_only_that_fiel
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
     assert_eq!(res[0].name(), "test");
-    assert_eq!(res[0].priority(), TaskPriority::High.to_string().as_str());
+    assert_eq!(*res[0].priority(), TaskPriority::High);
     assert!(res[0].description().is_none());
 }
 
@@ -63,7 +66,7 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
     let db = db::DB::new_test().await;
     let task = Task::builder()
         .name("test".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
@@ -84,7 +87,7 @@ async fn given_existing_tasks_when_updating_a_description_field_then_only_that_f
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
     assert_eq!(res[0].name(), "test");
-    assert_eq!(res[0].priority(), TaskPriority::Medium.to_string().as_str());
+    assert_eq!(*res[0].priority(), TaskPriority::Medium);
     assert_eq!(res[0].description().as_ref().unwrap(), "new description");
 }
 
@@ -94,7 +97,7 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
 
     let task = Task::builder()
         .name("test".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .description("some description".to_string())
         .build();
 
@@ -109,7 +112,7 @@ async fn given_existing_tasks_when_updating_the_name_then_only_that_field_should
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
     assert_eq!(res[0].name(), "test2");
-    assert_eq!(res[0].priority(), TaskPriority::Medium.to_string().as_str());
+    assert_eq!(*res[0].priority(), TaskPriority::Medium);
     assert_eq!(res[0].description().as_ref().unwrap(), "some description");
 }
 
@@ -124,7 +127,7 @@ async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fiel
 
     let task = Task::builder()
         .name("test".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .build();
 
     let db_res: Vec<Task> = db.client.insert("task").content(task).await.unwrap();
@@ -145,7 +148,7 @@ async fn given_existing_tasks_when_updating_multiple_fields_then_only_those_fiel
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 1);
     assert_eq!(res[0].name(), "test");
-    assert_eq!(res[0].priority(), TaskPriority::High.to_string().as_str());
+    assert_eq!(*res[0].priority(), TaskPriority::High);
     assert_eq!(res[0].description().as_ref().unwrap(), "new description");
 }
 

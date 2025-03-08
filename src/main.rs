@@ -1,5 +1,8 @@
 mod cli;
 mod commands;
+mod db;
+mod model;
+
 use cli::parser;
 
 fn main() {

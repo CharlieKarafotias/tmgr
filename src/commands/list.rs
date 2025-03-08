@@ -1,4 +1,4 @@
-use super::{db::DB, model::Task};
+use super::super::{db::DB, model::Task};
 use comfy_table::{ContentArrangement::Dynamic, Table};
 use std::error::Error;
 
@@ -26,7 +26,7 @@ pub(crate) async fn run(db: &DB, all: bool) -> Result<String, Box<dyn Error>> {
         table.add_row(vec![
             t.id().unwrap_or("ID not found".to_string()).as_str(),
             t.name(),
-            t.priority(),
+            t.priority().to_string().as_str(),
             t.description().as_ref().unwrap_or(&"None".to_string()),
             t.created_at().to_string().as_str(),
             t.completed_at()

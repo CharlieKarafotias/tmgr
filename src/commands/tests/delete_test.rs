@@ -1,4 +1,5 @@
-use super::super::{db, delete, model::Task};
+use super::super::super::{db, model::Task};
+use super::super::delete;
 use std::{fs::File, path::Path};
 
 #[tokio::test]

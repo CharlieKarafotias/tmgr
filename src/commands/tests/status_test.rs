@@ -1,4 +1,5 @@
-use super::super::{db, model::Task, status};
+use super::super::super::{db, model::Task};
+use super::super::status;
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_running_status_command_then_no_tasks_should_be_reported() {

@@ -1,5 +1,8 @@
-use super::super::super::cli::model::TaskPriority;
-use super::super::{db, model::Task, view};
+use super::super::super::{
+    db,
+    model::{Task, TaskPriority},
+};
+use super::super::view;
 use chrono;
 use surrealdb::sql::Datetime;
 
@@ -18,7 +21,7 @@ async fn given_existing_task_when_wrong_id_is_passed_then_error_should_be_return
 
     let task = Task::builder()
         .name("test".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .description("some description".to_string())
         .build();
 
@@ -39,12 +42,12 @@ async fn given_existing_tasks_when_unspecific_id_is_passed_then_error_should_be_
 
     let task = Task::builder()
         .name("test".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .description("some description".to_string())
         .build();
     let task2 = Task::builder()
         .name("test2".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .description("some description".to_string())
         .build();
 
@@ -66,7 +69,7 @@ async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_retur
 
     let task = Task::builder()
         .name("test".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .description("some description".to_string())
         .created_at(Datetime::from(
             chrono::DateTime::from_timestamp(0, 0).unwrap(),

@@ -1,4 +1,4 @@
-use super::{db::DB, model::Task};
+use super::super::{db::DB, model::Task};
 use std::{error::Error, fs::remove_file, path::Path};
 
 pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn Error>> {

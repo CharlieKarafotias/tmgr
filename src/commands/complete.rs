@@ -1,4 +1,4 @@
-use super::{db::DB, model::Task};
+use super::super::{db::DB, model::Task};
 use std::error::Error;
 use surrealdb::{opt::PatchOp, sql::Datetime};
 

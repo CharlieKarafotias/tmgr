@@ -1,14 +1,18 @@
-use super::super::cli::model::TaskPriority;
-use super::{db::DB, model::Task};
+use super::super::{
+    db::DB,
+    model::{Task, TaskPriority},
+};
 use std::error::Error;
 
 pub(crate) async fn run(
     db: &DB,
     name: String,
-    priority: TaskPriority,
+    priority: Option<TaskPriority>,
     description: Option<String>,
 ) -> Result<String, Box<dyn Error>> {
-    let mut task_builder = Task::builder().name(&name).priority(&priority);
+    let mut task_builder = Task::builder()
+        .name(&name)
+        .priority(priority.unwrap_or_default());
     if let Some(description) = description {
         task_builder = task_builder.description(description);
     }

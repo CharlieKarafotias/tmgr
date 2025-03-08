@@ -1,6 +1,6 @@
 # Release Notes
 
-## 2.3.0
+## 3.0.0
 
 - Refactor of code base to improve readability and maintainability
   - All `pub(crate)` visibilities are now `pub(super)` to ensure proper visibility
@@ -14,6 +14,13 @@
 - Dependency updates
   - Bumped `tempfile` from 3.17.1 to 3.18.0
   - Bumped `tokio` from 1.43.0 to 1.44.0
+
+### Breaking changes
+
+- The `priority` of a `Task` is now stored as `Low`, `Medium`, or `High` in the database. 
+  This will result in older versions needing to run the `migrate` function prior to using the application.
+  The `migrate` function will update all tasks to their new priority values. 
+- The new default value of a `Task`'s priority is now `Low` instead of `High`.
 
 ## 2.2.6
 

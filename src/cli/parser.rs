@@ -4,6 +4,7 @@ use super::super::{
         result_handler::handle_result,
     },
     commands,
+    db::DB,
 };
 use clap::Parser;
 
@@ -11,9 +12,9 @@ use clap::Parser;
 pub async fn run() -> i32 {
     let input = Cli::parse();
     let db = if cfg!(test) {
-        commands::db::DB::new_test().await
+        DB::new_test().await
     } else {
-        commands::db::DB::new().await
+        DB::new().await
     };
 
     let res: Result<String, Box<dyn std::error::Error>> = match input.command {
@@ -25,6 +26,7 @@ pub async fn run() -> i32 {
         Command::Complete { id } => commands::complete::run(&db, id).await,
         Command::Delete { id } => commands::delete::run(&db, id).await,
         Command::List { all } => commands::list::run(&db, all).await,
+        Command::Migrate { from } => commands::migrate::run(&db, from).await,
         Command::Note { id, open } => commands::note::run(&db, id, open).await,
         Command::Status => commands::status::run(&db).await,
         Command::Update {

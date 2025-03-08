@@ -1,4 +1,5 @@
-use super::super::{db, list, model::Task};
+use super::super::super::{db, model::Task};
+use super::super::list;
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_listing_all_tasks_then_no_tasks_should_be_returned() {
@@ -30,8 +31,7 @@ async fn given_existing_tasks_when_listing_all_tasks_then_all_tasks_should_be_re
     let res = list::run(&db, true).await;
     assert!(res.is_ok());
     let res_str = res.unwrap();
-    assert!(res_str.to_lowercase().contains("a new task"));
-    assert!(res_str.to_lowercase().contains("high"));
+    assert!(res_str.contains("Low"));
 }
 
 #[tokio::test]

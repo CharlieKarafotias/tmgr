@@ -5,12 +5,13 @@ use surrealdb::{
     engine::any::{Any, connect},
 };
 
-pub(crate) struct DB {
-    pub(crate) client: Surreal<Any>,
+// TODO: should client be private?
+pub(super) struct DB {
+    pub(super) client: Surreal<Any>,
 }
 
 impl DB {
-    pub(crate) async fn new() -> Self {
+    pub(super) async fn new() -> Self {
         let client = connect(format!(
             "surrealkv://{}",
             Self::get_db_file_path().display()
@@ -25,7 +26,7 @@ impl DB {
         Self { client }
     }
 
-    pub(crate) async fn new_test() -> Self {
+    pub(super) async fn new_test() -> Self {
         let client = connect("mem://")
             .await
             .expect("Could not connect to memory database");
@@ -37,7 +38,7 @@ impl DB {
         Self { client }
     }
 
-    pub(crate) fn get_db_file_path() -> PathBuf {
+    pub(super) fn get_db_file_path() -> PathBuf {
         let exe_path = std::env::current_exe().expect("Could not get executable path");
         let dir_path = exe_path
             .parent()
@@ -53,7 +54,7 @@ impl DB {
     /// The id should be a prefix of the full id of the task you want to select.
     /// The full id of each task is "task:<id>", where <id> is the id you
     /// provided when you added the task.
-    pub(crate) async fn select_task_by_partial_id(
+    pub(super) async fn select_task_by_partial_id(
         &self,
         id: impl Into<String>,
     ) -> Result<Task, Box<dyn Error>> {

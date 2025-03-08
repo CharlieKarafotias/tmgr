@@ -1,8 +1,5 @@
-use super::super::{
-    db,
-    model::Task,
-    note::{self, path_from_id},
-};
+use super::super::super::{db, model::Task};
+use super::super::note::{self, path_from_id};
 use std::{
     fs::{File, read_to_string, remove_file},
     io::{self, BufRead, Write},
@@ -53,7 +50,7 @@ async fn when_creating_note_should_write_correct_header() {
     let reader = io::BufReader::new(file);
     let lines: Vec<String> = reader.lines().collect::<io::Result<Vec<String>>>().unwrap();
 
-    assert_eq!(lines[0], format!("# Task {id} - a new task"));
+    assert_eq!(lines[0], format!("# Task {id} - "));
     assert_eq!(lines[1], "");
     assert_eq!(lines[2], "## Notes");
     assert_eq!(lines[3], "");

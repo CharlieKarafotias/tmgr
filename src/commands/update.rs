@@ -1,5 +1,7 @@
-use super::super::cli::model::TaskPriority;
-use super::{db::DB, model::Task};
+use super::super::{
+    db::DB,
+    model::{Task, TaskPriority},
+};
 use std::{collections::BTreeMap, error::Error, iter::FromIterator};
 
 pub(crate) async fn run(

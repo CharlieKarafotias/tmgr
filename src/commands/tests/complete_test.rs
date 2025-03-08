@@ -1,5 +1,8 @@
-use super::super::super::cli::model::TaskPriority;
-use super::super::{complete, db, model::Task};
+use super::super::super::{
+    db,
+    model::{Task, TaskPriority},
+};
+use super::super::complete;
 
 #[tokio::test]
 async fn given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_completed() {
@@ -39,7 +42,7 @@ async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the
     let db = db::DB::new_test().await;
     let task = Task::builder()
         .name("task to complete".to_string())
-        .priority(TaskPriority::Medium.to_string())
+        .priority(TaskPriority::Medium)
         .description("This is a description of the task".to_string())
         .build();
 
@@ -59,7 +62,7 @@ async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the
     let first = &res[0];
     assert!(first.completed_at().is_some());
     assert_eq!(first.name(), "task to complete");
-    assert_eq!(first.priority(), TaskPriority::Medium.to_string().as_str());
+    assert_eq!(*first.priority(), TaskPriority::Medium);
     assert_eq!(
         first.description().as_ref().unwrap(),
         "This is a description of the task"

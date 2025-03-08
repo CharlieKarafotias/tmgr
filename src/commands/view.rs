@@ -1,4 +1,4 @@
-use super::db::DB;
+use super::super::db::DB;
 use comfy_table::{ContentArrangement::Dynamic, Table};
 use std::error::Error;
 
@@ -12,7 +12,7 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, Box<dyn Error>> {
         .set_header(vec!["Key", "Value"])
         .add_row(vec!["id", &t.id()?])
         .add_row(vec!["name", t.name()])
-        .add_row(vec!["priority", t.priority()])
+        .add_row(vec!["priority", t.priority().to_string().as_str()])
         .add_row(vec![
             "description",
             t.description().as_ref().unwrap_or(&"None".to_string()),
