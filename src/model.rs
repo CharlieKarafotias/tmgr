@@ -127,9 +127,7 @@ where
 pub(super) trait TableRow {
     const FIELDS: &'static [&'static str];
     fn to_table_rows(&self) -> Vec<(String, String)>;
-    // TODO: fix so include_fields is a &[String] instead of a &Vec<String>
-    #[allow(clippy::ptr_arg)]
-    fn to_table_rows_filtered(&self, include_fields: &Vec<String>) -> Vec<(String, String)>;
+    fn to_table_rows_filtered(&self, include_fields: &[String]) -> Vec<(String, String)>;
 }
 
 impl TableRow for Task {
@@ -148,7 +146,12 @@ impl TableRow for Task {
     /// - The first vector contains all the field names of a Task.
     /// - The second vector contains all the field values of a Task.
     fn to_table_rows(&self) -> Vec<(String, String)> {
-        self.to_table_rows_filtered(&Self::FIELDS.iter().map(|f| f.to_string()).collect())
+        self.to_table_rows_filtered(
+            &Self::FIELDS
+                .iter()
+                .map(|f| f.to_string())
+                .collect::<Vec<String>>(),
+        )
     }
 
     /// Filters the fields of a Task based on the provided field names.
@@ -160,7 +163,7 @@ impl TableRow for Task {
     /// Returns a tuple of two vectors:
     /// - The first vector contains all the field names of a Task.
     /// - The second vector contains all the field values of a Task.
-    fn to_table_rows_filtered(&self, include_fields: &Vec<String>) -> Vec<(String, String)> {
+    fn to_table_rows_filtered(&self, include_fields: &[String]) -> Vec<(String, String)> {
         include_fields
             .iter()
             .map(|f| match f.as_str() {
