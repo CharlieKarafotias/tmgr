@@ -1,6 +1,6 @@
 use super::super::{
     db::DB,
-    model::{TmgrError, TmgrErrorKind},
+    model::{TableRow, TmgrError, TmgrErrorKind},
 };
 use comfy_table::{ContentArrangement::Dynamic, Table};
 use std::fmt;
@@ -13,36 +13,18 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, ViewError> {
             kind: ViewErrorKind::DatabaseError,
             message: e.to_string(),
         })?;
-    let id = t.id().map_err(|e| ViewError {
+
+    let _ = t.id().map_err(|e| ViewError {
         kind: ViewErrorKind::BadTaskId,
         message: e.to_string(),
     })?;
 
-    // TODO: refactor with List command (see todo comment in list function)
     let mut table = Table::new();
-    table
-        .set_content_arrangement(Dynamic)
-        .set_header(vec!["Key", "Value"])
-        .add_row(vec!["id", &id])
-        .add_row(vec!["name", t.name()])
-        .add_row(vec!["priority", t.priority().to_string().as_str()])
-        .add_row(vec![
-            "description",
-            t.description().as_ref().unwrap_or(&"None".to_string()),
-        ])
-        .add_row(vec![
-            "work_note_path",
-            t.work_note_path().as_ref().unwrap_or(&"None".to_string()),
-        ])
-        .add_row(vec!["created_at", t.created_at().to_string().as_str()])
-        .add_row(vec![
-            "completed_at",
-            t.completed_at()
-                .as_ref()
-                .map(|s| s.to_string())
-                .unwrap_or("In Progress".to_string())
-                .as_str(),
-        ]);
+    table.set_content_arrangement(Dynamic);
+    table.set_header(vec!["Key", "Value"]);
+    t.to_table_rows().iter().for_each(|(k, v)| {
+        table.add_row(vec![k, v]);
+    });
 
     Ok(table.to_string())
 }

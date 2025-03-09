@@ -1,6 +1,6 @@
 use super::super::{
     db::DB,
-    model::{Task, TmgrError, TmgrErrorKind},
+    model::{TableRow, Task, TmgrError, TmgrErrorKind},
 };
 use comfy_table::{ContentArrangement::Dynamic, Table};
 use std::fmt;
@@ -28,30 +28,20 @@ pub(crate) async fn run(db: &DB, all: bool) -> Result<String, ListError> {
     };
 
     let mut table = Table::new();
-    table.set_content_arrangement(Dynamic).set_header(vec![
-        "id",
-        "name",
-        "priority",
-        "description",
-        "created_at",
-        "completed_at",
-    ]);
+    let headers = vec![
+        "id".to_string(),
+        "name".to_string(),
+        "priority".to_string(),
+        "description".to_string(),
+        "created_at".to_string(),
+        "completed_at".to_string(),
+    ];
+    table.set_content_arrangement(Dynamic).set_header(&headers);
 
-    // TODO: should have a function implemented for task that allows returning of these values
-    // can also filter out specific fields
     tasks.iter().for_each(|t| {
-        table.add_row(vec![
-            t.id().unwrap_or("ID not found".to_string()).as_str(),
-            t.name(),
-            t.priority().to_string().as_str(),
-            t.description().as_ref().unwrap_or(&"None".to_string()),
-            t.created_at().to_string().as_str(),
-            t.completed_at()
-                .as_ref()
-                .map(|s| s.to_string())
-                .unwrap_or("In Progress".to_string())
-                .as_str(),
-        ]);
+        let row = t.to_table_rows_filtered(&headers);
+        let vals: Vec<String> = row.iter().map(|(_, v)| v.to_string()).collect();
+        table.add_row(vals);
     });
 
     Ok(table.to_string())

@@ -18,6 +18,8 @@ pub(super) struct Task {
     work_note_path: Option<String>,
     created_at: Datetime,
     completed_at: Option<Datetime>,
+    // TODO: impl macros for this: https://stackoverflow.com/questions/37140768/how-to-get-struct-field-names-in-rust
+    // NOTE (new field): if new fields are added here, then implement getters and update TableRow implementation
 }
 
 impl Task {
@@ -121,6 +123,81 @@ where
     let t = Thing::deserialize(deserializer)?;
     Ok(Some(t.to_raw()))
 }
+
+pub(super) trait TableRow {
+    const FIELDS: &'static [&'static str];
+    fn to_table_rows(&self) -> Vec<(String, String)>;
+    // TODO: fix so include_fields is a &[String] instead of a &Vec<String>
+    #[allow(clippy::ptr_arg)]
+    fn to_table_rows_filtered(&self, include_fields: &Vec<String>) -> Vec<(String, String)>;
+}
+
+impl TableRow for Task {
+    // NOTE (new field): update me if new field
+    const FIELDS: &'static [&'static str] = &[
+        "id",
+        "name",
+        "priority",
+        "description",
+        "created_at",
+        "completed_at",
+        "work_note_path",
+    ];
+
+    /// Returns a tuple of two vectors:
+    /// - The first vector contains all the field names of a Task.
+    /// - The second vector contains all the field values of a Task.
+    fn to_table_rows(&self) -> Vec<(String, String)> {
+        self.to_table_rows_filtered(&Self::FIELDS.iter().map(|f| f.to_string()).collect())
+    }
+
+    /// Filters the fields of a Task based on the provided field names.
+    /// The fields are sorted by the included fields.
+    /// Ex:
+    ///   - if the included fields are `["id", "name", "priority"]`
+    ///   - returned vector will be `["id", "name", "priority"]`
+    ///
+    /// Returns a tuple of two vectors:
+    /// - The first vector contains all the field names of a Task.
+    /// - The second vector contains all the field values of a Task.
+    fn to_table_rows_filtered(&self, include_fields: &Vec<String>) -> Vec<(String, String)> {
+        include_fields
+            .iter()
+            .map(|f| match f.as_str() {
+                "id" => (
+                    f.to_string(),
+                    self.id().unwrap_or("Error getting ID".to_string()),
+                ),
+                "name" => (f.to_string(), self.name().to_string()),
+                "priority" => (f.to_string(), self.priority().to_string()),
+                "description" => (
+                    f.to_string(),
+                    self.description()
+                        .as_ref()
+                        .unwrap_or(&"None".to_string())
+                        .to_string(),
+                ),
+                "created_at" => (f.to_string(), self.created_at().to_string()),
+                "completed_at" => (
+                    f.to_string(),
+                    self.completed_at()
+                        .as_ref()
+                        .map(|s| s.to_string())
+                        .unwrap_or("In Progress".to_string()),
+                ),
+                "work_note_path" => (
+                    f.to_string(),
+                    self.work_note_path()
+                        .as_ref()
+                        .unwrap_or(&"".to_string())
+                        .to_string(),
+                ),
+                _ => panic!("Unknown field: {}", f),
+            })
+            .collect()
+    }
+}
+
 // -- Task --
 
 // -- Task Errors --
