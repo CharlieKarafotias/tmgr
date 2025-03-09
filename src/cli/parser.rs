@@ -27,21 +27,32 @@ pub async fn run() -> i32 {
                 description,
             } => commands::add::run(&db, name, priority, description)
                 .await
-                .map_err(TmgrError::from),
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
             Command::Complete { id } => commands::complete::run(&db, id)
                 .await
-                .map_err(TmgrError::from),
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
             Command::Delete { id } => commands::delete::run(&db, id)
                 .await
-                .map_err(TmgrError::from),
-            Command::List { all } => commands::list::run(&db, all).await.map_err(TmgrError::from),
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
+            Command::List { all } => commands::list::run(&db, all)
+                .await
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
             Command::Migrate { from } => commands::migrate::run(&db, from)
                 .await
-                .map_err(TmgrError::from),
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
             Command::Note { id, open } => commands::note::run(&db, id, open)
                 .await
-                .map_err(TmgrError::from),
-            Command::Status => commands::status::run(&db).await.map_err(TmgrError::from),
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
+            Command::Status => commands::status::run(&db)
+                .await
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
             Command::Update {
                 id,
                 name,
@@ -49,9 +60,16 @@ pub async fn run() -> i32 {
                 description,
             } => commands::update::run(&db, id, name, priority, description)
                 .await
-                .map_err(TmgrError::from),
-            Command::Upgrade => commands::upgrade::run().await.map_err(TmgrError::from),
-            Command::View { id } => commands::view::run(&db, id).await.map_err(TmgrError::from),
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
+            Command::Upgrade => commands::upgrade::run()
+                .await
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
+            Command::View { id } => commands::view::run(&db, id)
+                .await
+                .map_err(TmgrError::from)
+                .map(|f| f.message().to_string()),
         },
     };
 

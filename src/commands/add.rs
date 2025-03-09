@@ -1,6 +1,6 @@
 use super::super::{
     db::DB,
-    model::{Task, TaskPriority, TmgrError, TmgrErrorKind},
+    model::{CommandResult, Task, TaskPriority, TmgrError, TmgrErrorKind},
 };
 use std::fmt;
 
@@ -9,7 +9,7 @@ pub(crate) async fn run(
     name: String,
     priority: Option<TaskPriority>,
     description: Option<String>,
-) -> Result<String, AddError> {
+) -> Result<CommandResult<Task>, AddError> {
     let mut task_builder = Task::builder()
         .name(&name)
         .priority(priority.unwrap_or_default());
@@ -33,7 +33,10 @@ pub(crate) async fn run(
             message: e.to_string(),
         })?;
 
-        Ok(format!("Task '{id}' created successfully"))
+        Ok(CommandResult::new(
+            format!("Task '{id}' created successfully"),
+            task,
+        ))
     } else {
         Err(AddError {
             kind: AddErrorKind::FailedToCreateTask,

@@ -1,4 +1,4 @@
-use super::super::model::{TmgrError, TmgrErrorKind};
+use super::super::model::{CommandResult, TmgrError, TmgrErrorKind};
 use directories::UserDirs;
 use reqwest::header::USER_AGENT;
 use semver::Version;
@@ -12,7 +12,7 @@ use std::{
     path::PathBuf,
 };
 
-pub(crate) async fn run() -> Result<String, UpdateError> {
+pub(crate) async fn run() -> Result<CommandResult<bool>, UpdateError> {
     println!("Checking repository for updates...");
     let update_info = check_for_updates().await?;
 
@@ -26,12 +26,18 @@ pub(crate) async fn run() -> Result<String, UpdateError> {
         delete_existing_binary(&path_to_existing_executable)?;
         // move new binary from download folder to bin of current executable
         move_new_binary(new_binary_download_path, path_to_existing_executable)?;
-        Ok(format!(
-            "Update complete: v{} -> v{}",
-            update_info.current_version, update_info.latest_version
+        Ok(CommandResult::new(
+            format!(
+                "Update complete: v{} -> v{}",
+                update_info.current_version, update_info.latest_version
+            ),
+            true,
         ))
     } else {
-        Ok("Already on latest version".to_string())
+        Ok(CommandResult::new(
+            "Already on latest version".to_string(),
+            true,
+        ))
     }
 }
 

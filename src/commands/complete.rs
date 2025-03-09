@@ -1,11 +1,11 @@
 use super::super::{
     db::DB,
-    model::{Task, TmgrError, TmgrErrorKind},
+    model::{CommandResult, Task, TmgrError, TmgrErrorKind},
 };
 use std::fmt;
 use surrealdb::{opt::PatchOp, sql::Datetime};
 
-pub(crate) async fn run(db: &DB, id: String) -> Result<String, CompleteError> {
+pub(crate) async fn run(db: &DB, id: String) -> Result<CommandResult<Task>, CompleteError> {
     let task = db
         .select_task_by_partial_id(&id)
         .await
@@ -17,7 +17,7 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, CompleteError> {
         kind: CompleteErrorKind::BadTaskId,
         message: e.to_string(),
     })?;
-    let _: Option<Task> = db
+    let t: Task = db
         .client
         .upsert(("task", &task_id))
         .patch(PatchOp::replace("/completed_at", Datetime::default()))
@@ -25,10 +25,15 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, CompleteError> {
         .map_err(|_| CompleteError {
             kind: CompleteErrorKind::DatabaseError,
             message: "Failed to set task to complete".to_string(),
+        })?
+        .ok_or_else(|| CompleteError {
+            kind: CompleteErrorKind::DatabaseError,
+            message: "Failed to set task to complete".to_string(),
         })?;
 
-    Ok(format!(
-        "Successfully updated task '{task_id}' to completed"
+    Ok(CommandResult::new(
+        format!("Successfully updated task '{task_id}' to completed"),
+        t,
     ))
 }
 

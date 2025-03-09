@@ -1,14 +1,14 @@
 use super::super::{
     cli::model::TmgrVersion,
     db::DB,
-    model::{TmgrError, TmgrErrorKind},
+    model::{CommandResult, TmgrError, TmgrErrorKind},
 };
 use std::fmt;
 
 pub(crate) async fn run(
     db: &DB,
     previous_major_version: TmgrVersion,
-) -> Result<String, MigrateError> {
+) -> Result<CommandResult<bool>, MigrateError> {
     // Logic to get from V2 to V3 (Change: priority field must become TaskPriority value)
     // priority low -> Low
     let v2_fix_low = "UPDATE task SET priority = 'Low' WHERE priority = 'low'";
@@ -55,10 +55,13 @@ pub(crate) async fn run(
                 message: "Unable to determine tmgr current version".to_string(),
             })?;
 
-    Ok(format!(
-        "Successfully migrated tasks from {} to v{} schema",
-        String::from(&previous_major_version),
-        current_major_version,
+    Ok(CommandResult::new(
+        format!(
+            "Successfully migrated tasks from {} to v{} schema",
+            String::from(&previous_major_version),
+            current_major_version,
+        ),
+        true,
     ))
 }
 

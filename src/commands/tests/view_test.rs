@@ -83,7 +83,7 @@ async fn given_existing_task_when_viewing_a_task_then_all_fields_should_be_retur
     let id = db_res[0].id().unwrap();
 
     let res = view::run(&db, id.clone()).await;
-    let res_str = res.unwrap();
+    let res_str = res.unwrap().message().to_string();
     assert!(res_str.contains("test"));
     assert!(res_str.contains("Medium"));
     assert!(res_str.contains("some description"));

@@ -13,7 +13,7 @@ async fn given_no_tasks_in_db_when_migrating_then_no_effect() {
     let curr_version = format!("v{}", env!("CARGO_PKG_VERSION").split(".").next().unwrap());
     assert!(res.is_ok());
     assert_eq!(
-        res.unwrap(),
+        res.unwrap().message(),
         format!(
             "Successfully migrated tasks from v2 to {} schema",
             curr_version
@@ -47,7 +47,7 @@ async fn given_v2_task_in_db_when_migrating_then_task_should_be_migrated() {
     let curr_version = format!("v{}", env!("CARGO_PKG_VERSION").split(".").next().unwrap());
     assert!(res.is_ok());
     assert_eq!(
-        res.unwrap(),
+        res.unwrap().message(),
         format!(
             "Successfully migrated tasks from v2 to {} schema",
             curr_version
@@ -95,7 +95,7 @@ async fn given_all_varieties_of_v2_tasks_in_db_when_migrating_then_tasks_should_
     let curr_version = format!("v{}", env!("CARGO_PKG_VERSION").split(".").next().unwrap());
     assert!(res.is_ok());
     assert_eq!(
-        res.unwrap(),
+        res.unwrap().message(),
         format!(
             "Successfully migrated tasks from v2 to {} schema",
             curr_version
@@ -172,7 +172,7 @@ async fn given_mix_of_v2_v3_tasks_in_db_when_migrating_then_v2_tasks_should_be_m
     let curr_version = format!("v{}", env!("CARGO_PKG_VERSION").split(".").next().unwrap());
     assert!(res.is_ok());
     assert_eq!(
-        res.unwrap(),
+        res.unwrap().message(),
         format!(
             "Successfully migrated tasks from v2 to {} schema",
             curr_version
@@ -211,7 +211,7 @@ async fn given_v3_task_in_db_when_migrating_then_no_effect() {
     let curr_version = format!("v{}", env!("CARGO_PKG_VERSION").split(".").next().unwrap());
     assert!(res.is_ok());
     assert_eq!(
-        res.unwrap(),
+        res.unwrap().message(),
         format!(
             "Successfully migrated tasks from v2 to {} schema",
             curr_version

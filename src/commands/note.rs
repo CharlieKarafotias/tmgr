@@ -1,6 +1,6 @@
 use super::super::{
     db::DB,
-    model::{Task, TmgrError, TmgrErrorKind},
+    model::{CommandResult, Task, TmgrError, TmgrErrorKind},
 };
 use std::{
     env::{current_exe, var},
@@ -12,7 +12,11 @@ use std::{
 };
 use surrealdb::opt::PatchOp;
 
-pub(crate) async fn run(db: &DB, id: String, open_editor: bool) -> Result<String, NoteError> {
+pub(crate) async fn run(
+    db: &DB,
+    id: String,
+    open_editor: bool,
+) -> Result<CommandResult<Task>, NoteError> {
     let task = db
         .select_task_by_partial_id(&id)
         .await
@@ -25,7 +29,7 @@ pub(crate) async fn run(db: &DB, id: String, open_editor: bool) -> Result<String
         if open_editor {
             open_note(note_path)?;
         }
-        Ok(note_path.to_string())
+        Ok(CommandResult::new(note_path.to_string(), task))
     } else {
         let task_id = task.id().map_err(|e| NoteError {
             kind: NoteErrorKind::BadTaskId,
@@ -75,12 +79,16 @@ pub(crate) async fn run(db: &DB, id: String, open_editor: bool) -> Result<String
 
         let note_path_string = note_path.to_string_lossy().to_string();
         // Update task
-        let _: Option<Task> = db
+        let updated_task: Task = db
             .client
             .upsert(("task", task_id))
             .patch(PatchOp::replace("/work_note_path", Some(&note_path_string)))
             .await
             .map_err(|_| NoteError {
+                kind: NoteErrorKind::DatabaseError,
+                message: "Failed to update task".to_string(),
+            })?
+            .ok_or_else(|| NoteError {
                 kind: NoteErrorKind::DatabaseError,
                 message: "Failed to update task".to_string(),
             })?;
@@ -89,7 +97,7 @@ pub(crate) async fn run(db: &DB, id: String, open_editor: bool) -> Result<String
             open_note(&note_path_string)?;
         }
 
-        Ok(note_path_string)
+        Ok(CommandResult::new(note_path_string, updated_task))
     }
 }
 

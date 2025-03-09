@@ -1,53 +1,49 @@
 use super::super::{
     db::DB,
-    model::{TmgrError, TmgrErrorKind},
+    model::{CommandResult, TmgrError, TmgrErrorKind},
 };
 use std::{env::current_exe, fmt};
 
-pub(crate) async fn run(db: &DB) -> Result<String, StatusError> {
-    let mut res = String::new();
-    res.push_str("File locations:\n");
-    res.push_str(&format!(
-        "  tmgr executable: {:?}\n",
-        current_exe()
+pub(crate) async fn run(db: &DB) -> Result<CommandResult<Status>, StatusError> {
+    let status = Status {
+        tmgr_executable_path: current_exe()
             .map(|p| p.display().to_string())
             .map_err(|_| StatusError {
                 kind: StatusErrorKind::UnableToDetermineTmgrExecutablePath,
                 message: "Unable to determine executable location".to_string(),
-            })
-    ));
-    res.push_str(&format!(
-        "  database: {}\n",
-        DB::get_db_file_path()
+            })?,
+        db_file_path: DB::get_db_file_path()
             .map_err(|e| StatusError {
                 kind: StatusErrorKind::UnableToDetermineDbFilePath,
                 message: e.to_string(),
             })?
             .display()
-    ));
-    res.push_str("General statistics:\n");
-    let task_count = get_number_of_tasks(db).await;
-    if let Ok(task_count) = task_count {
-        res.push_str(&format!("  completed tasks: {}\n", task_count.completed));
-        res.push_str(&format!(
-            "  in progress tasks: {}\n",
-            task_count.in_progress
-        ));
-        res.push_str(&format!("  total tasks: {}\n", task_count.total));
-    } else {
-        res.push_str(
-            "  completed tasks: unable to determine number of tasks in current database\n",
-        );
-        res.push_str(
-            "  in progress tasks: unable to determine number of tasks in current database\n",
-        );
-        res.push_str("  total tasks: unable to determine number of tasks in current database\n");
-    }
+            .to_string(),
+        task_status: get_number_of_tasks(db).await?,
+    };
 
-    Ok(res)
+    Ok(CommandResult::new(status.to_string(), status))
 }
 
-struct TaskCount {
+pub(crate) struct Status {
+    tmgr_executable_path: String,
+    db_file_path: String,
+    task_status: TaskCount,
+}
+
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "File locations:")?;
+        writeln!(f, "  tmgr executable: {}", self.tmgr_executable_path)?;
+        writeln!(f, "  database: {}", self.db_file_path)?;
+        writeln!(f, "General statistics:")?;
+        writeln!(f, "  completed tasks: {}", self.task_status.completed)?;
+        writeln!(f, "  in progress tasks: {}", self.task_status.in_progress)?;
+        writeln!(f, "  total tasks: {}", self.task_status.total)
+    }
+}
+
+pub(crate) struct TaskCount {
     completed: i32,
     in_progress: i32,
     total: i32,

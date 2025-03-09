@@ -19,7 +19,9 @@ async fn given_an_existing_task_without_note_when_calling_note_should_create_md_
     let id = new_task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
-        .expect("Error creating note");
+        .expect("Error creating note")
+        .message()
+        .to_string();
 
     // Should create a note file
     assert!(Path::new(&res).exists());
@@ -44,7 +46,9 @@ async fn when_creating_note_should_write_correct_header() {
     let id = new_task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
-        .expect("Error creating note");
+        .expect("Error creating note")
+        .message()
+        .to_string();
 
     let file = File::open(&res).expect("Failed to open the note file");
     let reader = io::BufReader::new(file);
@@ -75,7 +79,9 @@ async fn when_creating_note_with_description_should_write_correct_header() {
     let id = new_task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
-        .expect("Error creating note");
+        .expect("Error creating note")
+        .message()
+        .to_string();
 
     let file = File::open(&res).expect("Failed to open the note file");
     let reader = io::BufReader::new(file);
@@ -110,7 +116,9 @@ async fn given_an_existing_task_with_note_when_calling_note_should_not_create_md
     let id = task[0].id().unwrap();
     let res = note::run(&db, id.clone(), false)
         .await
-        .expect("Error creating note");
+        .expect("Error creating note")
+        .message()
+        .to_string();
 
     // Should return the path to the note file
     assert!(res.eq(temp_file_path.as_str()));

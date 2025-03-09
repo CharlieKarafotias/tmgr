@@ -9,9 +9,8 @@ async fn given_no_existing_tasks_when_completing_a_task_then_no_task_should_be_c
     let db = db::DB::new_test().await.expect("Failed to create db");
     let res = complete::run(&db, "randomID".to_string()).await;
     assert!(res.is_err());
-    let res_str = res.unwrap_err().to_string();
     assert_eq!(
-        res_str,
+        res.unwrap_err().to_string(),
         "Task starting with id 'randomID' was not found (db error: No tasks found) (complete error: Database error)"
     );
 }
@@ -28,9 +27,8 @@ async fn given_existing_tasks_when_completing_a_task_then_the_task_should_be_com
     let id = new_task[0].id().unwrap();
     let res = complete::run(&db, id.clone()).await;
 
-    let res_str = res.unwrap();
     assert_eq!(
-        res_str,
+        res.unwrap().message(),
         format!("Successfully updated task '{id}' to completed")
     );
 
@@ -54,9 +52,8 @@ async fn given_existing_tasks_when_completing_a_task_then_the_other_parts_of_the
     let id = new_task[0].id().unwrap();
     let res = complete::run(&db, id.clone()).await;
     assert!(res.is_ok());
-    let res_str = res.unwrap();
     assert_eq!(
-        res_str,
+        res.unwrap().message(),
         format!("Successfully updated task '{id}' to completed")
     );
 

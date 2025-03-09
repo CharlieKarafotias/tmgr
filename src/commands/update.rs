@@ -1,6 +1,6 @@
 use super::super::{
     db::DB,
-    model::{Task, TaskPriority, TmgrError, TmgrErrorKind},
+    model::{CommandResult, Task, TaskPriority, TmgrError, TmgrErrorKind},
 };
 use std::{collections::BTreeMap, fmt, iter::FromIterator};
 
@@ -10,7 +10,7 @@ pub(crate) async fn run(
     name: Option<String>,
     priority: Option<TaskPriority>,
     description: Option<String>,
-) -> Result<String, UpdateError> {
+) -> Result<CommandResult<Task>, UpdateError> {
     if name.is_none() && priority.is_none() && description.is_none() {
         return Err(UpdateError {
             kind: UpdateErrorKind::NoFieldsToUpdate,
@@ -45,7 +45,7 @@ pub(crate) async fn run(
     );
 
     // TODO: follow this model for Complete & Note work path commands as well instead of Patch op
-    let _: Option<Task> = db
+    let updated_task: Task = db
         .client
         .update(("task", &task_id))
         .merge(update_map)
@@ -53,9 +53,16 @@ pub(crate) async fn run(
         .map_err(|_| UpdateError {
             kind: UpdateErrorKind::DatabaseError,
             message: "Failed to update task".to_string(),
+        })?
+        .ok_or_else(|| UpdateError {
+            kind: UpdateErrorKind::DatabaseError,
+            message: "Failed to update task".to_string(),
         })?;
 
-    Ok(format!("Successfully updated task '{task_id}'"))
+    Ok(CommandResult::new(
+        format!("Successfully updated task '{task_id}'"),
+        updated_task,
+    ))
 }
 
 #[derive(Debug)]

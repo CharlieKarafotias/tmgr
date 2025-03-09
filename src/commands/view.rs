@@ -1,11 +1,11 @@
 use super::super::{
     db::DB,
-    model::{TableRow, TmgrError, TmgrErrorKind},
+    model::{CommandResult, TableRow, Task, TmgrError, TmgrErrorKind},
 };
 use comfy_table::{ContentArrangement::Dynamic, Table};
 use std::fmt;
 
-pub(crate) async fn run(db: &DB, id: String) -> Result<String, ViewError> {
+pub(crate) async fn run(db: &DB, id: String) -> Result<CommandResult<Task>, ViewError> {
     let t = db
         .select_task_by_partial_id(&id)
         .await
@@ -26,7 +26,7 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, ViewError> {
         table.add_row(vec![k, v]);
     });
 
-    Ok(table.to_string())
+    Ok(CommandResult::new(table.to_string(), t))
 }
 
 // -- View Errors ---

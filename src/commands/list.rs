@@ -1,11 +1,11 @@
 use super::super::{
     db::DB,
-    model::{TableRow, Task, TmgrError, TmgrErrorKind},
+    model::{CommandResult, TableRow, Task, TmgrError, TmgrErrorKind},
 };
 use comfy_table::{ContentArrangement::Dynamic, Table};
 use std::fmt;
 
-pub(crate) async fn run(db: &DB, all: bool) -> Result<String, ListError> {
+pub(crate) async fn run(db: &DB, all: bool) -> Result<CommandResult<Vec<Task>>, ListError> {
     let tasks: Vec<Task> = if all {
         db.client.select("task").await.map_err(|_| ListError {
             kind: ListErrorKind::DatabaseError,
@@ -44,7 +44,7 @@ pub(crate) async fn run(db: &DB, all: bool) -> Result<String, ListError> {
         table.add_row(vals);
     });
 
-    Ok(table.to_string())
+    Ok(CommandResult::new(table.to_string(), tasks))
 }
 
 // --- ListError ---

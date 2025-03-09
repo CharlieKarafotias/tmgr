@@ -7,9 +7,8 @@ async fn given_no_existing_tasks_when_deleting_a_task_then_no_task_should_be_del
     let db = db::DB::new_test().await.expect("Failed to create db");
     let res = delete::run(&db, "randomID".to_string()).await;
     assert!(res.is_err());
-    let res_str = res.unwrap_err().to_string();
     assert_eq!(
-        res_str,
+        res.unwrap_err().to_string(),
         "Task starting with id 'randomID' was not found (db error: No tasks found) (delete error: Database error)"
     );
 }
@@ -26,8 +25,10 @@ async fn given_existing_tasks_when_deleting_a_task_then_the_task_should_be_delet
     let id = db_res[0].id().unwrap();
     let res = delete::run(&db, id.clone()).await;
     assert!(res.is_ok());
-    let res_str = res.unwrap();
-    assert_eq!(res_str, format!("Successfully deleted task '{id}'"));
+    assert_eq!(
+        res.unwrap().message(),
+        format!("Successfully deleted task '{id}'")
+    );
 
     let res: Vec<Task> = db.client.select("task").await.unwrap();
     assert_eq!(res.len(), 0);

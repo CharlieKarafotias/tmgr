@@ -1,10 +1,10 @@
 use super::super::{
     db::DB,
-    model::{Task, TmgrError, TmgrErrorKind},
+    model::{CommandResult, Task, TmgrError, TmgrErrorKind},
 };
 use std::{fmt, fs::remove_file, path::Path};
 
-pub(crate) async fn run(db: &DB, id: String) -> Result<String, DeleteError> {
+pub(crate) async fn run(db: &DB, id: String) -> Result<CommandResult<Task>, DeleteError> {
     let task = db
         .select_task_by_partial_id(&id)
         .await
@@ -19,11 +19,15 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, DeleteError> {
     })?;
 
     // Delete task
-    let _: Option<Task> = db
+    let task: Task = db
         .client
         .delete(("task", &task_id))
         .await
         .map_err(|_| DeleteError {
+            kind: DeleteErrorKind::FailedToDeleteTask,
+            message: "Failed to delete task".to_string(),
+        })?
+        .ok_or_else(|| DeleteError {
             kind: DeleteErrorKind::FailedToDeleteTask,
             message: "Failed to delete task".to_string(),
         })?;
@@ -40,7 +44,10 @@ pub(crate) async fn run(db: &DB, id: String) -> Result<String, DeleteError> {
         }
     }
 
-    Ok(format!("Successfully deleted task '{task_id}'"))
+    Ok(CommandResult::new(
+        format!("Successfully deleted task '{task_id}'"),
+        task,
+    ))
 }
 
 // -- Delete Errors ---

@@ -400,3 +400,27 @@ impl Display for TmgrErrorKind {
 }
 
 // -- TmgrError --
+
+// -- CommandResult --
+#[derive(Debug)]
+pub(super) struct CommandResult<T> {
+    message: String,
+    #[allow(dead_code)]
+    result: T,
+}
+
+impl<T> CommandResult<T> {
+    pub(super) fn new(message: String, result: T) -> Self {
+        Self { message, result }
+    }
+
+    pub(super) fn message(&self) -> &str {
+        &self.message
+    }
+
+    #[allow(dead_code)]
+    pub(super) fn result(&self) -> &T {
+        &self.result
+    }
+}
+// -- CommandResult --
