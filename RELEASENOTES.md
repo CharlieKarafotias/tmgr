@@ -14,6 +14,7 @@
 - Dependency updates
   - Bumped `tempfile` from 3.17.1 to 3.18.0
   - Bumped `tokio` from 1.43.0 to 1.44.0
+  - Bumped `serde` from  1.0.218 to 1.0.219
 
 ### Breaking changes
 
