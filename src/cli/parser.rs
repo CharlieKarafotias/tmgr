@@ -62,7 +62,7 @@ pub async fn run() -> i32 {
                 .await
                 .map_err(TmgrError::from)
                 .map(|f| f.message().to_string()),
-            Command::Upgrade => commands::upgrade::run()
+            Command::Upgrade => commands::upgrade::run(&db)
                 .await
                 .map_err(TmgrError::from)
                 .map(|f| f.message().to_string()),

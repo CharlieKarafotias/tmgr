@@ -44,6 +44,11 @@ pub(crate) async fn run(
                     message: "Failed to convert high priority v2 tasks to v3".to_string(),
                 })?;
         }
+        TmgrVersion::V3 => (), // latest version - do nothing
+        TmgrVersion::Invalid => Err(MigrateError {
+            kind: MigrateErrorKind::UnableToGetTmgrVersion,
+            message: "Unable to determine tmgr current version".to_string(),
+        })?,
     }
 
     let current_major_version =

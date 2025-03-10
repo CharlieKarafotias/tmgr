@@ -1,4 +1,9 @@
-use super::super::model::{CommandResult, TmgrError, TmgrErrorKind};
+use super::super::{
+    cli::model::TmgrVersion,
+    db::DB,
+    model::{CommandResult, TmgrError, TmgrErrorKind},
+};
+use super::migrate;
 use directories::UserDirs;
 use reqwest::header::USER_AGENT;
 use semver::Version;
@@ -8,17 +13,18 @@ use std::{
     fmt, fs,
     fs::{File, Permissions},
     io::Write,
+    num::ParseIntError,
     os::unix::fs::PermissionsExt,
     path::PathBuf,
 };
 
-pub(crate) async fn run() -> Result<CommandResult<bool>, UpdateError> {
+pub(crate) async fn run(db: &DB) -> Result<CommandResult<bool>, UpdateError> {
     println!("Checking repository for updates...");
     let update_info = check_for_updates().await?;
 
-    if update_info.needs_update {
+    if update_info.needs_update() {
         let new_binary_download_path =
-            download_binary_to_downloads_folder(update_info.binary_download_url).await?;
+            download_binary_to_downloads_folder(update_info.binary_download_url()).await?;
         let path_to_existing_executable = current_exe().map_err(|e| UpdateError {
             message: e.to_string(),
             kind: UpdateErrorKind::UnableToDetermineTmgrExecutablePath,
@@ -26,10 +32,12 @@ pub(crate) async fn run() -> Result<CommandResult<bool>, UpdateError> {
         delete_existing_binary(&path_to_existing_executable)?;
         // move new binary from download folder to bin of current executable
         move_new_binary(new_binary_download_path, path_to_existing_executable)?;
+        migrate_database_if_major_version_changed(&update_info, db).await?;
         Ok(CommandResult::new(
             format!(
                 "Update complete: v{} -> v{}",
-                update_info.current_version, update_info.latest_version
+                update_info.current_version(),
+                update_info.latest_version()
             ),
             true,
         ))
@@ -98,7 +106,7 @@ pub(super) fn latest_release_url() -> String {
 }
 
 async fn download_binary_to_downloads_folder(
-    binary_download_url: String,
+    binary_download_url: &str,
 ) -> Result<PathBuf, UpdateError> {
     // get download directory of the current system
     let system_file_structure = UserDirs::new().ok_or(UpdateError {
@@ -165,11 +173,67 @@ pub(super) fn move_new_binary(
     })
 }
 
+async fn migrate_database_if_major_version_changed(
+    update_info: &UpdateInfo,
+    db: &DB,
+) -> Result<(), UpdateError> {
+    let current_version = get_major_version(update_info.current_version())?;
+    let latest_version = get_major_version(update_info.latest_version())?;
+    if latest_version > current_version {
+        println!("Migrating database...");
+        let res = migrate::run(db, TmgrVersion::from(current_version))
+            .await
+            .map_err(|e| UpdateError {
+                message: e.to_string(),
+                kind: UpdateErrorKind::UnableToMigrateDatabase,
+            })?;
+        if *res.result() {
+            println!("Database migration complete");
+        } else {
+            println!("Database migration failed, please run 'migrate' command manually");
+        }
+    }
+    Ok(())
+}
+
+fn get_major_version(version: &str) -> Result<u32, UpdateError> {
+    version
+        .split('.')
+        .next()
+        .ok_or_else(|| UpdateError {
+            message: "Unable to determine major version of current tmgr install".to_string(),
+            kind: UpdateErrorKind::NoCurrentVersion,
+        })?
+        .parse()
+        .map_err(|e: ParseIntError| UpdateError {
+            message: e.to_string(),
+            kind: UpdateErrorKind::NoCurrentVersion,
+        })
+}
+
 struct UpdateInfo {
     binary_download_url: String,
     latest_version: String,
     needs_update: bool,
     current_version: String,
+}
+
+impl UpdateInfo {
+    pub fn binary_download_url(&self) -> &str {
+        &self.binary_download_url
+    }
+
+    pub fn latest_version(&self) -> &str {
+        &self.latest_version
+    }
+
+    pub fn needs_update(&self) -> bool {
+        self.needs_update
+    }
+
+    pub fn current_version(&self) -> &str {
+        &self.current_version
+    }
 }
 
 #[derive(Debug)]
@@ -186,6 +250,7 @@ enum UpdateErrorKind {
     UnableToDeleteExistingBinary,
     UnableToMoveBinary,
     UnableToDetermineTmgrExecutablePath,
+    UnableToMigrateDatabase,
 }
 
 // --- Update Errors ---
@@ -242,6 +307,9 @@ impl fmt::Display for UpdateErrorKind {
             ),
             UpdateErrorKind::UnableToDetermineTmgrExecutablePath => {
                 write!(f, "Unable to determine path to existing tmgr executable")
+            }
+            UpdateErrorKind::UnableToMigrateDatabase => {
+                write!(f, "Unable to migrate database")
             }
         }
     }

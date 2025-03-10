@@ -83,12 +83,25 @@ pub(super) enum Command {
 #[derive(Clone, Debug, ValueEnum)]
 pub(crate) enum TmgrVersion {
     V2,
+    V3,
+    Invalid,
 }
 
+impl From<u32> for TmgrVersion {
+    fn from(value: u32) -> Self {
+        match value {
+            2 => TmgrVersion::V2,
+            3 => TmgrVersion::V3,
+            _ => TmgrVersion::Invalid,
+        }
+    }
+}
 impl From<&TmgrVersion> for String {
     fn from(value: &TmgrVersion) -> Self {
         match value {
             TmgrVersion::V2 => "v2".to_string(),
+            TmgrVersion::V3 => "v3".to_string(),
+            TmgrVersion::Invalid => "invalid".to_string(),
         }
     }
 }
