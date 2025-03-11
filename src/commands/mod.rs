@@ -1,13 +1,12 @@
-pub(crate) mod add;
-pub(crate) mod complete;
-pub(crate) mod db;
-pub(crate) mod delete;
-pub(crate) mod list;
-pub(crate) mod model;
-pub(crate) mod note;
-pub(crate) mod status;
-pub(crate) mod update;
-pub(crate) mod upgrade;
-pub(crate) mod view;
+pub(super) mod add;
+pub(super) mod complete;
+pub(super) mod delete;
+pub(super) mod list;
+pub(super) mod migrate;
+pub(super) mod note;
+pub(super) mod status;
+pub(super) mod update;
+pub(super) mod upgrade;
+pub(super) mod view;
 
 mod tests;

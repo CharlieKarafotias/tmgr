@@ -1,5 +1,28 @@
 # Release Notes
 
+## 3.0.0
+
+- Refactor of code base to improve readability and maintainability
+  - To ensure proper visibility, the majority of `pub(crate)` visibilities are now `pub(super)`
+  - `TaskPriority` struct now implements `From` trait for `String` type
+  - New `model` module for struct definitions to replace models existing in commands and cli modules
+  - Replaced all legacy code for obtaining the id of a task in favor of `id` method on `Task` struct
+  - Added getters for all fields on `Task` struct
+  - Proper error handling - no more `expect` or `unwrap` calls in production code base; test suites are allowed to panic
+  - `Task` struct now implements function to retrieve fields required for building tables in `list` and `view` commands
+- Improved test suites for all commands
+- Dependency updates
+  - Bumped `tempfile` from 3.17.1 to 3.18.0
+  - Bumped `tokio` from 1.43.0 to 1.44.0
+  - Bumped `serde` from  1.0.218 to 1.0.219
+
+### Breaking changes
+
+- The `priority` of a `Task` is now stored as `Low`, `Medium`, or `High` in the database. 
+  This will result in older versions needing to run the `migrate` function prior to using the application.
+  The `migrate` function will update all tasks to their new priority values. 
+- The new default value of a `Task`'s priority is now `Low` instead of `High`.
+
 ## 2.2.6
 
 - Several improvements to `note` commands behavior

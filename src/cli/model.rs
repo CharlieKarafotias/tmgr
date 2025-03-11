@@ -1,22 +1,28 @@
+use super::super::model::TaskPriority;
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Parser, Debug)]
-#[command(author = "Charlie Karafotias", version, about = "Store todo tasks", long_about = None)]
-#[command(propagate_version = true)]
-pub(crate) struct Cli {
+#[command(
+    author = "Charlie Karafotias",
+    version,
+    about = "Store todo tasks",
+    propagate_version = true
+)]
+pub(super) struct Cli {
     #[command(subcommand)]
-    pub(crate) command: Command,
+    pub(super) command: Command,
 }
 
 #[derive(Subcommand, Debug)]
-pub(crate) enum Command {
+pub(super) enum Command {
     /// Add a new task
     Add {
         /// A short description of the task
         name: String,
-        /// The priority of the task
-        #[clap(default_value_t = TaskPriority::High)]
-        priority: TaskPriority,
+        #[arg(short, long)]
+        /// An optional priority of the task (will use low priority by default)
+        priority: Option<TaskPriority>,
+        #[arg(short, long)]
         /// An optional long description of the task
         description: Option<String>,
     },
@@ -35,6 +41,11 @@ pub(crate) enum Command {
         #[arg(short, long)]
         /// List all tasks, including completed ones
         all: bool,
+    },
+    /// Migrate will migrate the database from an older version of tmgr to be compatible with the latest version
+    Migrate {
+        /// The major version of the database to migrate from
+        from: TmgrVersion,
     },
     /// Creates and/or opens a markdown file to store notes associated with a particular task
     Note {
@@ -69,18 +80,28 @@ pub(crate) enum Command {
     },
 }
 
-#[derive(Clone, ValueEnum, Debug)]
-pub(crate) enum TaskPriority {
-    Low,
-    Medium,
-    High,
+#[derive(Clone, Debug, ValueEnum)]
+pub(crate) enum TmgrVersion {
+    V2,
+    V3,
+    Invalid,
 }
 
-impl std::fmt::Display for TaskPriority {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.to_possible_value()
-            .expect("no values are skipped")
-            .get_name()
-            .fmt(f)
+impl From<u32> for TmgrVersion {
+    fn from(value: u32) -> Self {
+        match value {
+            2 => TmgrVersion::V2,
+            3 => TmgrVersion::V3,
+            _ => TmgrVersion::Invalid,
+        }
+    }
+}
+impl From<&TmgrVersion> for String {
+    fn from(value: &TmgrVersion) -> Self {
+        match value {
+            TmgrVersion::V2 => "v2".to_string(),
+            TmgrVersion::V3 => "v3".to_string(),
+            TmgrVersion::Invalid => "invalid".to_string(),
+        }
     }
 }

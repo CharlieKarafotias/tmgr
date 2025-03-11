@@ -1,6 +1,6 @@
 [package]
 name = "tmgr"
-version = "2.2.6"
+version = "3.0.0"
 edition = "2024"
 authors = ["Charlie Karafotias <cnkara2023@gmail.com>"]
 repository = "https://github.com/charliekarafotias/tmgr"
@@ -9,9 +9,9 @@ repository = "https://github.com/charliekarafotias/tmgr"
 
 [dependencies]
 clap = { version = "4.5.31", features = ["derive"] }
-serde = { version = "1.0.218", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
 surrealdb = { version = "2.2.1", features = ["kv-mem", "kv-surrealkv"] }
-tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.44.0", features = ["macros", "rt-multi-thread"] }
 reqwest = { version = "0.12.12", features = ["json"] }
 semver = "1.0.26"
 directories = "6.0.0"
@@ -21,4 +21,4 @@ comfy-table = "7.1.4"
 
 [dev-dependencies]
 chrono = "0.4.40"
-tempfile = "3.17.1"
+tempfile = "3.18.0"
