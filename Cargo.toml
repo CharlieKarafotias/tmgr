@@ -21,4 +21,4 @@ comfy-table = "7.1.4"
 
 [dev-dependencies]
 chrono = "0.4.40"
-tempfile = "3.17.1"
+tempfile = "3.19.1"
