@@ -8,7 +8,7 @@ repository = "https://github.com/charliekarafotias/tmgr"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4.5.31", features = ["derive"] }
+clap = { version = "4.5.34", features = ["derive"] }
 serde = { version = "1.0.218", features = ["derive"] }
 surrealdb = { version = "2.2.1", features = ["kv-mem", "kv-surrealkv"] }
 tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
