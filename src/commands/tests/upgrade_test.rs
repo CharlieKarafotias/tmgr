@@ -1,8 +1,9 @@
-use crate::commands::upgrade::{delete_existing_binary, latest_release_url, move_new_binary};
-use std::fs::File;
-use std::io::Write;
+use super::super::upgrade::{delete_existing_binary, latest_release_url, move_new_binary};
+use std::{fs::File, io::Write};
 use tempfile::tempdir;
 
+// TODO: Repurpose this test file to test calling the run::upgrade function instead and checking output
+// TODO: move existing tests into upgrade.rs file as these test functionality of functions that should not be public
 #[test]
 fn latest_release_url_test() {
     let expected = "https://api.github.com/repos/charliekarafotias/tmgr/releases/latest";
