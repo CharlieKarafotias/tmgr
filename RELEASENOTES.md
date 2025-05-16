@@ -12,9 +12,13 @@
   - `Task` struct now implements function to retrieve fields required for building tables in `list` and `view` commands
 - Improved test suites for all commands
 - Dependency updates
-  - Bumped `tempfile` from 3.17.1 to 3.18.0
-  - Bumped `tokio` from 1.43.0 to 1.44.0
+  - Bumped `chrono` from 0.4.40 to 0.4.41
+  - Bumped `clap` from 4.5.31 to 4.5.38
+  - Bumped `reqwest` from 0.12.12 to 0.12.15
   - Bumped `serde` from  1.0.218 to 1.0.219
+  - Bumped `surrealdb` from 2.2.1 to 2.3.2
+  - Bumped `tempfile` from 3.17.1 to 3.20.0
+  - Bumped `tokio` from 1.43.0 to 1.45.0
 
 ### Breaking changes
 
